@@ -91,16 +91,43 @@ Cruncher exposes its functions as individual MCP tools. Here is the full list:
 
 | Tool Name | Description | Arguments |
 | :--- | :--- | :--- |
-| ... (Previous tools omitted for brevity) ... | ... | ... |
+| **Basic Arithmetic** | | |
+| `add` | Adds two numbers (a + b). | `a` (number), `b` (number) |
+| `subtract` | Subtracts the second number from the first (a - b). | `a` (number), `b` (number) |
+| `multiply` | Multiplies two numbers (a * b). | `a` (number), `b` (number) |
+| `divide` | Divides the first number by the second (a / b). | `a` (number), `b` (number) |
+| `modulo` | Calculates the remainder (a mod b). | `a` (number), `b` (number) |
+| **Power & Roots** | | |
+| `power` | Calculates a raised to the power of b (a^b). | `base` (number), `exponent` (number) |
+| `sqrt` | Calculates the square root of a value. | `value` (number) |
+| **Trigonometry** | | |
+| `sine` | Calculates the sine of an angle. | `angle` (number), `unit` (degrees/radians, optional) |
+| `cosine` | Calculates the cosine of an angle. | `angle` (number), `unit` (degrees/radians, optional) |
+| `tangent` | Calculates the tangent of an angle. | `angle` (number), `unit` (degrees/radians, optional) |
 | `asin` | Calculates the inverse sine (arcsine) of a value. Returns an angle. | `value` (number), `unit` (degrees/radians, optional) |
 | `acos` | Calculates the inverse cosine (arccosine) of a value. Returns an angle. | `value` (number), `unit` (degrees/radians, optional) |
 | `atan` | Calculates the inverse tangent (arctangent) of a value. Returns an angle. | `value` (number), `unit` (degrees/radians, optional) |
+| **Logarithms** | | |
+| `logarithm` | Calculates the base-10 logarithm of a value. | `value` (number) |
+| `natural_log` | Calculates the natural logarithm (base-e) of a value. | `value` (number) |
+| **Statistical Functions** | | |
 | `sum` | Calculates the sum of an array of numbers. | `numbers` (array of numbers) |
 | `avg` | Calculates the average of an array of numbers. | `numbers` (array of numbers) |
 | `median` | Calculates the median of an array of numbers. | `numbers` (array of numbers) |
 | `min` | Finds the minimum value in an array of numbers. | `numbers` (array of numbers) |
 | `max` | Finds the maximum value in an array of numbers. | `numbers` (array of numbers) |
-| ... (Remaining tools omitted for brevity) ... | ... | ... |
+| `count` | Counts the number of elements in an array. | `numbers` (array of numbers) |
+| `range` | Calculates the range (max - min) of an array. | `numbers` (array of numbers) |
+| `percentile` | Calculates the value at a given percentile (0-100). | `numbers` (array of numbers), `percentile` (number, 0-100) |
+| **Other** | | |
+| `absolute` | Calculates the absolute value of a number. | `value` (number) |
+| **Constants** | | |
+| `get_constant` | Returns the value of a mathematical constant. | `name` ("pi" or "e") |
+| **Memory Functions** | | |
+| `memory_clear` | Clears the calculator memory (MC). | (no arguments) |
+| `memory_recall` | Recalls the value stored in memory (MR). | (no arguments) |
+| `memory_add` | Adds a value to the current memory (M+). | `value` (number) |
+| `memory_subtract` | Subtracts a value from the current memory (M-). | `value` (number) |
 
 ## ⛏️ How It Works (For Developers)
 
