@@ -15,6 +15,7 @@ Cruncher provides a comprehensive set of calculator functions:
 
 *   **Basic Arithmetic**: Addition, Subtraction, Multiplication, Division, Modulo.
 *   **Power & Roots**: Exponentiation (`a^b`), Square Root.
+*   **Number Theory**: Factorial (n!).
 *   **Trigonometry**: Sine, Cosine, Tangent, Arcsine (`asin`), Arccosine (`acos`), and Arctangent (`atan`) (with support for degrees and radians).
 *   **Logarithms**: Base-10 Logarithm and Natural Logarithm (ln).
 *   **Statistical Functions**: Sum, Average, Median, Min, Max, Range, Count, and Percentile for arrays of numbers.
@@ -79,6 +80,8 @@ You need to tell Claude Desktop where to find the Cruncher server.
 
 > "What is 17 modulo 5?"
 
+> "What is 10 factorial?"
+
 > "Store 99 in memory."
 
 > "Add 5 to memory and then tell me what the total now is."
@@ -100,6 +103,8 @@ Cruncher exposes its functions as individual MCP tools. Here is the full list:
 | **Power & Roots** | | |
 | `power` | Calculates a raised to the power of b (a^b). | `base` (number), `exponent` (number) |
 | `sqrt` | Calculates the square root of a value. | `value` (number) |
+| **Number Theory** | | |
+| `factorial` | Calculates the factorial of a non-negative integer (n!). | `n` (number, non-negative integer) |
 | **Trigonometry** | | |
 | `sine` | Calculates the sine of an angle. | `angle` (number), `unit` (degrees/radians, optional) |
 | `cosine` | Calculates the cosine of an angle. | `angle` (number), `unit` (degrees/radians, optional) |

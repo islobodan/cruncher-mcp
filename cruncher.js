@@ -332,6 +332,16 @@ const TOOLS = [
       required: ["a", "b"],
     },
   },
+  {
+    name: "factorial",
+    description:
+      "Calculates the factorial of a non-negative integer (n!). For example, 5! = 5 × 4 × 3 × 2 × 1 = 120.",
+    inputSchema: {
+      type: "object",
+      properties: { n: { type: "number" } },
+      required: ["n"],
+    },
+  },
 ];
 
 // --- Tool Implementations ---
@@ -699,6 +709,30 @@ const toolHandlers = {
   modulo: ({ a, b }) => {
     if (b === 0) throw new Error("Modulo by zero is not allowed.");
     return a % b;
+  },
+
+  /**
+   * Calculates the factorial of a non-negative integer (n!).
+   * @param {Object} args - The arguments object.
+   * @param {number} args.n - The non-negative integer.
+   * @returns {number} The factorial of n.
+   * @throws {Error} If n is negative or not an integer.
+   */
+  factorial: ({ n }) => {
+    if (n < 0)
+      throw new Error("Factorial is not defined for negative numbers.");
+    if (!Number.isInteger(n))
+      throw new Error("Factorial requires an integer value.");
+    if (n > 170)
+      throw new Error(
+        "Factorial result exceeds maximum safe integer (n > 170).",
+      );
+
+    let result = 1;
+    for (let i = 2; i <= n; i++) {
+      result *= i;
+    }
+    return result;
   },
 };
 
