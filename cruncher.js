@@ -335,7 +335,7 @@ const TOOLS = [
   {
     name: "factorial",
     description:
-      "Calculates the factorial of a non-negative integer (n!). For example, 5! = 5 × 4 × 3 × 2 × 1 = 120.",
+      "Calculates the factorial of a non-negative integer (n!). For example, 5! = 5 x 4 x 3 x 2 x 1 = 120.",
     inputSchema: {
       type: "object",
       properties: { n: { type: "number" } },
