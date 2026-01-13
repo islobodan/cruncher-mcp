@@ -66,6 +66,18 @@ You need to tell Claude Desktop where to find the Cruncher server.
 2.  Restart Claude Desktop. It will automatically connect to the Cruncher server.
 3.  Start asking questions!
 
+### LibreChat Configuration
+
+If you're using LibreChat, you can add the following configuration to your librechat.yaml file:
+
+```yaml
+  cruncher:
+    type: stdio
+    command: node
+    args:
+      - "/opt/mcp/cruncher.js"
+```
+
 #### Example Questions for Claude
 
 > "What is the angle in degrees whose sine is 0.5?"
