@@ -1,9 +1,24 @@
 # Cruncher: The Scientific Calculator MCP Server
 
+[![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)](https://github.com/)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen.svg)](https://nodejs.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A powerful scientific calculator for your AI assistant, built as a **Model Context Protocol (MCP)** server. Cruncher allows compatible AI clients (like Claude Desktop) to perform complex mathematical calculations, handle memory, perform statistical analysis, and access scientific constants with a simple, secure, and standardized interface.
+
+## 🌟 The Purity Promise (Zero Dependencies)
+
+Cruncher is built as a highly educational, extremely lightweight tool. It accomplishes powerful features without pulling in any heavy external libraries (no `mathjs`, no `zod`, no `@modelcontextprotocol/sdk`). Everything is handled using native Node.js capabilities:
+* **Safe Expression Evaluation**: Instead of relying on `mathjs` or dangerous `eval()`, Cruncher uses `new Function()` guarded by a strict whitelist Regex that guarantees only numbers and math operators can pass.
+* **Input Validation**: Instead of heavy schema libraries like Zod, a custom recursive validation function rigidly enforces AI inputs against JSON Schemas directly.
+* **Timeout Protection**: Instead of complex process managers, it leverages Node.js `worker_threads` to spawn calculations. If an AI requests a multi-million loop factorial, the main thread easily terminates the worker after a strict timeout (default 3 seconds). This timeout is configurable via the `CRUNCHER_TIMEOUT` environment variable (in milliseconds), ensuring the server remains responsive even during heavy computational loads.
+* **Floating-Point Accuracy**: Instead of using `decimal.js`, it solves the classic JS math error (`0.1 + 0.2 = 0.30000000000000004`) via dynamic integer-scaling logic under the hood.
+
+## 📚 An Educational Approach to MCP
+
+This project serves as an excellent learning resource for developers looking to understand the Model Context Protocol (MCP) deeply. Because it deliberately avoids using the official `@modelcontextprotocol/sdk`, the entire implementation of the MCP protocol, JSON-RPC message handling, input validations, and error formatting is exposed in plain JavaScript. 
+
+Reading through `cruncher.js` provides unparalleled, transparent insight into exactly how an MCP server communicates over `stdio`, parses incoming requests (`initialize`, `tools/list`, `tools/call`), and responds back to the AI client—demystifying the "magic" that SDKs usually hide away.
 
 ## What is the Model Context Protocol?
 
@@ -11,16 +26,22 @@ The Model Context Protocol (MCP) is an open standard that allows AI applications
 
 ## ✨ Features
 
-Cruncher provides a comprehensive set of calculator functions:
+Cruncher provides a comprehensive set of calculator functions built completely from scratch without heavy dependencies:
 
+*   **Robust Architecture**: 
+    *   **Zero Dependencies**: Relies purely on Node.js standard libraries.
+    *   **Strict Input Validation**: Custom schema validator prevents AI hallucinations and invalid data.
+    *   **Infinite Loop Protection**: Utilizes Node.js `worker_threads` with a 3-second strict timeout to prevent complex calculations from freezing the server.
+    *   **Accurate Decimal Math**: Uses an integer-scaling approach to prevent classic JS floating-point errors (e.g., `0.1 + 0.2 === 0.3`).
 *   **Basic Arithmetic**: Addition, Subtraction, Multiplication, Division, Modulo.
+*   **Expression Evaluation**: Safely compute entire plain-text math strings (e.g. `(5 + 3) * 10 / 2`).
 *   **Power & Roots**: Exponentiation (`a^b`), Square Root.
 *   **Number Theory**: Factorial (n!).
 *   **Trigonometry**: Sine, Cosine, Tangent, Arcsine (`asin`), Arccosine (`acos`), and Arctangent (`atan`) (with support for degrees and radians).
 *   **Logarithms**: Base-10 Logarithm and Natural Logarithm (ln).
 *   **Statistical Functions**: Sum, Average, Median, Min, Max, Range, Count, and Percentile for arrays of numbers.
 *   **Convenience Functions**: Absolute Value.
-*   **Mathematical Constants**: Easy access to `pi` (π) and `e`.
+*   **Constants**: Easy access to Math (`pi`, `e`, `tau`, `phi`, `sqrt2`, `euler_mascheroni`), Physics (`c`, `g`, `G`, `h`, `k`, `R`), and Chemistry constants (`NA`, `e_charge`, `m_e`, `m_p`).
 *   **Memory Functions**: `M+`, `M-`, `MR` (Memory Recall), and `MC` (Memory Clear).
 
 ## 🚀 Installation & Usage
@@ -46,14 +67,17 @@ You need to tell Claude Desktop where to find the Cruncher server.
 
 2.  If the file doesn't exist, create it.
 
-3.  Add the following server configuration. **Important:** Replace the `args` path with the actual path to your `cruncher.js` file.
+3.  Add the following server configuration. **Important:** Replace the `args` path with the actual path to your `cruncher.js` file. You can also configure the execution timeout (in milliseconds) via the `CRUNCHER_TIMEOUT` environment variable (defaults to 3000ms).
 
     ```json
     {
       "mcpServers": {
         "cruncher": {
           "command": "node",
-          "args": ["C:/Users/YOUR_USERNAME/mcp-servers/cruncher.js"]
+          "args": ["C:/Users/YOUR_USERNAME/mcp-servers/cruncher.js"],
+          "env": {
+            "CRUNCHER_TIMEOUT": "5000"
+          }
         }
       }
     }
@@ -66,6 +90,70 @@ You need to tell Claude Desktop where to find the Cruncher server.
 2.  Restart Claude Desktop. It will automatically connect to the Cruncher server.
 3.  Start asking questions!
 
+### OpenWebUI (Formerly Ollama WebUI)
+OpenWebUI natively supports connecting to `stdio` MCP servers.
+1. Go to **Admin Panel** > **Settings** > **Tools** > **MCP Servers**.
+2. Click **Add Server**.
+3. Name it "Cruncher", select **stdio**, use `node` as the command, and `/path/to/cruncher.js` as the argument.
+
+### Cursor IDE
+You can give Cursor's built-in AI the ability to run math and calculate hashes.
+1. Open Cursor Settings (gear icon) > **Features** > **MCP Servers**.
+2. Click **+ Add New MCP Server**.
+3. Set Type to `command`, Name to `cruncher`, and Command to `node /path/to/cruncher.js`.
+
+### Cline (VS Code Extension)
+If you use Cline for agentic coding in VS Code, open the MCP configuration file (`cline_mcp_settings.json`) and add:
+
+```json
+{
+  "mcpServers": {
+    "cruncher": {
+      "command": "node",
+      "args": ["/path/to/cruncher.js"],
+      "env": {
+        "CRUNCHER_TIMEOUT": "5000"
+      }
+    }
+  }
+}
+```
+
+### Goose (Terminal Agent)
+Goose is a lightweight, terminal‑based AI assistant that fully supports MCP.
+1. Edit `~/.goose/config.yaml` (or the local project config).
+2. Add a new server entry:
+
+```yaml
+mcpServers:
+  cruncher:
+    command: node
+    args:
+      - "/path/to/cruncher.js"
+    env:
+      CRUNCHER_TIMEOUT: "5000"
+```
+3. Restart Goose. You can now ask Goose to run calculations like `evaluate_expression` or `median` directly.
+
+### Zed Editor (AI Pane)
+Zed’s built‑in AI pane supports MCP connections.
+1. Open **Settings → AI → MCP Servers**.
+2. Click **Add Server** and fill in:
+   - **Name**: `cruncher`
+   - **Command**: `node`
+   - **Args**: `/absolute/path/to/cruncher.js`
+   - **Env** (optional): `CRUNCHER_TIMEOUT=5000`
+3. Save. The Zed AI can now call Cruncher for precise arithmetic and statistics.
+
+### LM Studio (Local LLM + MCP)
+LM Studio runs LLMs entirely offline and now includes an MCP client.
+1. Open **Settings → MCP** in LM Studio.
+2. Click **Add Server** and provide:
+   - **Executable**: `node`
+   - **Arguments**: `/absolute/path/to/cruncher.js`
+   - **Environment** (optional): `CRUNCHER_TIMEOUT=5000`
+3. Confirm. Your private model (e.g., Llama 3, DeepSeek‑V2) can now offload math to Cruncher without any network traffic.
+
 ### LibreChat Configuration
 
 If you're using LibreChat, you can add the following configuration to your librechat.yaml file:
@@ -76,6 +164,8 @@ If you're using LibreChat, you can add the following configuration to your libre
     command: node
     args:
       - "/opt/mcp/cruncher.js"
+    env:
+      CRUNCHER_TIMEOUT: "5000"
 ```
 
 #### Example Questions for Claude
@@ -94,6 +184,8 @@ If you're using LibreChat, you can add the following configuration to your libre
 
 > "What is 10 factorial?"
 
+> "Evaluate the expression: (15 + 20) * 3 / 2"
+
 > "Store 99 in memory."
 
 > "Add 5 to memory and then tell me what the total now is."
@@ -107,6 +199,7 @@ Cruncher exposes its functions as individual MCP tools. Here is the full list:
 | Tool Name | Description | Arguments |
 | :--- | :--- | :--- |
 | **Basic Arithmetic** | | |
+| `evaluate_expression` | Evaluates a plain text math expression (e.g. `(5 + 3) * 10 / 2`). | `expression` (string) |
 | `add` | Adds two numbers (a + b). | `a` (number), `b` (number) |
 | `subtract` | Subtracts the second number from the first (a - b). | `a` (number), `b` (number) |
 | `multiply` | Multiplies two numbers (a * b). | `a` (number), `b` (number) |
@@ -139,7 +232,7 @@ Cruncher exposes its functions as individual MCP tools. Here is the full list:
 | **Other** | | |
 | `absolute` | Calculates the absolute value of a number. | `value` (number) |
 | **Constants** | | |
-| `get_constant` | Returns the value of a mathematical constant. | `name` ("pi" or "e") |
+| `get_constant` | Returns the value of a mathematical, physical, or chemical constant. | `name` ("pi", "e", "tau", "phi", "sqrt2", "euler_mascheroni", "c", "g", "G", "h", "k", "R", "NA", "e_charge", "m_e", "m_p") |
 | **Memory Functions** | | |
 | `memory_clear` | Clears the calculator memory (MC). | (no arguments) |
 | `memory_recall` | Recalls the value stored in memory (MR). | (no arguments) |
@@ -148,13 +241,14 @@ Cruncher exposes its functions as individual MCP tools. Here is the full list:
 
 ## ⛏️ How It Works (For Developers)
 
-Cruncher is a plain Node.js JavaScript application that communicates over **standard input/output (stdio)**. This makes it a lightweight, portable, and secure MCP server.
+Cruncher is a plain Node.js JavaScript application that communicates over **standard input/output (stdio)**. This makes it a lightweight, portable, and secure MCP server. The entire flow for a single tool call looks like this:
 
-1.  **Initialization**: On startup, the server listens for an `initialize` request from the MCP client and responds with its capabilities.
-2.  **Tool Discovery**: The client sends a `tools/list` request, and the server responds with the full list of available calculator tools and their `inputSchema`, which defines the required arguments.
-3.  **Tool Execution**: When the AI decides to use a calculator function (e.g., `median`), the client sends a `tools/call` request with the tool name and arguments. The server executes the corresponding JavaScript function from the `toolHandlers` object, performs error checking, and returns the result.
-
-This architecture allows the AI to make decisions based on the available tools, while the server handles the actual computation in a controlled environment.
+1.  **Initialization**: On startup, the server listens for an `initialize` request from the MCP client and responds with its capabilities and version info (`v1.2.0`).
+2.  **Tool Discovery**: The client sends a `tools/list` request, and the server responds with the full list of available calculator tools and their `inputSchema`, which defines the required arguments and their types.
+3.  **Input Validation**: Before any tool is executed, the server runs a custom recursive `validateArguments` function against the tool's `inputSchema`. This ensures required fields are present, types are correct (number, string, array), enum values are valid, and min/max constraints are respected — all without any external library.
+4.  **Worker Thread Execution**: Once validated, the tool call is handed off to an isolated Node.js `worker_thread`. This completely protects the main thread (and its `stdio` communication) from being blocked by a long-running or infinite calculation.
+5.  **Timeout Protection**: A configurable timer (`CRUNCHER_TIMEOUT`, default 3000ms) watches the worker. If the worker takes too long, the main thread forcefully terminates it via `worker.terminate()` and returns a `-32000` error to the AI client.
+6.  **Safe Math & Result**: The worker executes the handler function using `safeMath` (integer-scaling) for decimal-safe arithmetic, then posts the result back to the main thread, which formats and writes the final JSON-RPC 2.0 response to `stdout`.
 
 ## 🤝 Contributing
 
@@ -162,4 +256,4 @@ Contributions are welcome! If you'd like to add a new function, fix a bug, or im
 
 ## 📜 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License.
