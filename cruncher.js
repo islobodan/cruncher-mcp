@@ -29,7 +29,7 @@ const TOOLS = [
   // --- Basic Arithmetic ---
   {
     name: "add",
-    description: "Adds two numbers (a + b).",
+    description: "Adds two numbers (a + b). NOTE: For multi-step calculations or complex expressions, use 'evaluate_expression' instead (e.g., '5 + 3 + 2' or '(10 + 5) * 2').",
     inputSchema: {
       type: "object",
       properties: { a: { type: "number" }, b: { type: "number" } },
@@ -38,7 +38,7 @@ const TOOLS = [
   },
   {
     name: "subtract",
-    description: "Subtracts the second number from the first (a - b).",
+    description: "Subtracts the second number from the first (a - b). NOTE: For multi-step calculations, use 'evaluate_expression' instead.",
     inputSchema: {
       type: "object",
       properties: { a: { type: "number" }, b: { type: "number" } },
@@ -47,7 +47,7 @@ const TOOLS = [
   },
   {
     name: "multiply",
-    description: "Multiplies two numbers (a * b).",
+    description: "Multiplies two numbers (a * b). NOTE: For multi-step calculations, use 'evaluate_expression' instead.",
     inputSchema: {
       type: "object",
       properties: { a: { type: "number" }, b: { type: "number" } },
@@ -56,7 +56,7 @@ const TOOLS = [
   },
   {
     name: "divide",
-    description: "Divides the first number by the second (a / b). Returns an error if b is zero.",
+    description: "Divides the first number by the second (a / b). Returns an error if b is zero. NOTE: For multi-step calculations, use 'evaluate_expression' instead.",
     inputSchema: {
       type: "object",
       properties: { a: { type: "number" }, b: { type: "number" } },
@@ -345,7 +345,7 @@ const TOOLS = [
   // --- NEW in v1.2.0: Expression Evaluator ---
   {
     name: "evaluate_expression",
-    description: "Evaluates a plain text mathematical expression (e.g., '(5 + 3) * 10 / 2'). Supports basic operators (+, -, *, /, %, ^) and parentheses.",
+    description: "Evaluates a plain text mathematical expression. PREFERRED METHOD for most calculations. Use this for ANY math problem that can be written as a single expression (e.g., '5 + 3 * 2', '(100 - 25) / 3', '2^10 + sqrt(16)'). Supports +, -, *, /, %, ^, parentheses, and decimals. Prefer this over calling add/subtract/multiply/divide separately for better accuracy and efficiency.",
     inputSchema: {
       type: "object",
       properties: { expression: { type: "string" } },
