@@ -7,8 +7,8 @@ This document summarizes the comprehensive test suite for the Cruncher MCP Serve
 - **Framework**: `mcp-tester` (custom MCP client testing framework)
 - **Runner**: `tsx` (TypeScript execution without compilation)
 - **Test File**: `test-cruncher-full.ts` (single comprehensive suite)
-- **Total Tests**: 108
-- **Pass Rate**: **100%** (108/108 tests passed) on v1.2.0
+- **Total Tests**: 127
+- **Pass Rate**: **100%** (127/127 tests passed) on v1.2.0
 
 ## Test Categories
 
@@ -68,7 +68,7 @@ This document summarizes the comprehensive test suite for the Cruncher MCP Serve
 
 ## Failed Tests Analysis
 
-**No failed tests!** All 108 tests pass on v1.2.0.
+**No failed tests!** All 127 tests pass on v1.2.0.
 
 ## Key Successes
 
@@ -120,7 +120,7 @@ npx tsx test-cruncher-full.ts
 | Absolute Value | 2 | 2 | 0 | 100% |
 | Modulo Edge Cases | 2 | 2 | 0 | 100% |
 | Power Edge Cases | 3 | 3 | 0 | 100% |
-| **Total** | **108** | **108** | **0** | **100%** |
+| **Total** | **127** | **127** | **0** | **100%** |
 
 
 ## Conclusion

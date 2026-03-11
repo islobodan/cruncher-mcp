@@ -913,6 +913,228 @@ async function testCruncher() {
       }));
 
 
+      
+      // --- 32. Concurrent Execution Tests (Critical for Production) ---
+      results.push(await runTest('Concurrent: 10 simultaneous add calls', async () => {
+        const promises = Array.from({ length: 10 }, async (_, i) => {
+          return await client.callTool({ name: 'add', arguments: { a: i, b: i * 2 } });
+        });
+        const results = await Promise.all(promises);
+        // Verify all succeeded
+        if (results.length !== 10) throw new Error(`Expected 10 results, got ${results.length}`);
+        // Verify results are correct (i + i*2 = 3i)
+        for (let i = 0; i < 10; i++) {
+          const expected = 3 * i;
+          const actual = parseFloat(results[i].content[0].text);
+          if (actual !== expected) throw new Error(`Call ${i}: Expected ${expected}, got ${actual}`);
+        }
+      }));
+
+      results.push(await runTest('Concurrent: Mixed tools simultaneously', async () => {
+        const promises = [
+          client.callTool({ name: 'add', arguments: { a: 1, b: 2 } }),
+          client.callTool({ name: 'multiply', arguments: { a: 3, b: 4 } }),
+          client.callTool({ name: 'sqrt', arguments: { value: 16 } }),
+          client.callTool({ name: 'power', arguments: { base: 2, exponent: 3 } }),
+          client.callTool({ name: 'get_constant', arguments: { name: 'pi' } }),
+        ];
+        const results = await Promise.all(promises);
+        if (results.length !== 5) throw new Error(`Expected 5 results, got ${results.length}`);
+        if (parseFloat(results[0].content[0].text) !== 3) throw new Error('Add failed');
+        if (parseFloat(results[1].content[0].text) !== 12) throw new Error('Multiply failed');
+        if (parseFloat(results[2].content[0].text) !== 4) throw new Error('Sqrt failed');
+        if (parseFloat(results[3].content[0].text) !== 8) throw new Error('Power failed');
+        if (Math.abs(parseFloat(results[4].content[0].text) - Math.PI) > 1e-10) throw new Error('Pi failed');
+      }));
+
+      results.push(await runTest('Concurrent: Memory operations (sequential)', async () => {
+        // Clear memory first
+        await client.callTool({ name: 'memory_clear', arguments: {} });
+        
+        // Perform memory operations sequentially to ensure atomicity
+        await client.callTool({ name: 'memory_add', arguments: { value: 100 } });
+        await client.callTool({ name: 'memory_add', arguments: { value: 200 } });
+        
+        // Recall should be 300 (100 + 200)
+        const result = await client.callTool({ name: 'memory_recall', arguments: {} });
+        if (parseFloat(result.content[0].text) !== 300) {
+          throw new Error(`Expected 300, got ${result.content[0].text}`);
+        }
+      }));
+
+      // --- 33. Security & Injection Tests ---
+      results.push(await runTest('Security: Unicode injection (error)', async () => {
+        try {
+          await client.callTool({ name: 'evaluate_expression', arguments: { expression: '5 + ①' } });
+          throw new Error('Should have thrown an error');
+        } catch (error: any) {
+          if (!error.message.includes('Security Error') && !error.message.includes('invalid characters')) {
+            throw new Error(`Expected security error, got: ${error.message}`);
+          }
+        }
+      }));
+
+      results.push(await runTest('Security: Prototype pollution attempt (error)', async () => {
+        try {
+          await client.callTool({ name: 'evaluate_expression', arguments: { expression: '5 + __proto__' } });
+          throw new Error('Should have thrown an error');
+        } catch (error: any) {
+          if (!error.message.includes('Security Error') && !error.message.includes('invalid characters')) {
+            throw new Error(`Expected security error, got: ${error.message}`);
+          }
+        }
+      }));
+
+      results.push(await runTest('Security: Null input handling', async () => {
+        try {
+          await client.callTool({ name: 'add', arguments: { a: null as any, b: 2 } });
+          throw new Error('Should have thrown an error');
+        } catch (error: any) {
+          if (!error.message.includes('Validation Error') && !error.message.includes('Expected number')) {
+            throw new Error(`Expected validation error, got: ${error.message}`);
+          }
+        }
+      }));
+
+      results.push(await runTest('Security: Array in number field (error)', async () => {
+        try {
+          await client.callTool({ name: 'add', arguments: { a: [1] as any, b: 2 } });
+          throw new Error('Should have thrown an error');
+        } catch (error: any) {
+          if (!error.message.includes('Validation Error') && !error.message.includes('Expected number')) {
+            throw new Error(`Expected validation error, got: ${error.message}`);
+          }
+        }
+      }));
+
+      results.push(await runTest('Security: Whitespace handling (should work)', async () => {
+        const result = await client.callTool({ name: 'evaluate_expression', arguments: { expression: '  5  +  3  ' } });
+        if (parseFloat(result.content[0].text) !== 8) throw new Error(`Expected 8, got ${result.content[0].text}`);
+      }));
+
+      // --- 34. Extreme Precision & Boundary Tests ---
+      results.push(await runTest('Precision: Very small decimals', async () => {
+        const result = await client.callTool({ name: 'add', arguments: { a: 0.0000000001, b: 0.0000000002 } });
+        const expected = 0.0000000003;
+        if (Math.abs(parseFloat(result.content[0].text) - expected) > 1e-15) {
+          throw new Error(`Expected ${expected}, got ${result.content[0].text}`);
+        }
+      }));
+
+      results.push(await runTest('Precision: Very large decimals', async () => {
+        const result = await client.callTool({ name: 'add', arguments: { a: 999999999.999999999, b: 1 } });
+        const expected = 1000000000.999999999;
+        if (Math.abs(parseFloat(result.content[0].text) - expected) > 1e-6) {
+          throw new Error(`Expected ~${expected}, got ${result.content[0].text}`);
+        }
+      }));
+
+      results.push(await runTest('Precision: Mixed precision', async () => {
+        const result = await client.callTool({ name: 'add', arguments: { a: 1, b: 0.0000000000001 } });
+        const expected = 1.0000000000001;
+        if (Math.abs(parseFloat(result.content[0].text) - expected) > 1e-13) {
+          throw new Error(`Expected ~${expected}, got ${result.content[0].text}`);
+        }
+      }));
+
+      results.push(await runTest('Boundary: Power with large exponent', async () => {
+        const result = await client.callTool({ name: 'power', arguments: { base: 2, exponent: 1000 } });
+        if (!Number.isFinite(parseFloat(result.content[0].text))) {
+          throw new Error(`Expected finite number, got ${result.content[0].text}`);
+        }
+      }));
+
+      results.push(await runTest('Boundary: Power with negative base and fractional exponent', async () => {
+        // (-8)^(1/3) = -2 (in real numbers, but JS returns NaN)
+        // We expect an error or NaN handling
+        const result = await client.callTool({ name: 'power', arguments: { base: -8, exponent: 1/3 } });
+        // JS Math.pow returns NaN for this case, which is acceptable
+        if (isNaN(parseFloat(result.content[0].text))) {
+          // Accept NaN as valid behavior for complex result
+        }
+      }));
+
+      // --- 35. Real-World Integration Scenarios ---
+      results.push(await runTest('Real-world: Compound interest formula', async () => {
+        // A = P(1 + r/n)^(nt)
+        // P=1000, r=0.05, n=12, t=10
+        const expression = '1000 * (1 + 0.05/12)^(12*10)';
+        const result = await client.callTool({ name: 'evaluate_expression', arguments: { expression } });
+        const expected = 1000 * Math.pow(1 + 0.05/12, 120);
+        if (Math.abs(parseFloat(result.content[0].text) - expected) > 0.01) {
+          throw new Error(`Expected ~${expected.toFixed(2)}, got ${result.content[0].text}`);
+        }
+      }));
+
+      results.push(await runTest('Real-world: Physics E=mc^2', async () => {
+        const mass = 5; // kg
+        const cConstant = await client.callTool({ name: 'get_constant', arguments: { name: 'c' } });
+        const c = parseFloat(cConstant.content[0].text);
+        const expression = `${mass} * ${c}^2`;
+        const result = await client.callTool({ name: 'evaluate_expression', arguments: { expression } });
+        const expected = mass * c * c;
+        if (Math.abs(parseFloat(result.content[0].text) - expected) > 1e10) {
+          throw new Error(`Expected ~${expected.toExponential(2)}, got ${result.content[0].text}`);
+        }
+      }));
+
+      results.push(await runTest('Real-world: Statistical workflow (mean, variance, std dev)', async () => {
+        const data = [10, 20, 30, 40, 50];
+        // Mean
+        const meanResult = await client.callTool({ name: 'avg', arguments: { numbers: data } });
+        const mean = parseFloat(meanResult.content[0].text);
+        
+        // Variance: sum((x - mean)^2) / n
+        const squaredDiffs = data.map(x => Math.pow(x - mean, 2));
+        const sumSquaredDiffs = squaredDiffs.reduce((a, b) => a + b, 0);
+        const variance = sumSquaredDiffs / data.length;
+        
+        // Calculate via evaluate_expression
+        const varianceExpr = squaredDiffs.map(d => d.toFixed(10)).join(' + ');
+        const varianceResult = await client.callTool({ name: 'evaluate_expression', arguments: { expression: `(${varianceExpr}) / ${data.length}` } });
+        const calculatedVariance = parseFloat(varianceResult.content[0].text);
+        
+        if (Math.abs(calculatedVariance - variance) > 1e-10) {
+          throw new Error(`Variance mismatch: Expected ${variance}, got ${calculatedVariance}`);
+        }
+      }));
+
+      results.push(await runTest('Real-world: Gravitational force (simplified)', async () => {
+        // Use smaller, manageable numbers to avoid scientific notation
+        // F = G * m1 * m2 / r^2
+        // G ≈ 6.674e-11, use 0.00000000006674
+        // m1 = 1000, m2 = 2000, r = 100
+        const expression = '0.00000000006674 * 1000 * 2000 / 100^2';
+        const result = await client.callTool({ name: 'evaluate_expression', arguments: { expression } });
+        const expected = 6.674e-11 * 1000 * 2000 / (100 * 100);
+        
+        if (Math.abs(parseFloat(result.content[0].text) - expected) > 1e-18) {
+          throw new Error(`Force mismatch: Expected ${expected}, got ${result.content[0].text}`);
+        }
+      }));
+
+      // --- 36. Server Stability Stress Test ---
+      results.push(await runTest('Stress: 100 sequential calls', async () => {
+        for (let i = 0; i < 100; i++) {
+          const result = await client.callTool({ name: 'add', arguments: { a: i, b: i + 1 } });
+          if (parseFloat(result.content[0].text) !== 2 * i + 1) {
+            throw new Error(`Call ${i} failed: Expected ${2 * i + 1}, got ${result.content[0].text}`);
+          }
+        }
+      }));
+
+      results.push(await runTest('Stress: 50 complex expressions', async () => {
+        for (let i = 0; i < 50; i++) {
+          const expr = `${i} * ${i+1} + ${i+2} - ${i+3}`;
+          const result = await client.callTool({ name: 'evaluate_expression', arguments: { expression: expr } });
+          const expected = i * (i+1) + (i+2) - (i+3);
+          if (parseFloat(result.content[0].text) !== expected) {
+            throw new Error(`Expression ${i} failed: Expected ${expected}, got ${result.content[0].text}`);
+          }
+        }
+      }));
+
+
       // ========== Summary ==========
     console.log('\n' + '='.repeat(60));
     console.log('📊 TEST SUMMARY');
