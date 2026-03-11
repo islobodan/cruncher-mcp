@@ -15,7 +15,7 @@ This single command runs all 50 tests covering every feature of the Cruncher ser
 
 | File | Description | Tests | Use Case |
 |------|-------------|-------|----------|
-| `test-cruncher-full.ts` | Comprehensive test suite | 87 | Full regression testing, CI/CD |
+| `test-cruncher-full.ts` | Comprehensive test suite | 108 | Full regression testing, CI/CD |
 | `TEST_REPORT.md` | Test results and analysis | - | Documentation |
 
 ## Test Coverage
@@ -33,8 +33,8 @@ This single command runs all 50 tests covering every feature of the Cruncher ser
 - **Error Handling**: Invalid inputs, missing arguments, unknown tools
 
 ### 📊 Test Statistics
-- **Total Tests**: 87
-- **Pass Rate**: **100%** (87/87) on v1.2.0
+- **Total Tests**: 108
+- **Pass Rate**: **100%** (108/108) on v1.2.0
 - **Execution Time**: ~3-4 seconds
 - **Coverage**: All 31 tools, edge cases, and advanced scenarios
 
@@ -87,8 +87,8 @@ RUN npx tsx test-cruncher-full.ts
 
 📊 TEST SUMMARY
 ============================================================
-Total Tests: 87
-Passed: 87
+Total Tests: 108
+Passed: 108
 Failed: 0
 Success Rate: 100.00%
 ============================================================
