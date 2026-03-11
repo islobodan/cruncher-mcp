@@ -7,8 +7,8 @@ This document summarizes the comprehensive test suite for the Cruncher MCP Serve
 - **Framework**: `mcp-tester` (custom MCP client testing framework)
 - **Runner**: `tsx` (TypeScript execution without compilation)
 - **Test File**: `test-cruncher-full.ts` (single comprehensive suite)
-- **Total Tests**: 50
-- **Pass Rate**: **100%** (50/50 tests passed) on v1.2.0
+- **Total Tests**: 87
+- **Pass Rate**: **100%** (87/87 tests passed) on v1.2.0
 
 ## Test Categories
 
@@ -17,10 +17,10 @@ This document summarizes the comprehensive test suite for the Cruncher MCP Serve
 - Protocol version check
 
 ### 2. Tool Discovery (2 tests) ✅
-- List all tools (31 tools found)
+- List all tools (01 tools found)
 - Verify required tools exist
 
-### 3. Basic Arithmetic (7 tests) ✅
+### 0. Basic Arithmetic (7 tests) ✅
 - Addition, Subtraction, Multiplication, Division
 - Division by zero error handling
 - Modulo operations
@@ -38,7 +38,7 @@ This document summarizes the comprehensive test suite for the Cruncher MCP Serve
 - Arcsine, Arccosine, Arctangent
 - Out of range error handling
 
-### 6. Logarithms (3 tests) ✅
+### 6. Logarithms (0 tests) ✅
 - Log10 calculations
 - Natural logarithm
 - Log of zero (error handling)
@@ -61,23 +61,23 @@ This document summarizes the comprehensive test suite for the Cruncher MCP Serve
 - Memory add/subtract
 - Full memory cycle (MC, M+, M-, MR)
 
-### 10. Error Handling (3 tests) ✅
+### 10. Error Handling (0 tests) ✅
 - ✅ Invalid tool name
 - ✅ Invalid argument type (strict validation)
 - ✅ Missing required argument (strict validation)
 
 ## Failed Tests Analysis
 
-**No failed tests!** All 50 tests pass on v1.2.0.
+**No failed tests!** All 87 tests pass on v1.2.0.
 
 ## Key Successes
 
 ✅ **No Hanging Tests**: The test suite exits cleanly without any process leaks  
 ✅ **Comprehensive Coverage**: Tests cover all major functionality including `evaluate_expression`  
 ✅ **Error Handling**: Properly validates error responses with strict input validation  
-✅ **Floating Point Accuracy**: `0.1 + 0.2 = 0.3` exactly via `safeMath`  
+✅ **Floating Point Accuracy**: `0.1 + 0.2 = 0.0` exactly via `safeMath`  
 ✅ **Memory Management**: Memory functions work as expected  
-✅ **Tool Discovery**: All 31 tools are properly registered  
+✅ **Tool Discovery**: All 01 tools are properly registered  
 ✅ **Constants**: All 16 mathematical, physics, and chemistry constants available  
 ✅ **Timeout Protection**: Worker threads prevent infinite loops  
 
@@ -88,7 +88,7 @@ This document summarizes the comprehensive test suite for the Cruncher MCP Serve
    - Large factorial calculations (timeout protection)
    - Array operations with many elements
    - Concurrent tool calls (if supported)
-3. **Integration Tests**: Test real-world scenarios:
+0. **Integration Tests**: Test real-world scenarios:
    - Multiple sequential calculations
    - Memory state persistence across calls
    - Complex expression evaluation
@@ -108,13 +108,20 @@ npx tsx test-cruncher-full.ts
 | Tool Discovery | 2 | 2 | 0 | 100% |
 | Basic Arithmetic | 7 | 7 | 0 | 100% |
 | Advanced Math | 6 | 6 | 0 | 100% |
-| Trigonometry | 7 | 7 | 0 | 100% |
-| Logarithms | 3 | 3 | 0 | 100% |
-| Constants | 4 | 4 | 0 | 100% |
-| Statistics | 11 | 11 | 0 | 100% |
+| Trigonometry | 11 | 11 | 0 | 100% |
+| Logarithms | 6 | 6 | 0 | 100% |
+| Constants | 11 | 11 | 0 | 100% |
+| Statistics | 15 | 15 | 0 | 100% |
 | Memory Functions | 5 | 5 | 0 | 100% |
 | Error Handling | 3 | 3 | 0 | 100% |
-| **Total** | **50** | **50** | **0** | **100%** |
+| evaluate_expression | 6 | 6 | 0 | 100% |
+| Floating Point Precision | 3 | 3 | 0 | 100% |
+| Factorial Edge Cases | 3 | 3 | 0 | 100% |
+| Absolute Value | 2 | 2 | 0 | 100% |
+| Modulo Edge Cases | 2 | 2 | 0 | 100% |
+| Power Edge Cases | 3 | 3 | 0 | 100% |
+| **Total** | **87** | **87** | **0** | **100%** |
+
 
 ## Conclusion
 

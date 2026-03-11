@@ -516,7 +516,215 @@ async function testCruncher() {
       }
     }));
 
-    // ========== Summary ==========
+    
+      // --- 11. Extended evaluate_expression Tests ---
+      results.push(await runTest('evaluate_expression: simple addition', async () => {
+        const result = await client.callTool({ name: 'evaluate_expression', arguments: { expression: '5 + 3' } });
+        if (parseFloat(result.content[0].text) !== 8) throw new Error(`Expected 8, got ${result.content[0].text}`);
+      }));
+
+      results.push(await runTest('evaluate_expression: complex nested', async () => {
+        const result = await client.callTool({ name: 'evaluate_expression', arguments: { expression: '((5 + 3) * 2) - 4' } });
+        if (parseFloat(result.content[0].text) !== 12) throw new Error(`Expected 12, got ${result.content[0].text}`);
+      }));
+
+      results.push(await runTest('evaluate_expression: power operator', async () => {
+        const result = await client.callTool({ name: 'evaluate_expression', arguments: { expression: '2 ^ 8' } });
+        if (parseFloat(result.content[0].text) !== 256) throw new Error(`Expected 256, got ${result.content[0].text}`);
+      }));
+
+      results.push(await runTest('evaluate_expression: negative numbers', async () => {
+        const result = await client.callTool({ name: 'evaluate_expression', arguments: { expression: '-5 + 10' } });
+        if (parseFloat(result.content[0].text) !== 5) throw new Error(`Expected 5, got ${result.content[0].text}`);
+      }));
+
+      results.push(await runTest('evaluate_expression: decimals', async () => {
+        const result = await client.callTool({ name: 'evaluate_expression', arguments: { expression: '0.1 + 0.2' } });
+        if (Math.abs(parseFloat(result.content[0].text) - 0.3) > 1e-10) throw new Error(`Expected 0.3, got ${result.content[0].text}`);
+      }));
+
+      results.push(await runTest('evaluate_expression: invalid chars (error)', async () => {
+        try {
+          await client.callTool({ name: 'evaluate_expression', arguments: { expression: '5 + x' } });
+          throw new Error('Should have thrown an error');
+        } catch (error: any) {
+          if (!error.message.includes('Security Error') && !error.message.includes('invalid characters')) {
+            throw new Error(`Wrong error message: ${error.message}`);
+          }
+        }
+      }));
+
+      // --- 12. Extended Constants Tests ---
+      const constantsToTest = [
+        { name: 'tau', expected: 2 * Math.PI },
+        { name: 'phi', expected: 1.618033988749895 },
+        { name: 'sqrt2', expected: Math.SQRT2 },
+        { name: 'g', expected: 9.80665 },
+        { name: 'G', expected: 6.67430e-11 },
+        { name: 'h', expected: 6.62607015e-34 },
+        { name: 'NA', expected: 6.02214076e23 },
+      ];
+
+      for (const constant of constantsToTest) {
+        results.push(await runTest(`Get constant: ${constant.name}`, async () => {
+          const result = await client.callTool({ name: 'get_constant', arguments: { name: constant.name } });
+          const value = parseFloat(result.content[0].text);
+          if (Math.abs(value - constant.expected) / constant.expected > 1e-10) {
+            throw new Error(`Expected ~${constant.expected}, got ${value}`);
+          }
+        }));
+      }
+
+      // --- 13. Trigonometry Radians Tests ---
+      results.push(await runTest('Sine in radians: sin(π/2)', async () => {
+        const result = await client.callTool({ name: 'sine', arguments: { angle: Math.PI / 2, unit: 'radians' } });
+        if (Math.abs(parseFloat(result.content[0].text) - 1) > 1e-10) {
+          throw new Error(`Expected ~1, got ${result.content[0].text}`);
+        }
+      }));
+
+      results.push(await runTest('Cosine in radians: cos(0)', async () => {
+        const result = await client.callTool({ name: 'cosine', arguments: { angle: 0, unit: 'radians' } });
+        if (Math.abs(parseFloat(result.content[0].text) - 1) > 1e-10) {
+          throw new Error(`Expected ~1, got ${result.content[0].text}`);
+        }
+      }));
+
+      results.push(await runTest('Tangent in radians: tan(π/4)', async () => {
+        const result = await client.callTool({ name: 'tangent', arguments: { angle: Math.PI / 4, unit: 'radians' } });
+        if (Math.abs(parseFloat(result.content[0].text) - 1) > 1e-10) {
+          throw new Error(`Expected ~1, got ${result.content[0].text}`);
+        }
+      }));
+
+      results.push(await runTest('Arcsine in radians: asin(0.5)', async () => {
+        const result = await client.callTool({ name: 'asin', arguments: { value: 0.5, unit: 'radians' } });
+        if (Math.abs(parseFloat(result.content[0].text) - Math.PI / 6) > 1e-10) {
+          throw new Error(`Expected ~${Math.PI / 6}, got ${result.content[0].text}`);
+        }
+      }));
+
+      // --- 14. Statistical Edge Cases ---
+      results.push(await runTest('Percentile 0 (min)', async () => {
+        const result = await client.callTool({ name: 'percentile', arguments: { numbers: [10, 20, 30, 40, 50], percentile: 0 } });
+        if (parseFloat(result.content[0].text) !== 10) throw new Error(`Expected 10, got ${result.content[0].text}`);
+      }));
+
+      results.push(await runTest('Percentile 100 (max)', async () => {
+        const result = await client.callTool({ name: 'percentile', arguments: { numbers: [10, 20, 30, 40, 50], percentile: 100 } });
+        if (parseFloat(result.content[0].text) !== 50) throw new Error(`Expected 50, got ${result.content[0].text}`);
+      }));
+
+      results.push(await runTest('Single element array', async () => {
+        const result = await client.callTool({ name: 'avg', arguments: { numbers: [42] } });
+        if (parseFloat(result.content[0].text) !== 42) throw new Error(`Expected 42, got ${result.content[0].text}`);
+      }));
+
+      results.push(await runTest('Negative numbers in stats', async () => {
+        const result = await client.callTool({ name: 'sum', arguments: { numbers: [-5, 10, -3, 8] } });
+        if (parseFloat(result.content[0].text) !== 10) throw new Error(`Expected 10, got ${result.content[0].text}`);
+      }));
+
+      // --- 15. Floating Point Precision Tests ---
+      results.push(await runTest('Safe math: 1.1 + 2.2', async () => {
+        const result = await client.callTool({ name: 'add', arguments: { a: 1.1, b: 2.2 } });
+        if (parseFloat(result.content[0].text) !== 3.3) throw new Error(`Expected 3.3, got ${result.content[0].text}`);
+      }));
+
+      results.push(await runTest('Safe math: 0.3 - 0.1', async () => {
+        const result = await client.callTool({ name: 'subtract', arguments: { a: 0.3, b: 0.1 } });
+        if (parseFloat(result.content[0].text) !== 0.2) throw new Error(`Expected 0.2, got ${result.content[0].text}`);
+      }));
+
+      results.push(await runTest('Safe math: 0.1 * 0.2', async () => {
+        const result = await client.callTool({ name: 'multiply', arguments: { a: 0.1, b: 0.2 } });
+        if (parseFloat(result.content[0].text) !== 0.02) throw new Error(`Expected 0.02, got ${result.content[0].text}`);
+      }));
+
+      // --- 16. Factorial Edge Cases ---
+      results.push(await runTest('Factorial: 1!', async () => {
+        const result = await client.callTool({ name: 'factorial', arguments: { n: 1 } });
+        if (parseFloat(result.content[0].text) !== 1) throw new Error(`Expected 1, got ${result.content[0].text}`);
+      }));
+
+      results.push(await runTest('Factorial: 10!', async () => {
+        const result = await client.callTool({ name: 'factorial', arguments: { n: 10 } });
+        if (parseFloat(result.content[0].text) !== 3628800) throw new Error(`Expected 3628800, got ${result.content[0].text}`);
+      }));
+
+      results.push(await runTest('Factorial non-integer (error)', async () => {
+        try {
+          await client.callTool({ name: 'factorial', arguments: { n: 5.5 } });
+          throw new Error('Should have thrown an error');
+        } catch (error: any) {
+          if (!error.message.includes('integer')) {
+            throw new Error(`Wrong error message: ${error.message}`);
+          }
+        }
+      }));
+
+      // --- 17. Absolute Value Tests ---
+      results.push(await runTest('Absolute: positive', async () => {
+        const result = await client.callTool({ name: 'absolute', arguments: { value: -42 } });
+        if (parseFloat(result.content[0].text) !== 42) throw new Error(`Expected 42, got ${result.content[0].text}`);
+      }));
+
+      results.push(await runTest('Absolute: zero', async () => {
+        const result = await client.callTool({ name: 'absolute', arguments: { value: 0 } });
+        if (parseFloat(result.content[0].text) !== 0) throw new Error(`Expected 0, got ${result.content[0].text}`);
+      }));
+
+      // --- 18. Logarithm Edge Cases ---
+      results.push(await runTest('Log10: log10(1)', async () => {
+        const result = await client.callTool({ name: 'logarithm', arguments: { value: 1 } });
+        if (parseFloat(result.content[0].text) !== 0) throw new Error(`Expected 0, got ${result.content[0].text}`);
+      }));
+
+      results.push(await runTest('Natural log: ln(1)', async () => {
+        const result = await client.callTool({ name: 'natural_log', arguments: { value: 1 } });
+        if (parseFloat(result.content[0].text) !== 0) throw new Error(`Expected 0, got ${result.content[0].text}`);
+      }));
+
+      results.push(await runTest('Natural log negative (error)', async () => {
+        try {
+          await client.callTool({ name: 'natural_log', arguments: { value: -1 } });
+          throw new Error('Should have thrown an error');
+        } catch (error: any) {
+          if (!error.message.includes('positive')) {
+            throw new Error(`Wrong error message: ${error.message}`);
+          }
+        }
+      }));
+
+      // --- 19. Modulo Edge Cases ---
+      results.push(await runTest('Modulo: negative dividend', async () => {
+        const result = await client.callTool({ name: 'modulo', arguments: { a: -17, b: 5 } });
+        if (parseFloat(result.content[0].text) !== -2) throw new Error(`Expected -2, got ${result.content[0].text}`);
+      }));
+
+      results.push(await runTest('Modulo: decimal', async () => {
+        const result = await client.callTool({ name: 'modulo', arguments: { a: 17.5, b: 5 } });
+        if (parseFloat(result.content[0].text) !== 2.5) throw new Error(`Expected 2.5, got ${result.content[0].text}`);
+      }));
+
+      // --- 20. Power Edge Cases ---
+      results.push(await runTest('Power: negative base', async () => {
+        const result = await client.callTool({ name: 'power', arguments: { base: -2, exponent: 3 } });
+        if (parseFloat(result.content[0].text) !== -8) throw new Error(`Expected -8, got ${result.content[0].text}`);
+      }));
+
+      results.push(await runTest('Power: zero exponent', async () => {
+        const result = await client.callTool({ name: 'power', arguments: { base: 5, exponent: 0 } });
+        if (parseFloat(result.content[0].text) !== 1) throw new Error(`Expected 1, got ${result.content[0].text}`);
+      }));
+
+      results.push(await runTest('Power: negative exponent', async () => {
+        const result = await client.callTool({ name: 'power', arguments: { base: 2, exponent: -1 } });
+        if (parseFloat(result.content[0].text) !== 0.5) throw new Error(`Expected 0.5, got ${result.content[0].text}`);
+      }));
+
+
+      // ========== Summary ==========
     console.log('\n' + '='.repeat(60));
     console.log('📊 TEST SUMMARY');
     console.log('='.repeat(60));
