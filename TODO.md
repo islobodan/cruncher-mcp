@@ -1,5 +1,25 @@
 # Cruncher MCP Server - TODO List
 
+## Quick Overview
+
+| # | Task | Status | Effort | Priority | Impact |
+|---|------|--------|--------|----------|--------|
+| 1 | Scientific Notation Support | `[]` | L | 🔴 High | High |
+| 2 | Atomic Memory Operations | `[]` | M | 🔴 High | Medium |
+| 3 | Configurable Timeout | `[]` | L | 🔴 High | High |
+| 4 | More Built-in Functions | `[]` | L | 🟡 Medium | High |
+| 5 | Angle Mode Toggle | `[]` | L | 🟡 Medium | Medium |
+| 6 | Result Caching | `[]` | M | 🟡 Medium | High |
+| 7 | Enhanced Error Messages | `[]` | M | 🟡 Medium | Medium |
+| 8 | Batch Operations | `[]` | M | 🟡 Medium | High |
+| 9 | Unit Conversion Tool | `[]` | M | 🟡 Medium | Medium |
+| 10 | Complex Number Support | `[]` | H | 🟢 Low | Low |
+| 11 | Progress Streaming | `[]` | H | 🟢 Low | Low |
+| 12 | Statistics Mode | `[]` | M | 🟢 Low | Medium |
+| 13 | Expression History | `[]` | L | 🟢 Low | Low |
+
+---
+
 ## Legend
 
 ### Status
@@ -17,14 +37,19 @@
 - 🟡 - Medium
 - 🟢 - Low
 
+### Impact
+- High - Affects many users or critical functionality
+- Medium - Noticeable improvement for some users
+- Low - Nice to have, limited use cases
+
 ---
 
 ## High Priority
 
 ### 1. Scientific Notation Support
-| Status | Effort | Priority |
-|--------|--------|----------|
-| `[]`   | L      | 🔴 High  |
+| Status | Effort | Priority | Impact |
+|--------|--------|----------|--------|
+| `[]`   | L      | 🔴 High  | High   |
 
 **Description**: The security regex blocks `e` which prevents scientific notation like `1e6` (1 million) or `2.5e-3`.
 
@@ -56,9 +81,9 @@ const sanitizedExpr = parsedExpr.replace(scientificNotationPattern, '($1 * Math.
 ---
 
 ### 2. Atomic Memory Operations
-| Status | Effort | Priority |
-|--------|--------|----------|
-| `[]`   | M      | 🔴 High  |
+| Status | Effort | Priority | Impact |
+|--------|--------|----------|--------|
+| `[]`   | M      | 🔴 High  | Medium |
 
 **Description**: Concurrent `memory_add` calls aren't atomic. Since the server uses worker threads, memory state can have race conditions when multiple operations happen simultaneously.
 
@@ -99,9 +124,9 @@ memory_add: async ({ value }) => {
 ---
 
 ### 3. Configurable Timeout
-| Status | Effort | Priority |
-|--------|--------|----------|
-| `[]`   | L      | 🔴 High  |
+| Status | Effort | Priority | Impact |
+|--------|--------|----------|--------|
+| `[]`   | L      | 🔴 High  | High   |
 
 **Description**: Allow per-request timeout override instead of fixed 3-second timeout.
 
@@ -136,9 +161,9 @@ const timeout = args.timeout || EXECUTION_TIMEOUT;
 ## Medium Priority
 
 ### 4. Add More Built-in Functions
-| Status | Effort | Priority |
-|--------|--------|----------|
-| `[]`   | L      | 🟡 Medium |
+| Status | Effort | Priority | Impact |
+|--------|--------|----------|--------|
+| `[]`   | L      | 🟡 Medium | High   |
 
 **Description**: Expand `evaluate_expression` to support common math functions.
 
@@ -172,9 +197,9 @@ const mathFunctions = {
 ---
 
 ### 5. Angle Mode Toggle
-| Status | Effort | Priority |
-|--------|--------|----------|
-| `[]`   | L      | 🟡 Medium |
+| Status | Effort | Priority | Impact |
+|--------|--------|----------|--------|
+| `[]`   | L      | 🟡 Medium | Medium |
 
 **Description**: Add server-wide angle mode instead of passing unit every time.
 
@@ -221,9 +246,9 @@ sin: ({ value, unit }) => {
 ---
 
 ### 6. Result Caching
-| Status | Effort | Priority |
-|--------|--------|----------|
-| `[]`   | M      | 🟡 Medium |
+| Status | Effort | Priority | Impact |
+|--------|--------|----------|--------|
+| `[]`   | M      | 🟡 Medium | High   |
 
 **Description**: Cache expensive calculations to improve performance for repeated operations.
 
@@ -275,9 +300,9 @@ factorial: ({ n }) => getCachedOrCompute(`factorial:${n}`, () => {
 ---
 
 ### 7. Enhanced Error Messages
-| Status | Effort | Priority |
-|--------|--------|----------|
-| `[]`   | M      | 🟡 Medium |
+| Status | Effort | Priority | Impact |
+|--------|--------|----------|--------|
+| `[]`   | M      | 🟡 Medium | Medium |
 
 **Description**: Include more context in errors for better debugging.
 
@@ -315,9 +340,9 @@ factorial: ({ n }) => getCachedOrCompute(`factorial:${n}`, () => {
 ---
 
 ### 8. Batch Operations
-| Status | Effort | Priority |
-|--------|--------|----------|
-| `[]`   | M      | 🟡 Medium |
+| Status | Effort | Priority | Impact |
+|--------|--------|----------|--------|
+| `[]`   | M      | 🟡 Medium | High   |
 
 **Description**: Execute multiple calculations in a single request to reduce round trips.
 
@@ -372,9 +397,9 @@ batch({
 ---
 
 ### 9. Unit Conversion Tool
-| Status | Effort | Priority |
-|--------|--------|----------|
-| `[]`   | M      | 🟡 Medium |
+| Status | Effort | Priority | Impact |
+|--------|--------|----------|--------|
+| `[]`   | M      | 🟡 Medium | Medium |
 
 **Description**: Add common unit conversions beyond base conversion.
 
@@ -421,9 +446,9 @@ batch({
 ## Low Priority
 
 ### 10. Complex Number Support
-| Status | Effort | Priority |
-|--------|--------|----------|
-| `[]`   | H      | 🟢 Low   |
+| Status | Effort | Priority | Impact |
+|--------|--------|----------|--------|
+| `[]`   | H      | 🟢 Low   | Low    |
 
 **Description**: Support complex number operations for advanced mathematical use cases.
 
@@ -457,9 +482,9 @@ complex_add({ real1: 1, imag1: 2, real2: 3, imag2: 4 })
 ---
 
 ### 11. Progress Streaming
-| Status | Effort | Priority |
-|--------|--------|----------|
-| `[]`   | H      | 🟢 Low   |
+| Status | Effort | Priority | Impact |
+|--------|--------|----------|--------|
+| `[]`   | H      | 🟢 Low   | Low    |
 
 **Description**: Send progress updates for long-running calculations.
 
@@ -498,9 +523,9 @@ factorial: ({ n }) => {
 ---
 
 ### 12. Statistics Mode
-| Status | Effort | Priority |
-|--------|--------|----------|
-| `[]`   | M      | 🟢 Low   |
+| Status | Effort | Priority | Impact |
+|--------|--------|----------|--------|
+| `[]`   | M      | 🟢 Low   | Medium |
 
 **Description**: Add statistical functions with sample/population mode.
 
@@ -539,9 +564,9 @@ factorial: ({ n }) => {
 ---
 
 ### 13. Expression History
-| Status | Effort | Priority |
-|--------|--------|----------|
-| `[]`   | L      | 🟢 Low   |
+| Status | Effort | Priority | Impact |
+|--------|--------|----------|--------|
+| `[]`   | L      | 🟢 Low   | Low    |
 
 **Description**: Store and recall previous expressions.
 
@@ -575,21 +600,23 @@ factorial: ({ n }) => {
 
 ## Implementation Order
 
-Based on priority and dependencies:
+Based on priority, impact, and dependencies:
 
-1. **Scientific Notation** (🔴 High, L Effort) - Quick win, high impact
-2. **Configurable Timeout** (🔴 High, L Effort) - Quick win, improves usability
-3. **Atomic Memory Operations** (🔴 High, M Effort) - Fixes concurrency bug
-4. **More Built-in Functions** (🟡 Medium, L Effort) - Easy to add
-5. **Enhanced Error Messages** (🟡 Medium, M Effort) - Improves debugging
-6. **Angle Mode Toggle** (🟡 Medium, L Effort) - Quality of life improvement
-7. **Result Caching** (🟡 Medium, M Effort) - Performance improvement
-8. **Batch Operations** (🟡 Medium, M Effort) - Reduces round trips
-9. **Unit Conversion** (🟡 Medium, M Effort) - New feature
-10. **Statistics Mode** (🟢 Low, M Effort) - Nice to have
-11. **Expression History** (🟢 Low, L Effort) - Nice to have
-12. **Complex Numbers** (🟢 Low, H Effort) - Niche use case
-13. **Progress Streaming** (🟢 Low, H Effort) - Niche use case
+| Order | Task | Priority | Impact | Effort | Rationale |
+|-------|------|----------|--------|--------|-----------|
+| 1 | Scientific Notation | 🔴 High | High | L | Quick win, unblocks common use case |
+| 2 | Configurable Timeout | 🔴 High | High | L | Quick win, improves usability |
+| 3 | Atomic Memory Operations | 🔴 High | Medium | M | Fixes concurrency bug |
+| 4 | More Built-in Functions | 🟡 Medium | High | L | Easy to add, high value |
+| 5 | Result Caching | 🟡 Medium | High | M | Performance improvement |
+| 6 | Batch Operations | 🟡 Medium | High | M | Reduces round trips |
+| 7 | Enhanced Error Messages | 🟡 Medium | Medium | M | Improves debugging |
+| 8 | Angle Mode Toggle | 🟡 Medium | Medium | L | Quality of life improvement |
+| 9 | Unit Conversion | 🟡 Medium | Medium | M | New feature |
+| 10 | Statistics Mode | 🟢 Low | Medium | M | Nice to have |
+| 11 | Expression History | 🟢 Low | Low | L | Nice to have |
+| 12 | Complex Numbers | 🟢 Low | Low | H | Niche use case |
+| 13 | Progress Streaming | 🟢 Low | Low | H | Niche use case |
 
 ---
 
