@@ -7,7 +7,7 @@
 | 1 | Scientific Notation Support | `[x]` | L | 🔴 High | High |
 | 2 | Atomic Memory Operations | `[x]` | M | 🔴 High | Medium |
 | 3 | Configurable Timeout | `[]` | L | 🔴 High | High |
-| 4 | More Built-in Functions | `[]` | L | 🟡 Medium | High |
+| 4 | More Built-in Functions | `[x]` | L | 🟡 Medium | High |
 | 5 | Angle Mode Toggle | `[]` | L | 🟡 Medium | Medium |
 | 6 | Result Caching | `[]` | M | 🟡 Medium | High |
 | 7 | Enhanced Error Messages | `[]` | M | 🟡 Medium | Medium |
@@ -179,7 +179,22 @@ const timeout = args.timeout || EXECUTION_TIMEOUT;
 ### 4. Add More Built-in Functions
 | Status | Effort | Priority | Impact |
 |--------|--------|----------|--------|
-| `[]`   | L      | 🟡 Medium | High   |
+| `[x]`  | L      | 🟡 Medium | High   |
+
+**Implemented**: 2026-03-13
+
+**Functions Added**:
+- `abs(x)` - Absolute value: `abs(-5)` → `5`
+- `round(x)` - Round to nearest: `round(3.7)` → `4`
+- `floor(x)` - Round down: `floor(3.7)` → `3`
+- `ceil(x)` - Round up: `ceil(3.2)` → `4`
+- `min(a, b, ...)` - Minimum value: `min(1, 2, 3)` → `1`
+- `max(a, b, ...)` - Maximum value: `max(1, 2, 3)` → `3`
+
+**Implementation Details**:
+- Functions are converted to `Math.*` equivalents before security check
+- Works with complex expressions: `abs(-5) + round(3.7)` → `9`
+- 18 new tests added
 
 **Description**: Expand `evaluate_expression` to support common math functions.
 
@@ -623,7 +638,7 @@ Based on priority, impact, and dependencies:
 | ✅ 1 | Scientific Notation | 🔴 High | High | L | **DONE** - Unblocks common use case |
 | 2 | Configurable Timeout | 🔴 High | High | L | Quick win, improves usability |
 | ✅ 3 | Atomic Memory Operations | 🔴 High | Medium | M | **DONE** - Fixes concurrency bug |
-| 4 | More Built-in Functions | 🟡 Medium | High | L | Easy to add, high value |
+| ✅ 4 | More Built-in Functions | 🟡 Medium | High | L | **DONE** - Added abs/round/floor/ceil/min/max |
 | 5 | Result Caching | 🟡 Medium | High | M | Performance improvement |
 | 6 | Batch Operations | 🟡 Medium | High | M | Reduces round trips |
 | 7 | Enhanced Error Messages | 🟡 Medium | Medium | M | Improves debugging |
@@ -661,6 +676,6 @@ For each new feature:
 
 **Last Updated**: 2026-03-13  
 **Total Tasks**: 13  
-**Completed**: 2 ✅  
+**Completed**: 3 ✅  
 **In Progress**: 0  
-**Remaining**: 11
+**Remaining**: 10

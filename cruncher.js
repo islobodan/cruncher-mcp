@@ -889,7 +889,8 @@ const toolHandlers = {
 
     /**
      * Evaluates a mathematical string expression securely.
-     * Supports scientific notation (e.g., 1e6, 2.5e-3).
+     * Supports scientific notation (e.g., 1e6, 2.5e-3) and built-in functions:
+     * abs(), round(), floor(), ceil(), min(), max().
      * @param {Object} args - The arguments object.
      * @param {string} args.expression - The math expression as a string.
      * @returns {number} The calculated result.
@@ -906,17 +907,49 @@ const toolHandlers = {
             "($1 * Math.pow(10, $2))"
         );
 
-        // 3. SECURITY CHECK: Strict Whitelist
-        // Only allow digits 0-9, dot, operators (+ - * / % **), parentheses, and whitespace.
-        // Also allow Math.pow for scientific notation support.
-        if (!/^[0-9+\-*/().% \t*Math.pow,]+$/.test(parsedExpr)) {
+        // 3. Convert built-in functions to Math.* equivalents
+        // This must happen BEFORE security check since function names would be blocked
+        const functionMap = {
+            abs: "Math.abs",
+            round: "Math.round",
+            floor: "Math.floor",
+            ceil: "Math.ceil",
+            min: "Math.min",
+            max: "Math.max",
+        };
+
+        for (const [funcName, mathFunc] of Object.entries(functionMap)) {
+            // Match function name followed by opening parenthesis
+            // Use word boundary to avoid partial matches
+            const regex = new RegExp(`\\b${funcName}\\s*\\(`, "g");
+            parsedExpr = parsedExpr.replace(regex, `${mathFunc}(`);
+        }
+
+        // 4. SECURITY CHECK: Strict Whitelist
+        // Allow: digits, dot, operators, parentheses, whitespace, comma
+        // Allow: Math.pow, Math.abs, Math.round, Math.floor, Math.ceil, Math.min, Math.max
+        // We use a comprehensive allowed character set that includes all letters in these functions
+        const disallowedChars = /[^0-9+\-*/().% \t*,Mathabspowrndflceigumx]/;
+        
+        // Check for any disallowed characters
+        if (disallowedChars.test(parsedExpr)) {
             throw new Error(
-                "Security Error: Expression contains invalid characters. Only numbers and basic operators (+, -, *, /, %, ^) are allowed.",
+                "Security Error: Expression contains invalid characters. Only numbers, basic operators (+, -, *, /, %, ^), and functions (abs, round, floor, ceil, min, max) are allowed.",
+            );
+        }
+        
+        // Additional check: ensure only valid Math.* functions are used
+        const mathFuncPattern = /Math\.(pow|abs|round|floor|ceil|min|max)\(/g;
+        const sanitizedExpr = parsedExpr.replace(mathFuncPattern, "");
+        // After removing valid Math.* calls, check if any "Math." remains (invalid function)
+        if (sanitizedExpr.includes("Math.")) {
+            throw new Error(
+                "Security Error: Invalid Math function. Only abs, round, floor, ceil, min, max, pow are allowed.",
             );
         }
 
         try {
-            // 4. Evaluate safely
+            // 5. Evaluate safely
             // Because we strictly verified the contents above, this is now safe to run.
             const result = new Function("return (" + parsedExpr + ")")();
             if (!Number.isFinite(result) || isNaN(result)) {
@@ -1158,7 +1191,7 @@ if (isMainThread) {
         terminal: false,
     });
 
-    console.error("Cruncher v1.2.2 MCP Server starting...");
+    console.error("Cruncher v1.2.3 MCP Server starting...");
 
     rl.on("line", (line) => {
         let message;
@@ -1178,7 +1211,7 @@ if (isMainThread) {
             sendSuccess(message.id, {
                 protocolVersion: "2024-11-05",
                 capabilities: { tools: {} },
-                serverInfo: { name: "Cruncher", version: "1.2.2" },
+                serverInfo: { name: "Cruncher", version: "1.2.3" },
             });
             return;
         }

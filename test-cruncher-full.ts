@@ -911,7 +911,7 @@ async function testCruncher() {
                     try {
                         await client.callTool({
                             name: "evaluate_expression",
-                            arguments: { expression: "5 + x" },
+                            arguments: { expression: "5 + z" }, // 'z' is not a valid character
                         });
                         throw new Error("Should have thrown an error");
                     } catch (error: any) {
@@ -1591,7 +1591,224 @@ async function testCruncher() {
             }),
         );
 
-        // --- 23. Atomic Memory Operations Tests ---
+        // --- 23. Built-in Functions Tests ---
+        results.push(
+            await runTest("Built-in: abs(-5) = 5", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "abs(-5)" },
+                });
+                if (parseFloat(result.content[0].text) !== 5) {
+                    throw new Error(`Expected 5, got ${result.content[0].text}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Built-in: abs(3) = 3", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "abs(3)" },
+                });
+                if (parseFloat(result.content[0].text) !== 3) {
+                    throw new Error(`Expected 3, got ${result.content[0].text}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Built-in: round(3.7) = 4", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "round(3.7)" },
+                });
+                if (parseFloat(result.content[0].text) !== 4) {
+                    throw new Error(`Expected 4, got ${result.content[0].text}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Built-in: round(3.2) = 3", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "round(3.2)" },
+                });
+                if (parseFloat(result.content[0].text) !== 3) {
+                    throw new Error(`Expected 3, got ${result.content[0].text}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Built-in: floor(3.7) = 3", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "floor(3.7)" },
+                });
+                if (parseFloat(result.content[0].text) !== 3) {
+                    throw new Error(`Expected 3, got ${result.content[0].text}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Built-in: floor(3.2) = 3", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "floor(3.2)" },
+                });
+                if (parseFloat(result.content[0].text) !== 3) {
+                    throw new Error(`Expected 3, got ${result.content[0].text}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Built-in: ceil(3.7) = 4", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "ceil(3.7)" },
+                });
+                if (parseFloat(result.content[0].text) !== 4) {
+                    throw new Error(`Expected 4, got ${result.content[0].text}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Built-in: ceil(3.2) = 4", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "ceil(3.2)" },
+                });
+                if (parseFloat(result.content[0].text) !== 4) {
+                    throw new Error(`Expected 4, got ${result.content[0].text}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Built-in: min(1, 2, 3) = 1", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "min(1, 2, 3)" },
+                });
+                if (parseFloat(result.content[0].text) !== 1) {
+                    throw new Error(`Expected 1, got ${result.content[0].text}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Built-in: min(5, 2, 8, 1) = 1", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "min(5, 2, 8, 1)" },
+                });
+                if (parseFloat(result.content[0].text) !== 1) {
+                    throw new Error(`Expected 1, got ${result.content[0].text}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Built-in: max(1, 2, 3) = 3", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "max(1, 2, 3)" },
+                });
+                if (parseFloat(result.content[0].text) !== 3) {
+                    throw new Error(`Expected 3, got ${result.content[0].text}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Built-in: max(5, 2, 8, 1) = 8", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "max(5, 2, 8, 1)" },
+                });
+                if (parseFloat(result.content[0].text) !== 8) {
+                    throw new Error(`Expected 8, got ${result.content[0].text}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Built-in: abs(-5) + round(3.7) = 9", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "abs(-5) + round(3.7)" },
+                });
+                if (parseFloat(result.content[0].text) !== 9) {
+                    throw new Error(`Expected 9, got ${result.content[0].text}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Built-in: floor(10 / 3) * ceil(2.1) = 9", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "floor(10 / 3) * ceil(2.1)" },
+                });
+                if (parseFloat(result.content[0].text) !== 9) {
+                    throw new Error(`Expected 9, got ${result.content[0].text}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Built-in: min(10, 20) + max(5, 3) = 15", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "min(10, 20) + max(5, 3)" },
+                });
+                if (parseFloat(result.content[0].text) !== 15) {
+                    throw new Error(`Expected 15, got ${result.content[0].text}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Built-in: abs(-3.5) = 3.5", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "abs(-3.5)" },
+                });
+                if (parseFloat(result.content[0].text) !== 3.5) {
+                    throw new Error(`Expected 3.5, got ${result.content[0].text}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Built-in: floor(-3.7) = -4", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "floor(-3.7)" },
+                });
+                if (parseFloat(result.content[0].text) !== -4) {
+                    throw new Error(`Expected -4, got ${result.content[0].text}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Built-in: ceil(-3.7) = -3", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "ceil(-3.7)" },
+                });
+                if (parseFloat(result.content[0].text) !== -3) {
+                    throw new Error(`Expected -3, got ${result.content[0].text}`);
+                }
+            }),
+        );
+
+        // --- 24. Atomic Memory Operations Tests ---
         results.push(
             await runTest("Atomic Memory: Clear before test", async () => {
                 const result = await client.callTool({
@@ -1692,7 +1909,7 @@ async function testCruncher() {
             }),
         );
 
-        // --- 24. Timeout Protection Tests ---
+        // --- 25. Timeout Protection Tests ---
         results.push(
             await runTest(
                 "Timeout: Feature exists (worker threads)",
