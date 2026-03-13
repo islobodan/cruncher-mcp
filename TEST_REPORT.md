@@ -7,8 +7,8 @@ This document summarizes the comprehensive test suite for the Cruncher MCP Serve
 - **Framework**: `mcp-tester` (custom MCP client testing framework)
 - **Runner**: `tsx` (TypeScript execution without compilation)
 - **Test File**: `test-cruncher-full.ts` (single comprehensive suite)
-- **Total Tests**: 169
-- **Pass Rate**: **100%** (169/169 tests passed) on v1.2.3
+- **Total Tests**: 175
+- **Pass Rate**: **100%** (175/175 tests passed) on v1.2.4
 
 ## Test Categories
 
@@ -68,7 +68,7 @@ This document summarizes the comprehensive test suite for the Cruncher MCP Serve
 
 ## Failed Tests Analysis
 
-**No failed tests!** All 169 tests pass on v1.2.3.
+**No failed tests!** All 175 tests pass on v1.2.4.
 
 ## Key Successes
 
@@ -80,6 +80,7 @@ This document summarizes the comprehensive test suite for the Cruncher MCP Serve
 ✅ **Tool Discovery**: All 32 tools are properly registered  
 ✅ **Constants**: All 16 mathematical, physics, and chemistry constants available  
 ✅ **Timeout Protection**: Worker threads prevent infinite loops  
+✅ **Configurable Timeout**: Custom timeout for long-running operations (factorial, median, percentile)  
 ✅ **Base Conversion**: All 4 bases (binary, octal, decimal, hex) with proper validation  
 ✅ **Scientific Notation**: Expressions like `1e6`, `2.5e-3` work correctly  
 ✅ **Atomic Memory Operations**: Concurrent memory operations are properly serialized  
@@ -127,6 +128,7 @@ npx tsx test-cruncher-full.ts
 | Base Conversion | 14 | 14 | 0 | 100% |
 | Scientific Notation | 6 | 6 | 0 | 100% |
 | Built-in Functions | 18 | 18 | 0 | 100% |
+| Configurable Timeout | 6 | 6 | 0 | 100% |
 | Atomic Memory Operations | 4 | 4 | 0 | 100% |
 | Concurrent Operations | 3 | 3 | 0 | 100% |
 | Security Tests | 5 | 5 | 0 | 100% |
@@ -134,12 +136,12 @@ npx tsx test-cruncher-full.ts
 | Stress Tests | 2 | 2 | 0 | 100% |
 | Boundary Tests | 2 | 2 | 0 | 100% |
 | Timeout Protection | 2 | 2 | 0 | 100% |
-| **Total** | **169** | **169** | **0** | **100%** |
+| **Total** | **175** | **175** | **0** | **100%** |
 
 
 ## Conclusion
 
-The Cruncher MCP Server passes **100% of comprehensive tests** on v1.2.3. The test suite successfully:
+The Cruncher MCP Server passes **100% of comprehensive tests** on v1.2.4. The test suite successfully:
 
 - ✅ Exits cleanly without hanging
 - ✅ Tests all major functionality including `evaluate_expression`
@@ -149,6 +151,7 @@ The Cruncher MCP Server passes **100% of comprehensive tests** on v1.2.3. The te
 - ✅ Covers `convert_base` tool with 14 dedicated tests
 - ✅ Covers scientific notation with 6 dedicated tests
 - ✅ Covers built-in functions (abs, round, floor, ceil, min, max) with 18 dedicated tests
+- ✅ Covers configurable timeout with 6 dedicated tests
 - ✅ Validates atomic memory operations with 4 concurrent tests
 
 **Status**: Production-ready with full test coverage! 🎉

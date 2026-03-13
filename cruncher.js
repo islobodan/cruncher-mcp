@@ -265,11 +265,12 @@ const TOOLS = [
     },
     {
         name: "median",
-        description: "Calculates the median of an array of numbers.",
+        description: "Calculates the median of an array of numbers. Optional timeout parameter for large arrays (default: 3000ms).",
         inputSchema: {
             type: "object",
             properties: {
                 numbers: { type: "array", items: { type: "number" } },
+                timeout: { type: "number", minimum: 100, maximum: 60000, description: "Custom timeout in ms (100-60000, default: 3000)" },
             },
             required: ["numbers"],
         },
@@ -352,12 +353,13 @@ const TOOLS = [
     {
         name: "percentile",
         description:
-            "Calculates the value at a given percentile (0-100) in an array of numbers. For example, percentile 50 is the median.",
+            "Calculates the value at a given percentile (0-100) in an array of numbers. For example, percentile 50 is the median. Optional timeout parameter for large arrays (default: 3000ms).",
         inputSchema: {
             type: "object",
             properties: {
                 numbers: { type: "array", items: { type: "number" } },
                 percentile: { type: "number", minimum: 0, maximum: 100 },
+                timeout: { type: "number", minimum: 100, maximum: 60000, description: "Custom timeout in ms (100-60000, default: 3000)" },
             },
             required: ["numbers", "percentile"],
         },
@@ -376,10 +378,13 @@ const TOOLS = [
     {
         name: "factorial",
         description:
-            "Calculates the factorial of a non-negative integer (n!). For example, 5! = 5 x 4 x 3 x 2 x 1 = 120.",
+            "Calculates the factorial of a non-negative integer (n!). For example, 5! = 5 x 4 x 3 x 2 x 1 = 120. Optional timeout parameter for large calculations (default: 3000ms).",
         inputSchema: {
             type: "object",
-            properties: { n: { type: "number" } },
+            properties: {
+                n: { type: "number" },
+                timeout: { type: "number", minimum: 100, maximum: 60000, description: "Custom timeout in ms (100-60000, default: 3000)" },
+            },
             required: ["n"],
         },
     },
@@ -1191,7 +1196,7 @@ if (isMainThread) {
         terminal: false,
     });
 
-    console.error("Cruncher v1.2.3 MCP Server starting...");
+    console.error("Cruncher v1.2.4 MCP Server starting...");
 
     rl.on("line", (line) => {
         let message;
@@ -1211,7 +1216,7 @@ if (isMainThread) {
             sendSuccess(message.id, {
                 protocolVersion: "2024-11-05",
                 capabilities: { tools: {} },
-                serverInfo: { name: "Cruncher", version: "1.2.3" },
+                serverInfo: { name: "Cruncher", version: "1.2.4" },
             });
             return;
         }
@@ -1264,23 +1269,33 @@ if (isMainThread) {
                 }
 
                 // 2. Safe Execution via Worker Thread (Timeout Protection)
+                // Extract custom timeout if provided (for factorial, median, percentile)
+                const workerArgs = { ...(args || {}) };
+                const customTimeout = workerArgs.timeout;
+                delete workerArgs.timeout; // Remove timeout from args before passing to worker
+                
+                // Use custom timeout if valid, otherwise use default
+                const timeout = (customTimeout && customTimeout >= 100 && customTimeout <= 60000) 
+                    ? customTimeout 
+                    : EXECUTION_TIMEOUT;
+
                 // Pass the current memory state to the worker
                 // For memory ops, this is now guaranteed to be the latest value
                 const worker = new Worker(__filename, {
-                    workerData: { name, args: args || {}, currentMemory: memory },
+                    workerData: { name, args: workerArgs, currentMemory: memory },
                 });
 
-                // Set the configurable execution timeout
+                // Set the execution timeout (custom or default)
                 const timeoutId = setTimeout(() => {
                     worker.terminate(); // Forcefully kill the thread!
                     sendError(
                         message.id,
                         -32000,
-                        `Execution Timeout: The calculation took longer than ${EXECUTION_TIMEOUT}ms and was terminated to prevent an infinite loop.`,
+                        `Execution Timeout: The calculation took longer than ${timeout}ms and was terminated to prevent an infinite loop.`,
                     );
                     // Release queue on timeout
                     if (releaseQueue) releaseQueue();
-                }, EXECUTION_TIMEOUT);
+                }, timeout);
 
                 worker.on("message", (result) => {
                     clearTimeout(timeoutId);

@@ -6,7 +6,7 @@
 |---|------|--------|--------|----------|--------|
 | 1 | Scientific Notation Support | `[x]` | L | 🔴 High | High |
 | 2 | Atomic Memory Operations | `[x]` | M | 🔴 High | Medium |
-| 3 | Configurable Timeout | `[]` | L | 🔴 High | High |
+| 3 | Configurable Timeout | `[x]` | L | 🔴 High | High |
 | 4 | More Built-in Functions | `[x]` | L | 🟡 Medium | High |
 | 5 | Angle Mode Toggle | `[]` | L | 🟡 Medium | Medium |
 | 6 | Result Caching | `[]` | M | 🟡 Medium | High |
@@ -142,7 +142,21 @@ memory_add: async ({ value }) => {
 ### 3. Configurable Timeout
 | Status | Effort | Priority | Impact |
 |--------|--------|----------|--------|
-| `[]`   | L      | 🔴 High  | High   |
+| `[x]`  | L      | 🔴 High  | High   |
+
+**Implemented**: 2026-03-13
+
+**Implementation Details**:
+- Added optional `timeout` parameter (100-60000ms) to `factorial`, `median`, `percentile`
+- Default timeout remains 3000ms (configurable via `CRUNCHER_TIMEOUT` env var)
+- Timeout parameter is extracted before passing args to worker thread
+- 6 new tests added
+
+**Example Usage**:
+```javascript
+factorial({ n: 50000, timeout: 30000 })     // 30 seconds for large factorial
+median({ numbers: [...], timeout: 10000 })  // 10 seconds for large array
+```
 
 **Description**: Allow per-request timeout override instead of fixed 3-second timeout.
 
@@ -636,7 +650,7 @@ Based on priority, impact, and dependencies:
 | Order | Task | Priority | Impact | Effort | Rationale |
 |-------|------|----------|--------|--------|-----------|
 | ✅ 1 | Scientific Notation | 🔴 High | High | L | **DONE** - Unblocks common use case |
-| 2 | Configurable Timeout | 🔴 High | High | L | Quick win, improves usability |
+| ✅ 2 | Configurable Timeout | 🔴 High | High | L | **DONE** - For factorial/median/percentile |
 | ✅ 3 | Atomic Memory Operations | 🔴 High | Medium | M | **DONE** - Fixes concurrency bug |
 | ✅ 4 | More Built-in Functions | 🟡 Medium | High | L | **DONE** - Added abs/round/floor/ceil/min/max |
 | 5 | Result Caching | 🟡 Medium | High | M | Performance improvement |
@@ -676,6 +690,6 @@ For each new feature:
 
 **Last Updated**: 2026-03-13  
 **Total Tasks**: 13  
-**Completed**: 3 ✅  
+**Completed**: 4 ✅  
 **In Progress**: 0  
-**Remaining**: 10
+**Remaining**: 9
