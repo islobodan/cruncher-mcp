@@ -7,8 +7,8 @@ This document summarizes the comprehensive test suite for the Cruncher MCP Serve
 - **Framework**: `mcp-tester` (custom MCP client testing framework)
 - **Runner**: `tsx` (TypeScript execution without compilation)
 - **Test File**: `test-cruncher-full.ts` (single comprehensive suite)
-- **Total Tests**: 141
-- **Pass Rate**: **100%** (141/141 tests passed) on v1.2.1
+- **Total Tests**: 151
+- **Pass Rate**: **100%** (151/151 tests passed) on v1.2.2
 
 ## Test Categories
 
@@ -68,7 +68,7 @@ This document summarizes the comprehensive test suite for the Cruncher MCP Serve
 
 ## Failed Tests Analysis
 
-**No failed tests!** All 141 tests pass on v1.2.1.
+**No failed tests!** All 151 tests pass on v1.2.2.
 
 ## Key Successes
 
@@ -81,6 +81,8 @@ This document summarizes the comprehensive test suite for the Cruncher MCP Serve
 ✅ **Constants**: All 16 mathematical, physics, and chemistry constants available  
 ✅ **Timeout Protection**: Worker threads prevent infinite loops  
 ✅ **Base Conversion**: All 4 bases (binary, octal, decimal, hex) with proper validation  
+✅ **Scientific Notation**: Expressions like `1e6`, `2.5e-3` work correctly  
+✅ **Atomic Memory Operations**: Concurrent memory operations are properly serialized  
 
 ## Recommendations
 
@@ -122,23 +124,28 @@ npx tsx test-cruncher-full.ts
 | Modulo Edge Cases | 2 | 2 | 0 | 100% |
 | Power Edge Cases | 3 | 3 | 0 | 100% |
 | Base Conversion | 14 | 14 | 0 | 100% |
+| Scientific Notation | 6 | 6 | 0 | 100% |
+| Atomic Memory Operations | 4 | 4 | 0 | 100% |
 | Concurrent Operations | 3 | 3 | 0 | 100% |
 | Security Tests | 5 | 5 | 0 | 100% |
 | Real-World Scenarios | 4 | 4 | 0 | 100% |
 | Stress Tests | 2 | 2 | 0 | 100% |
 | Boundary Tests | 2 | 2 | 0 | 100% |
-| **Total** | **141** | **141** | **0** | **100%** |
+| Timeout Protection | 2 | 2 | 0 | 100% |
+| **Total** | **151** | **151** | **0** | **100%** |
 
 
 ## Conclusion
 
-The Cruncher MCP Server passes **100% of comprehensive tests** on v1.2.1. The test suite successfully:
+The Cruncher MCP Server passes **100% of comprehensive tests** on v1.2.2. The test suite successfully:
 
 - ✅ Exits cleanly without hanging
 - ✅ Tests all major functionality including `evaluate_expression`
 - ✅ Validates error handling with strict input validation
 - ✅ Provides detailed reporting
 - ✅ Is easily extensible for future features
-- ✅ Covers new `convert_base` tool with 14 dedicated tests
+- ✅ Covers `convert_base` tool with 14 dedicated tests
+- ✅ Covers scientific notation with 6 dedicated tests
+- ✅ Validates atomic memory operations with 4 concurrent tests
 
 **Status**: Production-ready with full test coverage! 🎉

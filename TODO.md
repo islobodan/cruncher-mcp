@@ -4,8 +4,8 @@
 
 | # | Task | Status | Effort | Priority | Impact |
 |---|------|--------|--------|----------|--------|
-| 1 | Scientific Notation Support | `[]` | L | 🔴 High | High |
-| 2 | Atomic Memory Operations | `[]` | M | 🔴 High | Medium |
+| 1 | Scientific Notation Support | `[x]` | L | 🔴 High | High |
+| 2 | Atomic Memory Operations | `[x]` | M | 🔴 High | Medium |
 | 3 | Configurable Timeout | `[]` | L | 🔴 High | High |
 | 4 | More Built-in Functions | `[]` | L | 🟡 Medium | High |
 | 5 | Angle Mode Toggle | `[]` | L | 🟡 Medium | Medium |
@@ -49,7 +49,15 @@
 ### 1. Scientific Notation Support
 | Status | Effort | Priority | Impact |
 |--------|--------|----------|--------|
-| `[]`   | L      | 🔴 High  | High   |
+| `[x]`  | L      | 🔴 High  | High   |
+
+**Implemented**: 2026-03-13
+
+**Implementation Details**:
+- Converts scientific notation (e.g., `1e6`, `2.5e-3`) to `Math.pow` expressions before security check
+- Supports both `e` and `E` notation
+- Supports positive (`1e+6`) and negative (`1e-3`) exponents
+- Works with decimal coefficients (`2.5e3`)
 
 **Description**: The security regex blocks `e` which prevents scientific notation like `1e6` (1 million) or `2.5e-3`.
 
@@ -83,7 +91,15 @@ const sanitizedExpr = parsedExpr.replace(scientificNotationPattern, '($1 * Math.
 ### 2. Atomic Memory Operations
 | Status | Effort | Priority | Impact |
 |--------|--------|----------|--------|
-| `[]`   | M      | 🔴 High  | Medium |
+| `[x]`  | M      | 🔴 High  | Medium |
+
+**Implemented**: 2026-03-13
+
+**Implementation Details**:
+- Added promise-based queue at main thread level (`memoryQueue`)
+- Memory operations (`memory_add`, `memory_subtract`, `memory_clear`) are serialized
+- Each memory operation waits for previous operations to complete before spawning worker
+- Non-memory operations run concurrently as before
 
 **Description**: Concurrent `memory_add` calls aren't atomic. Since the server uses worker threads, memory state can have race conditions when multiple operations happen simultaneously.
 
@@ -604,9 +620,9 @@ Based on priority, impact, and dependencies:
 
 | Order | Task | Priority | Impact | Effort | Rationale |
 |-------|------|----------|--------|--------|-----------|
-| 1 | Scientific Notation | 🔴 High | High | L | Quick win, unblocks common use case |
+| ✅ 1 | Scientific Notation | 🔴 High | High | L | **DONE** - Unblocks common use case |
 | 2 | Configurable Timeout | 🔴 High | High | L | Quick win, improves usability |
-| 3 | Atomic Memory Operations | 🔴 High | Medium | M | Fixes concurrency bug |
+| ✅ 3 | Atomic Memory Operations | 🔴 High | Medium | M | **DONE** - Fixes concurrency bug |
 | 4 | More Built-in Functions | 🟡 Medium | High | L | Easy to add, high value |
 | 5 | Result Caching | 🟡 Medium | High | M | Performance improvement |
 | 6 | Batch Operations | 🟡 Medium | High | M | Reduces round trips |
@@ -645,6 +661,6 @@ For each new feature:
 
 **Last Updated**: 2026-03-13  
 **Total Tasks**: 13  
-**Completed**: 0  
+**Completed**: 2 ✅  
 **In Progress**: 0  
-**Remaining**: 13
+**Remaining**: 11

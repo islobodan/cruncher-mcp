@@ -15,7 +15,7 @@ This single command runs all 50 tests covering every feature of the Cruncher ser
 
 | File | Description | Tests | Use Case |
 |------|-------------|-------|----------|
-| `test-cruncher-full.ts` | Comprehensive test suite | 141 | Full regression testing, CI/CD |
+| `test-cruncher-full.ts` | Comprehensive test suite | 151 | Full regression testing, CI/CD |
 | `TEST_REPORT.md` | Test results and analysis | - | Documentation |
 
 ## Test Coverage
@@ -29,14 +29,15 @@ This single command runs all 50 tests covering every feature of the Cruncher ser
 - **Logarithms**: log10, natural log
 - **Constants**: Mathematical and physical constants
 - **Statistics**: sum, avg, median, min, max, count, range, percentile
-- **Memory**: M+, M-, MR, MC operations
-- **Base Conversion**: Binary, octal, decimal, hexadecimal conversions (NEW in v1.2.1)
+- **Memory**: M+, M-, MR, MC operations (with atomic locking for concurrent calls)
+- **Base Conversion**: Binary, octal, decimal, hexadecimal conversions
+- **Scientific Notation**: `1e6`, `2.5e-3`, `1e+6` expressions (NEW in v1.2.2)
 - **Error Handling**: Invalid inputs, missing arguments, unknown tools
 
 ### 📊 Test Statistics
-- **Total Tests**: 141
-- **Pass Rate**: **100%** (141/141) on v1.2.1
-- **Execution Time**: ~3-4 seconds
+- **Total Tests**: 151
+- **Pass Rate**: **100%** (151/151) on v1.2.2
+- **Execution Time**: ~5-6 seconds
 - **Coverage**: All 32 tools, edge cases, and advanced scenarios
 
 ## Test Framework
@@ -88,8 +89,8 @@ RUN npx tsx test-cruncher-full.ts
 
 📊 TEST SUMMARY
 ============================================================
-Total Tests: 141
-Passed: 141
+Total Tests: 151
+Passed: 151
 Failed: 0
 Success Rate: 100.00%
 ============================================================
@@ -185,4 +186,4 @@ For issues or questions:
 
 **Last Updated**: 2026-03-13  
 **Test Framework Version**: mcp-tester 1.0.0  
-**Server Version Tested**: Cruncher **v1.2.1** (141 tests, 100% pass rate)
+**Server Version Tested**: Cruncher **v1.2.2** (151 tests, 100% pass rate)
