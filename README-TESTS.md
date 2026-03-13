@@ -15,7 +15,7 @@ This single command runs all 50 tests covering every feature of the Cruncher ser
 
 | File | Description | Tests | Use Case |
 |------|-------------|-------|----------|
-| `test-cruncher-full.ts` | Comprehensive test suite | 127 | Full regression testing, CI/CD |
+| `test-cruncher-full.ts` | Comprehensive test suite | 141 | Full regression testing, CI/CD |
 | `TEST_REPORT.md` | Test results and analysis | - | Documentation |
 
 ## Test Coverage
@@ -30,13 +30,14 @@ This single command runs all 50 tests covering every feature of the Cruncher ser
 - **Constants**: Mathematical and physical constants
 - **Statistics**: sum, avg, median, min, max, count, range, percentile
 - **Memory**: M+, M-, MR, MC operations
+- **Base Conversion**: Binary, octal, decimal, hexadecimal conversions (NEW in v1.2.1)
 - **Error Handling**: Invalid inputs, missing arguments, unknown tools
 
 ### 📊 Test Statistics
-- **Total Tests**: 127
-- **Pass Rate**: **100%** (127/127) on v1.2.0
+- **Total Tests**: 141
+- **Pass Rate**: **100%** (141/141) on v1.2.1
 - **Execution Time**: ~3-4 seconds
-- **Coverage**: All 31 tools, edge cases, and advanced scenarios
+- **Coverage**: All 32 tools, edge cases, and advanced scenarios
 
 ## Test Framework
 
@@ -87,8 +88,8 @@ RUN npx tsx test-cruncher-full.ts
 
 📊 TEST SUMMARY
 ============================================================
-Total Tests: 127
-Passed: 127
+Total Tests: 141
+Passed: 141
 Failed: 0
 Success Rate: 100.00%
 ============================================================
@@ -182,6 +183,6 @@ For issues or questions:
 
 ---
 
-**Last Updated**: 2026-03-11  
+**Last Updated**: 2026-03-13  
 **Test Framework Version**: mcp-tester 1.0.0  
-**Server Version Tested**: Cruncher **v1.2.0** (100% pass rate)
+**Server Version Tested**: Cruncher **v1.2.1** (141 tests, 100% pass rate)

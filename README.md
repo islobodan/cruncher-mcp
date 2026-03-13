@@ -184,6 +184,10 @@ If you're using LibreChat, you can add the following configuration to your libre
 
 > "What is 10 factorial?"
 
+> "Convert the binary number 1010 to decimal."
+
+> "What is FF in hexadecimal when converted to binary?"
+
 > "Evaluate the expression: (15 + 20) * 3 / 2"
 
 > "Store 99 in memory."
@@ -210,6 +214,8 @@ Cruncher exposes its functions as individual MCP tools. Here is the full list:
 | `sqrt` | Calculates the square root of a value. | `value` (number) |
 | **Number Theory** | | |
 | `factorial` | Calculates the factorial of a non-negative integer (n!). | `n` (number, non-negative integer) |
+| **Base Conversion** | | |
+| `convert_base` | Converts a number between different bases (binary, octal, decimal, hexadecimal). | `value` (string), `from_base` (number: 2, 8, 10, or 16), `to_base` (number: 2, 8, 10, or 16) |
 | **Trigonometry** | | |
 | `sine` | Calculates the sine of an angle. | `angle` (number), `unit` (degrees/radians, optional) |
 | `cosine` | Calculates the cosine of an angle. | `angle` (number), `unit` (degrees/radians, optional) |
@@ -243,7 +249,7 @@ Cruncher exposes its functions as individual MCP tools. Here is the full list:
 
 Cruncher is a plain Node.js JavaScript application that communicates over **standard input/output (stdio)**. This makes it a lightweight, portable, and secure MCP server. The entire flow for a single tool call looks like this:
 
-1.  **Initialization**: On startup, the server listens for an `initialize` request from the MCP client and responds with its capabilities and version info (`v1.2.0`).
+1.  **Initialization**: On startup, the server listens for an `initialize` request from the MCP client and responds with its capabilities and version info (`v1.2.1`).
 2.  **Tool Discovery**: The client sends a `tools/list` request, and the server responds with the full list of available calculator tools and their `inputSchema`, which defines the required arguments and their types.
 3.  **Input Validation**: Before any tool is executed, the server runs a custom recursive `validateArguments` function against the tool's `inputSchema`. This ensures required fields are present, types are correct (number, string, array), enum values are valid, and min/max constraints are respected — all without any external library.
 4.  **Worker Thread Execution**: Once validated, the tool call is handed off to an isolated Node.js `worker_thread`. This completely protects the main thread (and its `stdio` communication) from being blocked by a long-running or infinite calculation.
