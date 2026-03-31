@@ -33,12 +33,13 @@ This single command runs all 50 tests covering every feature of the Cruncher ser
 - **Base Conversion**: Binary, octal, decimal, hexadecimal conversions
 - **Scientific Notation**: `1e6`, `2.5e-3`, `1e+6` expressions
 - **Built-in Functions**: `abs()`, `round()`, `floor()`, `ceil()`, `min()`, `max()`
-- **Configurable Timeout**: Custom timeout for factorial, median, percentile (NEW in v1.2.4)
+- **Configurable Timeout**: Custom timeout for factorial, median, percentile (v1.2.4)
+- **Enhanced Error Messages**: Structured error responses with parameter context (NEW in v1.2.5)
 - **Error Handling**: Invalid inputs, missing arguments, unknown tools
 
 ### 📊 Test Statistics
 - **Total Tests**: 175
-- **Pass Rate**: **100%** (175/175) on v1.2.4
+- **Pass Rate**: **100%** (185/185) on v1.2.5
 - **Execution Time**: ~5-6 seconds
 - **Coverage**: All 32 tools, edge cases, and advanced scenarios
 
@@ -188,4 +189,4 @@ For issues or questions:
 
 **Last Updated**: 2026-03-13  
 **Test Framework Version**: mcp-tester 1.0.0  
-**Server Version Tested**: Cruncher **v1.2.4** (175 tests, 100% pass rate)
+**Server Version Tested**: Cruncher **v1.2.5** (185 tests, 100% pass rate)

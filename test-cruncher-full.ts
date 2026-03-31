@@ -838,7 +838,155 @@ async function testCruncher() {
             }),
         );
 
-        // --- 11. Extended evaluate_expression Tests ---
+        // ========== 11. Structured Error Response Tests ==========
+        console.log("\n📋 11. Structured Error Response Tests");
+        results.push(
+            await runTest("structured error: tool not found", async () => {
+                try {
+                    await client.callTool({ name: "nonexistent_tool", arguments: {} });
+                    throw new Error("Should have thrown an error");
+                } catch (error: any) {
+                    const msg = error.message || error.toString();
+                    if (!msg.includes("not found")) {
+                        throw new Error(`Expected 'not found', got: ${msg}`);
+                    }
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("structured error: missing required param", async () => {
+                try {
+                    await client.callTool({ name: "add", arguments: { a: 1 } });
+                    throw new Error("Should have thrown an error");
+                } catch (error: any) {
+                    const msg = error.message || error.toString();
+                    if (!msg.includes("Missing required property")) {
+                        throw new Error(`Expected missing param error, got: ${msg}`);
+                    }
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("structured error: wrong type validation", async () => {
+                try {
+                    await client.callTool({ name: "add", arguments: { a: "string", b: 2 } });
+                    throw new Error("Should have thrown an error");
+                } catch (error: any) {
+                    const msg = error.message || error.toString();
+                    if (!msg.includes("Expected number") && !msg.includes("Validation Error")) {
+                        throw new Error(`Expected validation error, got: ${msg}`);
+                    }
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("structured error: enum validation", async () => {
+                try {
+                    await client.callTool({
+                        name: "sine",
+                        arguments: { angle: 0, unit: "gradians" },
+                    });
+                    throw new Error("Should have thrown an error");
+                } catch (error: any) {
+                    const msg = error.message || error.toString();
+                    if (!msg.includes("degrees") || !msg.includes("radians")) {
+                        throw new Error(`Expected enum error, got: ${msg}`);
+                    }
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("structured error: math domain error", async () => {
+                try {
+                    await client.callTool({ name: "sqrt", arguments: { value: -4 } });
+                    throw new Error("Should have thrown an error");
+                } catch (error: any) {
+                    const msg = error.message || error.toString();
+                    if (!msg.toLowerCase().includes("negative")) {
+                        throw new Error(`Expected negative error, got: ${msg}`);
+                    }
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("structured error: division by zero", async () => {
+                try {
+                    await client.callTool({ name: "divide", arguments: { a: 1, b: 0 } });
+                    throw new Error("Should have thrown an error");
+                } catch (error: any) {
+                    const msg = error.message || error.toString();
+                    if (!msg.includes("Division by zero")) {
+                        throw new Error(`Expected division by zero error, got: ${msg}`);
+                    }
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("structured error: factorial negative", async () => {
+                try {
+                    await client.callTool({ name: "factorial", arguments: { n: -5 } });
+                    throw new Error("Should have thrown an error");
+                } catch (error: any) {
+                    const msg = error.message || error.toString();
+                    if (!msg.includes("negative")) {
+                        throw new Error(`Expected negative factorial error, got: ${msg}`);
+                    }
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("structured error: factorial non-integer", async () => {
+                try {
+                    await client.callTool({ name: "factorial", arguments: { n: 5.5 } });
+                    throw new Error("Should have thrown an error");
+                } catch (error: any) {
+                    const msg = error.message || error.toString();
+                    if (!msg.includes("integer")) {
+                        throw new Error(`Expected integer error, got: ${msg}`);
+                    }
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("structured error: empty array stats", async () => {
+                try {
+                    await client.callTool({ name: "avg", arguments: { numbers: [] } });
+                    throw new Error("Should have thrown an error");
+                } catch (error: any) {
+                    const msg = error.message || error.toString();
+                    if (!msg.includes("empty")) {
+                        throw new Error(`Expected empty error, got: ${msg}`);
+                    }
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("structured error: convert_base invalid chars", async () => {
+                try {
+                    await client.callTool({
+                        name: "convert_base",
+                        arguments: { value: "1G", from_base: 16, to_base: 2 },
+                    });
+                    throw new Error("Should have thrown an error");
+                } catch (error: any) {
+                    const msg = error.message || error.toString();
+                    if (!msg.includes("Invalid characters")) {
+                        throw new Error(`Expected invalid chars error, got: ${msg}`);
+                    }
+                }
+            }),
+        );
+
+        // --- 12. Extended evaluate_expression Tests ---
         results.push(
             await runTest("evaluate_expression: simple addition", async () => {
                 const result = await client.callTool({

@@ -10,7 +10,7 @@
 | 4 | More Built-in Functions | `[x]` | L | 🟡 Medium | High |
 | 5 | Angle Mode Toggle | `[]` | L | 🟡 Medium | Medium |
 | 6 | Result Caching | `[]` | M | 🟡 Medium | High |
-| 7 | Enhanced Error Messages | `[]` | M | 🟡 Medium | Medium |
+| 7 | Enhanced Error Messages | `[x]` | M | 🟡 Medium | Medium |
 | 8 | Batch Operations | `[]` | M | 🟡 Medium | High |
 | 9 | Unit Conversion Tool | `[]` | M | 🟡 Medium | Medium |
 | 10 | Complex Number Support | `[]` | H | 🟢 Low | Low |
@@ -347,40 +347,37 @@ factorial: ({ n }) => getCachedOrCompute(`factorial:${n}`, () => {
 ### 7. Enhanced Error Messages
 | Status | Effort | Priority | Impact |
 |--------|--------|----------|--------|
-| `[]`   | M      | 🟡 Medium | Medium |
+| `[x]`   | M      | 🟡 Medium | Medium |
+
+**Implemented**: 2026-03-31
 
 **Description**: Include more context in errors for better debugging.
 
-**Current Error**:
-```json
-{ "error": "Value must be a number" }
-```
+**Implementation Details**:
+- Refactored `sendError(id, code, errorDetails)` to accept structured `errorDetails` object with `message` and optional `data` payload
+- Created `structuredValidationError(code, message, details)` helper that returns `{ code, message, data: { parameter, expected, received, receivedValue, tool } }`
+- Updated `validateArguments(schema, args, path, toolName)` to throw structured error objects instead of plain strings
+- Added 10 new tests covering: missing params, wrong types, enum validation, math domain errors, division by zero, factorial edge cases, empty arrays, and base conversion errors
+- Backward compatible: `sendError` still handles legacy plain-string third arguments gracefully
 
-**Proposed Error**:
+**Error Response Format**:
 ```json
 {
+  "jsonrpc": "2.0",
+  "id": 1,
   "error": {
-    "code": "INVALID_TYPE",
-    "message": "Value must be a number",
-    "details": {
-      "parameter": "a",
-      "expected": "number",
-      "received": "string",
-      "receivedValue": "hello",
+    "code": -32602,
+    "message": "Validation Error: Missing required property 'b' at root",
+    "data": {
+      "parameter": "b",
+      "expected": "defined value",
+      "received": "undefined",
+      "receivedValue": null,
       "tool": "add"
     }
   }
 }
 ```
-
-**Files to Modify**:
-- `cruncher.js` - `validateArguments`, error handlers
-
-**Tests to Add**:
-- Errors include parameter name
-- Errors include expected type
-- Errors include received value
-- Backward compatibility with existing error parsing
 
 ---
 
@@ -655,7 +652,7 @@ Based on priority, impact, and dependencies:
 | ✅ 4 | More Built-in Functions | 🟡 Medium | High | L | **DONE** - Added abs/round/floor/ceil/min/max |
 | 5 | Result Caching | 🟡 Medium | High | M | Performance improvement |
 | 6 | Batch Operations | 🟡 Medium | High | M | Reduces round trips |
-| 7 | Enhanced Error Messages | 🟡 Medium | Medium | M | Improves debugging |
+| 7 | Enhanced Error Messages | ✅ Done | Medium | M | Improves debugging |
 | 8 | Angle Mode Toggle | 🟡 Medium | Medium | L | Quality of life improvement |
 | 9 | Unit Conversion | 🟡 Medium | Medium | M | New feature |
 | 10 | Statistics Mode | 🟢 Low | Medium | M | Nice to have |

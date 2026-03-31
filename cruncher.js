@@ -10,6 +10,9 @@
  * - v1.2.0: Added evaluate_expression, extended constants, custom input
  *           validation, worker_thread timeout protection, and safe
  *           floating-point arithmetic via integer-scaling.
+ * - v1.2.5: Enhanced error messages with structured JSON-RPC responses
+ *           including parameter context (parameter, expected, received,
+ *           receivedValue, tool) for better debugging.
  */
 
 const readline = require("readline");
@@ -1017,14 +1020,18 @@ const toolHandlers = {
  * Sends a JSON-RPC 2.0 error response to stdout.
  * @param {string|number|null} id - The request ID to correlate with the error.
  * @param {number} code - The error code (e.g., -32600, -32601, -32602).
- * @param {string} message - A descriptive error message.
+ * @param {Object|string} errorDetails - Error details object with `message` and optional `data`, or legacy plain string.
  */
-const sendError = (id, code, message) => {
+const sendError = (id, code, errorDetails) => {
+    const msg = typeof errorDetails === "string" ? errorDetails : (errorDetails.message || "Unknown error");
     const errorResponse = {
         jsonrpc: "2.0",
         id: id,
-        error: { code: code, message: message },
+        error: { code: code, message: msg },
     };
+    if (typeof errorDetails === "object" && errorDetails.data) {
+        errorResponse.error.data = errorDetails.data;
+    }
     process.stdout.write(JSON.stringify(errorResponse) + "\n");
 };
 
@@ -1043,23 +1050,44 @@ const sendSuccess = (id, result) => {
 };
 
 /**
+ * Creates a structured validation error object with detailed debugging context.
+ * @param {string} code - JSON-RPC error code.
+ * @param {string} message - Human-readable error message.
+ * @param {Object} details - Additional context (parameter, expected, received, receivedValue, tool).
+ * @returns {Object} A structured error object with code, message, and data fields.
+ */
+const structuredValidationError = (code, message, details) => ({
+    code,
+    message,
+    data: {
+        parameter: details.parameter || null,
+        expected: details.expected || null,
+        received: details.received || null,
+        receivedValue: details.receivedValue !== undefined ? details.receivedValue : null,
+        tool: details.tool || null,
+    },
+});
+
+/**
  * Recursively validates arguments against a JSON Schema to prevent malicious or malformed AI inputs.
  * Ensures the arguments strictly match the definitions in `inputSchema` for the given tool.
  *
  * @param {Object} schema - The JSON Schema defining the expected input.
  * @param {any} args - The arguments provided by the client (AI).
  * @param {string} path - The current property path (used for clear error messages).
- * @throws {Error} If the arguments do not match the schema constraints.
+ * @param {string} toolName - The name of the tool being validated (for error context).
+ * @throws {Object} A structured error object with code, message, and data fields if arguments don't match.
  */
-const validateArguments = (schema, args, path = "root") => {
+const validateArguments = (schema, args, path = "root", toolName = "unknown") => {
     if (!schema) return;
 
     // 1. Required fields
     if (schema.required) {
         for (const req of schema.required) {
             if (args === undefined || args[req] === undefined) {
-                throw new Error(
+                throw structuredValidationError(-32602,
                     `Validation Error: Missing required property '${req}' at ${path}`,
+                    { parameter: req, expected: "defined value", received: "undefined", tool: toolName },
                 );
             }
         }
@@ -1071,8 +1099,9 @@ const validateArguments = (schema, args, path = "root") => {
     // 2. Objects
     if (schema.type === "object") {
         if (typeof args !== "object" || args === null || Array.isArray(args)) {
-            throw new Error(
+            throw structuredValidationError(-32602,
                 `Validation Error: Expected object at ${path}, got ${typeof args}`,
+                { parameter: path.replace("root.", ""), expected: "object", received: typeof args, receivedValue: args, tool: toolName },
             );
         }
         if (schema.properties) {
@@ -1091,8 +1120,9 @@ const validateArguments = (schema, args, path = "root") => {
     // 3. Arrays
     if (schema.type === "array") {
         if (!Array.isArray(args)) {
-            throw new Error(
+            throw structuredValidationError(-32602,
                 `Validation Error: Expected array at ${path}, got ${typeof args}`,
+                { parameter: path.replace("root.", ""), expected: "array", received: typeof args, receivedValue: args, tool: toolName },
             );
         }
         if (schema.items) {
@@ -1104,35 +1134,41 @@ const validateArguments = (schema, args, path = "root") => {
 
     // 4. Primitives (number, string, boolean)
     if (schema.type === "number" && typeof args !== "number") {
-        throw new Error(
+        throw structuredValidationError(-32602,
             `Validation Error: Expected number at ${path}, got ${typeof args}`,
+            { parameter: path.replace("root.", ""), expected: "number", received: typeof args, receivedValue: args, tool: toolName },
         );
     }
     if (schema.type === "string" && typeof args !== "string") {
-        throw new Error(
+        throw structuredValidationError(-32602,
             `Validation Error: Expected string at ${path}, got ${typeof args}`,
+            { parameter: path.replace("root.", ""), expected: "string", received: typeof args, receivedValue: args, tool: toolName },
         );
     }
     if (schema.type === "boolean" && typeof args !== "boolean") {
-        throw new Error(
+        throw structuredValidationError(-32602,
             `Validation Error: Expected boolean at ${path}, got ${typeof args}`,
+            { parameter: path.replace("root.", ""), expected: "boolean", received: typeof args, receivedValue: args, tool: toolName },
         );
     }
 
     // 5. Constraints
     if (schema.enum && !schema.enum.includes(args)) {
-        throw new Error(
+        throw structuredValidationError(-32602,
             `Validation Error: Value '${args}' at ${path} is not valid. Must be one of: ${schema.enum.join(", ")}`,
+            { parameter: path.replace("root.", ""), expected: JSON.stringify(schema.enum), received: "invalid enum value", receivedValue: args, tool: toolName },
         );
     }
     if (schema.minimum !== undefined && args < schema.minimum) {
-        throw new Error(
+        throw structuredValidationError(-32602,
             `Validation Error: Value ${args} at ${path} must be >= ${schema.minimum}`,
+            { parameter: path.replace("root.", ""), expected: `>= ${schema.minimum}`, received: "out of range", receivedValue: args, tool: toolName },
         );
     }
     if (schema.maximum !== undefined && args > schema.maximum) {
-        throw new Error(
+        throw structuredValidationError(-32602,
             `Validation Error: Value ${args} at ${path} must be <= ${schema.maximum}`,
+            { parameter: path.replace("root.", ""), expected: `<= ${schema.maximum}`, received: "out of range", receivedValue: args, tool: toolName },
         );
     }
 };
@@ -1158,7 +1194,7 @@ const validateMessage = (message) => {
         sendError(
             message.id,
             -32600,
-            "Invalid Request: JSON-RPC version must be '2.0'",
+            { message: "Invalid Request: JSON-RPC version must be '2.0'" },
         );
         return false;
     }
@@ -1168,7 +1204,7 @@ const validateMessage = (message) => {
         sendError(
             message.id,
             -32600,
-            "Invalid Request: 'method' property is required",
+            { message: "Invalid Request: 'method' property is required" },
         );
         return false;
     }
@@ -1179,7 +1215,7 @@ const validateMessage = (message) => {
         sendError(
             message.id,
             -32601,
-            `Method not found: '${message.method}' is not a supported method`,
+            { message: `Method not found: '${message.method}' is not a supported method` },
         );
         return false;
     }
@@ -1196,7 +1232,7 @@ if (isMainThread) {
         terminal: false,
     });
 
-    console.error("Cruncher v1.2.4 MCP Server starting...");
+    console.error("Cruncher v1.2.5 MCP Server starting...");
 
     rl.on("line", (line) => {
         let message;
@@ -1216,7 +1252,7 @@ if (isMainThread) {
             sendSuccess(message.id, {
                 protocolVersion: "2024-11-05",
                 capabilities: { tools: {} },
-                serverInfo: { name: "Cruncher", version: "1.2.4" },
+                serverInfo: { name: "Cruncher", version: "1.2.5" },
             });
             return;
         }
@@ -1234,18 +1270,23 @@ if (isMainThread) {
             const handler = toolHandlers[name];
 
             if (!toolDef || !handler) {
-                sendError(message.id, -32601, `Tool '${name}' not found.`);
+                sendError(message.id, -32601, { message: `Tool '${name}' not found.` });
                 return;
             }
 
             try {
                 // 1. Strict Input Validation based on Tool Schema
                 if (toolDef.inputSchema) {
-                    validateArguments(toolDef.inputSchema, args || {});
+                    validateArguments(toolDef.inputSchema, args || {}, "root", name);
                 }
             } catch (error) {
                 // Fail fast on validation errors before spawning worker
-                sendError(message.id, -32602, error.message);
+                // Pass structured error objects directly, or wrap plain strings
+                if (error.code && error.data) {
+                    sendError(message.id, error.code, error);
+                } else {
+                    sendError(message.id, -32602, { message: error.message });
+                }
                 return;
             }
 
@@ -1291,7 +1332,7 @@ if (isMainThread) {
                     sendError(
                         message.id,
                         -32000,
-                        `Execution Timeout: The calculation took longer than ${timeout}ms and was terminated to prevent an infinite loop.`,
+                        { message: `Execution Timeout: The calculation took longer than ${timeout}ms and was terminated to prevent an infinite loop.` },
                     );
                     // Release queue on timeout
                     if (releaseQueue) releaseQueue();
@@ -1306,7 +1347,7 @@ if (isMainThread) {
                             content: [{ type: "text", text: String(result.data) }],
                         });
                     } else {
-                        sendError(message.id, -32602, result.error);
+                        sendError(message.id, -32602, { message: result.error });
                     }
                     // Release queue after worker completes
                     if (releaseQueue) releaseQueue();
@@ -1314,14 +1355,14 @@ if (isMainThread) {
 
                 worker.on("error", (error) => {
                     clearTimeout(timeoutId);
-                    sendError(message.id, -32603, `Worker Error: ${error.message}`);
+                    sendError(message.id, -32603, { message: `Worker Error: ${error.message}` });
                     // Release queue on error
                     if (releaseQueue) releaseQueue();
                 });
             };
 
             executeTool().catch((error) => {
-                sendError(message.id, -32603, `Unexpected error: ${error.message}`);
+                sendError(message.id, -32603, { message: `Unexpected error: ${error.message}` });
             });
         }
     });
@@ -1361,6 +1402,8 @@ if (typeof module !== "undefined") {
         toolHandlers,
         validateArguments,
         validateMessage,
+        sendError,
+        structuredValidationError,
         EXECUTION_TIMEOUT,
     };
 }
