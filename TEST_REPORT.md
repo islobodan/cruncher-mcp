@@ -7,7 +7,7 @@ This document summarizes the comprehensive test suite for the Cruncher MCP Serve
 - **Framework**: `mcp-tester` (custom MCP client testing framework)
 - **Runner**: `tsx` (TypeScript execution without compilation)
 - **Test File**: `test-cruncher-full.ts` (single comprehensive suite)
-- **Total Tests**: 175
+- **Total Tests**: 185
 - **Pass Rate**: **100%** (185/185 tests passed) on v1.2.5
 
 ## Test Categories
@@ -66,6 +66,18 @@ This document summarizes the comprehensive test suite for the Cruncher MCP Serve
 - ✅ Invalid argument type (strict validation)
 - ✅ Missing required argument (strict validation)
 
+### 11. Structured Error Responses (10 tests) ✅
+- ✅ Tool not found error format
+- ✅ Missing required parameter error
+- ✅ Wrong type validation error
+- ✅ Enum validation error
+- ✅ Math domain error (negative square root)
+- ✅ Division by zero error
+- ✅ Factorial negative error
+- ✅ Factorial non-integer error
+- ✅ Empty array stats error
+- ✅ Base conversion invalid chars error
+
 ## Failed Tests Analysis
 
 **No failed tests!** All 185 tests pass on v1.2.5.
@@ -75,6 +87,7 @@ This document summarizes the comprehensive test suite for the Cruncher MCP Serve
 ✅ **No Hanging Tests**: The test suite exits cleanly without any process leaks  
 ✅ **Comprehensive Coverage**: Tests cover all major functionality including `evaluate_expression`  
 ✅ **Error Handling**: Properly validates error responses with strict input validation  
+✅ **Structured Error Messages**: JSON-RPC errors include `data` object with `parameter`, `expected`, `received`, `receivedValue`, and `tool` fields for debugging  
 ✅ **Floating Point Accuracy**: `0.1 + 0.2 = 0.0` exactly via `safeMath`  
 ✅ **Memory Management**: Memory functions work as expected  
 ✅ **Tool Discovery**: All 32 tools are properly registered  
@@ -85,6 +98,37 @@ This document summarizes the comprehensive test suite for the Cruncher MCP Serve
 ✅ **Scientific Notation**: Expressions like `1e6`, `2.5e-3` work correctly  
 ✅ **Atomic Memory Operations**: Concurrent memory operations are properly serialized  
 ✅ **Built-in Functions**: `abs()`, `round()`, `floor()`, `ceil()`, `min()`, `max()` work in expressions  
+
+## Structured Error Response Format (v1.2.5+)
+
+Errors now include a `data` object with detailed debugging context:
+
+```json
+{
+  \"jsonrpc\": \"2.0\",
+  \"id\": 1,
+  \"error\": {
+    \"code\": -32602,
+    \"message\": \"Validation Error: Expected number at root.a, got string\",
+    \"data\": {
+      \"parameter\": \"a\",
+      \"expected\": \"number\",
+      \"received\": \"string\",
+      \"receivedValue\": \"not_number\",
+      \"tool\": \"add\"
+    }
+  }
+}
+```
+
+**Fields in `error.data`**:
+| Field | Description |
+|-------|-------------|
+| `parameter` | The property path where validation failed (e.g., `root.a`, `numbers[0]`) |
+| `expected` | What was expected (e.g., `number`, `>= 0`, `defined value`) |
+| `received` | What was received (e.g., `string`, `undefined`, `out of range`) |
+| `receivedValue` | The actual value that was passed |
+| `tool` | The name of the tool that was called |
 
 ## Recommendations
 
