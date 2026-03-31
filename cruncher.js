@@ -1111,6 +1111,7 @@ const validateArguments = (schema, args, path = "root", toolName = "unknown") =>
                         schema.properties[key],
                         args[key],
                         `${path}.${key}`,
+                        toolName,
                     );
                 }
             }
@@ -1127,7 +1128,7 @@ const validateArguments = (schema, args, path = "root", toolName = "unknown") =>
         }
         if (schema.items) {
             for (let i = 0; i < args.length; i++) {
-                validateArguments(schema.items, args[i], `${path}[${i}]`);
+                validateArguments(schema.items, args[i], `${path}[${i}]`, toolName);
             }
         }
     }
