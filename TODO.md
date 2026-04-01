@@ -11,7 +11,7 @@
 | 5 | Angle Mode Toggle | `[]` | L | 🟡 Medium | Medium |
 | 6 | Result Caching | `[]` | M | 🟡 Medium | High |
 | 7 | Enhanced Error Messages | `[x]` | M | 🟡 Medium | Medium |
-| 8 | Batch Operations | `[]` | M | 🟡 Medium | High |
+| 8 | Batch Operations | `[x]` | M | 🟡 Medium | High |
 | 9 | Unit Conversion Tool | `[]` | M | 🟡 Medium | Medium |
 | 10 | Complex Number Support | `[]` | H | 🟢 Low | Low |
 | 11 | Progress Streaming | `[]` | H | 🟢 Low | Low |
@@ -384,50 +384,20 @@ factorial: ({ n }) => getCachedOrCompute(`factorial:${n}`, () => {
 ### 8. Batch Operations
 | Status | Effort | Priority | Impact |
 |--------|--------|----------|--------|
-| `[]`   | M      | 🟡 Medium | High   |
+| `[x]`   | M      | 🟡 Medium | High   |
+
+**Implemented**: 2026-04-01
 
 **Description**: Execute multiple calculations in a single request to reduce round trips.
 
-**Proposed Tool**:
-```javascript
-{
-  name: "batch",
-  description: "Execute multiple tool calls in sequence. Returns array of results.",
-  inputSchema: {
-    type: "object",
-    properties: {
-      operations: {
-        type: "array",
-        items: {
-          type: "object",
-          properties: {
-            tool: { type: "string" },
-            arguments: { type: "object" }
-          },
-          required: ["tool"]
-        },
-        minItems: 1,
-        maxItems: 50
-      }
-    },
-    required: ["operations"]
-  }
-}
-```
-
-**Example Usage**:
-```javascript
-batch({
-  operations: [
-    { tool: "add", arguments: { a: 1, b: 2 } },
-    { tool: "multiply", arguments: { a: 3, b: 4 } },
-    { tool: "sqrt", arguments: { value: 144 } }
-  ]
-})
-// Returns: [3, 12, 12]
-```
-
-**Files to Modify**:
+**Implementation Details**:
+- Added `batch` tool that accepts array of `{ tool, args }` operations
+- Executes operations sequentially in main thread (no worker overhead)
+- Partial failure tolerance: continues processing even if individual operations fail
+- Each result includes `{ index, tool, success, data/error }`
+- Results returned as JSON.stringify'd array string
+- Batch limited to 50 operations per request for performance
+- Validates each operation schema before execution (non-blocking: skips failures)
 - `cruncher.js` - Add batch tool and handler
 
 **Tests to Add**:

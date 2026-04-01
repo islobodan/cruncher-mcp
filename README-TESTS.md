@@ -15,7 +15,7 @@ This single command runs all 50 tests covering every feature of the Cruncher ser
 
 | File | Description | Tests | Use Case |
 |------|-------------|-------|----------|
-| `test-cruncher-full.ts` | Comprehensive test suite | 175 | Full regression testing, CI/CD |
+| `test-cruncher-full.ts` | Comprehensive test suite | 191 | Full regression testing, CI/CD |
 | `TEST_REPORT.md` | Test results and analysis | - | Documentation |
 
 ## Test Coverage
@@ -34,12 +34,13 @@ This single command runs all 50 tests covering every feature of the Cruncher ser
 - **Scientific Notation**: `1e6`, `2.5e-3`, `1e+6` expressions
 - **Built-in Functions**: `abs()`, `round()`, `floor()`, `ceil()`, `min()`, `max()`
 - **Configurable Timeout**: Custom timeout for factorial, median, percentile (v1.2.4)
-- **Enhanced Error Messages**: Structured error responses with parameter context (NEW in v1.2.5)
+- **Enhanced Error Messages**: Structured error responses with parameter context (v1.2.5)
+- **Batch Processing**: Multi-operation batch tool with partial failure tolerance (NEW in v1.2.6)
 - **Error Handling**: Invalid inputs, missing arguments, unknown tools
 
 ### 📊 Test Statistics
-- **Total Tests**: 175
-- **Pass Rate**: **100%** (185/185) on v1.2.5
+- **Total Tests**: 191
+- **Pass Rate**: **100%** (191/191) on v1.2.6
 - **Execution Time**: ~5-6 seconds
 - **Coverage**: All 32 tools, edge cases, and advanced scenarios
 
@@ -92,8 +93,8 @@ RUN npx tsx test-cruncher-full.ts
 
 📊 TEST SUMMARY
 ============================================================
-Total Tests: 175
-Passed: 175
+Total Tests: 191
+Passed: 191
 Failed: 0
 Success Rate: 100.00%
 ============================================================
@@ -112,7 +113,7 @@ results.push(await runTest('My new test', async () => {
     name: 'my_tool',
     arguments: { param1: 'value' }
   });
-  
+
   // Assert the result
   if (parseFloat(result.content[0].text) !== expected) {
     throw new Error(`Expected ${expected}, got ${result.content[0].text}`);
@@ -140,7 +141,7 @@ Organize tests by category for better readability:
 - Verify no open file descriptors or network connections
 
 ### "Tool not found" Error
-**Solution**: 
+**Solution**:
 - Verify the tool exists in `cruncher.js`
 - Check tool name spelling (case-sensitive)
 - Ensure the server has started successfully
@@ -187,6 +188,6 @@ For issues or questions:
 
 ---
 
-**Last Updated**: 2026-03-13  
-**Test Framework Version**: mcp-tester 1.0.0  
-**Server Version Tested**: Cruncher **v1.2.5** (185 tests, 100% pass rate)
+**Last Updated**: 2026-04-01
+**Test Framework Version**: mcp-tester 1.0.0
+**Server Version Tested**: Cruncher **v1.2.6** (191 tests, 100% pass rate)

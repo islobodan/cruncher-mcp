@@ -116,6 +116,7 @@ async function testCruncher() {
             "memory_recall",
             "memory_add",
             "memory_subtract",
+            "batch",
         ];
 
         results.push(
@@ -986,7 +987,114 @@ async function testCruncher() {
             }),
         );
 
-        // --- 12. Extended evaluate_expression Tests ---
+        // ========== 12. Batch Processing Tests ==========
+        console.log("\n📦 12. Batch Processing Tests");
+        results.push(
+            await runTest("Batch: basic multi-operation", async () => {
+                const result = await client.callTool({
+                    name: "batch",
+                    arguments: {
+                        operations: [
+                            { tool: "add", args: { a: 10, b: 20 } },
+                            { tool: "multiply", args: { a: 3, b: 7 } },
+                        ],
+                    },
+                });
+                const data = JSON.parse(result.content[0].text);
+                if (!Array.isArray(data)) throw new Error("Expected array result");
+                if (data.length !== 2) throw new Error(`Expected 2 results, got ${data.length}`);
+                if (!data[0].success || data[0].data !== 30) throw new Error(`add failed: ${JSON.stringify(data[0])}`);
+                if (!data[1].success || data[1].data !== 21) throw new Error(`multiply failed: ${JSON.stringify(data[1])}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Batch: partial failure continues", async () => {
+                const result = await client.callTool({
+                    name: "batch",
+                    arguments: {
+                        operations: [
+                            { tool: "add", args: { a: 1, b: 2 } },
+                            { tool: "divide", args: { a: 5, b: 0 } },
+                            { tool: "power", args: { base: 2, exponent: 8 } },
+                        ],
+                    },
+                });
+                const data = JSON.parse(result.content[0].text);
+                if (data.length !== 3) throw new Error(`Expected 3 results, got ${data.length}`);
+                if (!data[0].success) throw new Error("add should succeed");
+                if (data[1].success) throw new Error("divide by zero should fail");
+                if (!data[2].success) throw new Error("power should succeed");
+            }),
+        );
+
+        results.push(
+            await runTest("Batch: nonexistent tool", async () => {
+                const result = await client.callTool({
+                    name: "batch",
+                    arguments: {
+                        operations: [
+                            { tool: "nonexistent", args: {} },
+                        ],
+                    },
+                });
+                const data = JSON.parse(result.content[0].text);
+                if (data[0].success) throw new Error("Expected failure for nonexistent tool");
+                if (!data[0].error.includes("not found")) throw new Error(`Wrong error: ${data[0].error}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Batch: empty operations", async () => {
+                try {
+                    await client.callTool({
+                        name: "batch",
+                        arguments: { operations: [] },
+                    });
+                    throw new Error("Should have thrown an error");
+                } catch (error: any) {
+                    if (!error.message.includes("non-empty")) {
+                        throw new Error(`Wrong error: ${error.message}`);
+                    }
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Batch: with evaluate_expression", async () => {
+                const result = await client.callTool({
+                    name: "batch",
+                    arguments: {
+                        operations: [
+                            { tool: "evaluate_expression", args: { expression: "2 + 3" } },
+                            { tool: "evaluate_expression", args: { expression: "4 * 5" } },
+                        ],
+                    },
+                });
+                const data = JSON.parse(result.content[0].text);
+                if (!data[0].success || parseFloat(data[0].data) !== 5) throw new Error("First eval failed");
+                if (!data[1].success || parseFloat(data[1].data) !== 20) throw new Error("Second eval failed");
+            }),
+        );
+
+        results.push(
+            await runTest("Batch: too many operations (limit 50)", async () => {
+                try {
+                    const ops = Array.from({ length: 51 }, (_, i) => ({ tool: "add", args: { a: i, b: 1 } }));
+                    await client.callTool({
+                        name: "batch",
+                        arguments: { operations: ops },
+                    });
+                    throw new Error("Should have thrown an error");
+                } catch (error: any) {
+                    if (!error.message.includes("50")) {
+                        throw new Error(`Wrong error: ${error.message}`);
+                    }
+                }
+            }),
+        );
+
+        // --- 13. Extended evaluate_expression Tests ---
         results.push(
             await runTest("evaluate_expression: simple addition", async () => {
                 const result = await client.callTool({

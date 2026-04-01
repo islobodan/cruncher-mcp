@@ -13,6 +13,8 @@
  * - v1.2.5: Enhanced error messages with structured JSON-RPC responses
  *           including parameter context (parameter, expected, received,
  *           receivedValue, tool) for better debugging.
+ * - v1.2.6: Batch processing tool for executing multiple calculations
+ *           in a single request with partial failure tolerance.
  */
 
 const readline = require("readline");
@@ -414,6 +416,28 @@ const TOOLS = [
                 to_base: { type: "number", enum: [2, 8, 10, 16] },
             },
             required: ["value", "from_base", "to_base"],
+        },
+    },
+    {
+        name: "batch",
+        description:
+            "Executes multiple tool calls in a single request for batch processing. Accepts an array of operations, each with tool name and arguments. Returns an array of results.",
+        inputSchema: {
+            type: "object",
+            properties: {
+                operations: {
+                    type: "array",
+                    items: {
+                        type: "object",
+                        properties: {
+                            tool: { type: "string" },
+                            args: { type: "object" },
+                        },
+                        required: ["tool", "args"],
+                    },
+                },
+            },
+            required: ["operations"],
         },
     },
 ];
@@ -1014,6 +1038,51 @@ const toolHandlers = {
         // Step 3: Convert from decimal to target base
         return decimalValue.toString(to_base).toUpperCase();
     },
+
+    /**
+     * Executes multiple tool calls in a single request for batch processing.
+     * Each operation runs sequentially and results are returned as an array.
+     * @param {Object} args - The arguments object.
+     * @param {Array} args.operations - Array of { tool, args } objects.
+     * @returns {Array} Array of result objects with { tool, success, data/error }.
+     */
+    batch: ({ operations }) => {
+        if (!Array.isArray(operations) || operations.length === 0) {
+            throw new Error("Batch requires a non-empty array of operations.");
+        }
+        if (operations.length > 50) {
+            throw new Error("Batch limited to 50 operations per request.");
+        }
+
+        const results = [];
+        for (let i = 0; i < operations.length; i++) {
+            const op = operations[i];
+            const opName = op.tool || "unknown";
+            const opArgs = op.args || {};
+            const opToolDef = TOOLS.find((t) => t.name === opName);
+            const opHandler = toolHandlers[opName];
+
+            if (!opToolDef || !opHandler) {
+                results.push({ index: i, tool: opName, success: false, error: `Tool '${opName}' not found.` });
+                continue;
+            }
+
+            try {
+                // Validate operation arguments
+                if (opToolDef.inputSchema) {
+                    validateArguments(opToolDef.inputSchema, opArgs, "root", opName);
+                }
+
+                // Execute the tool (runs in main thread, no worker for batch)
+                const result = opHandler(opArgs);
+                results.push({ index: i, tool: opName, success: true, data: result });
+            } catch (error) {
+                results.push({ index: i, tool: opName, success: false, error: error.message || String(error) });
+            }
+        }
+
+        return JSON.stringify(results);
+    },
 };
 
 /**
@@ -1233,7 +1302,7 @@ if (isMainThread) {
         terminal: false,
     });
 
-    console.error("Cruncher v1.2.5 MCP Server starting...");
+    console.error("Cruncher v1.2.6 MCP Server starting...");
 
     rl.on("line", (line) => {
         let message;
@@ -1253,7 +1322,7 @@ if (isMainThread) {
             sendSuccess(message.id, {
                 protocolVersion: "2024-11-05",
                 capabilities: { tools: {} },
-                serverInfo: { name: "Cruncher", version: "1.2.5" },
+                serverInfo: { name: "Cruncher", version: "1.2.6" },
             });
             return;
         }
