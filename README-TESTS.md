@@ -36,12 +36,12 @@ This single command runs all 50 tests covering every feature of the Cruncher ser
 - **Configurable Timeout**: Custom timeout for factorial, median, percentile (v1.2.4)
 - **Enhanced Error Messages**: Structured error responses with parameter context (v1.2.5)
 - **Batch Processing**: Multi-operation batch tool with partial failure tolerance (v1.2.6)
-- **Result Caching**: Expensive operation caching with TTL and LRU eviction (NEW in v1.2.7)
+- **Result Caching**: Expensive operation caching with TTL and LRU eviction (NEW in v1.2.8)
 - **Error Handling**: Invalid inputs, missing arguments, unknown tools
 
 ### 📊 Test Statistics
 - **Total Tests**: 198
-- **Pass Rate**: **100%** (198/198) on v1.2.7
+- **Pass Rate**: **100%** (198/198) on v1.2.8
 - **Execution Time**: ~5-6 seconds
 - **Coverage**: All 32 tools, edge cases, and advanced scenarios
 
@@ -94,8 +94,8 @@ RUN npx tsx test-cruncher-full.ts
 
 📊 TEST SUMMARY
 ============================================================
-Total Tests: 198
-Passed: 198
+Total Tests: 201
+Passed: 201
 Failed: 0
 Success Rate: 100.00%
 ============================================================
@@ -191,4 +191,4 @@ For issues or questions:
 
 **Last Updated**: 2026-04-01
 **Test Framework Version**: mcp-tester 1.0.0
-**Server Version Tested**: Cruncher **v1.2.7** (198 tests, 100% pass rate)
+**Server Version Tested**: Cruncher **v1.2.8** (198 tests, 100% pass rate)

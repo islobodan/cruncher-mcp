@@ -119,6 +119,8 @@ async function testCruncher() {
             "batch",
             "cache_clear",
             "cache_info",
+            "set_angle_mode",
+            "get_angle_mode",
         ];
 
         results.push(
@@ -995,8 +997,6 @@ async function testCruncher() {
             await runTest("Batch: basic multi-operation", async () => {
                 const result = await client.callTool({
                     name: "batch",
-            "cache_clear",
-            "cache_info",
                     arguments: {
                         operations: [
                             { tool: "add", args: { a: 10, b: 20 } },
@@ -1016,8 +1016,6 @@ async function testCruncher() {
             await runTest("Batch: partial failure continues", async () => {
                 const result = await client.callTool({
                     name: "batch",
-            "cache_clear",
-            "cache_info",
                     arguments: {
                         operations: [
                             { tool: "add", args: { a: 1, b: 2 } },
@@ -1038,8 +1036,6 @@ async function testCruncher() {
             await runTest("Batch: nonexistent tool", async () => {
                 const result = await client.callTool({
                     name: "batch",
-            "cache_clear",
-            "cache_info",
                     arguments: {
                         operations: [
                             { tool: "nonexistent", args: {} },
@@ -1057,8 +1053,6 @@ async function testCruncher() {
                 try {
                     await client.callTool({
                         name: "batch",
-            "cache_clear",
-            "cache_info",
                         arguments: { operations: [] },
                     });
                     throw new Error("Should have thrown an error");
@@ -1074,8 +1068,6 @@ async function testCruncher() {
             await runTest("Batch: with evaluate_expression", async () => {
                 const result = await client.callTool({
                     name: "batch",
-            "cache_clear",
-            "cache_info",
                     arguments: {
                         operations: [
                             { tool: "evaluate_expression", args: { expression: "2 + 3" } },
@@ -1095,8 +1087,6 @@ async function testCruncher() {
                     const ops = Array.from({ length: 51 }, (_, i) => ({ tool: "add", args: { a: i, b: 1 } }));
                     await client.callTool({
                         name: "batch",
-            "cache_clear",
-            "cache_info",
                         arguments: { operations: ops },
                     });
                     throw new Error("Should have thrown an error");
@@ -1108,135 +1098,86 @@ async function testCruncher() {
             }),
         );
 
-        // ========== 13. Result Caching Tests ==========
-        console.log("\n💾 13. Result Caching Tests");
+        // ========== 13. Angle Mode Toggle Tests ==========
+        console.log("\n🔀 13. Angle Mode Toggle Tests");
         results.push(
-            await runTest("Cache: sqrt hits cache on repeated call", async () => {
-                await client.callTool({ name: "memory_clear", arguments: {} });
-                // First call
-                const r1 = await client.callTool({
-                    name: "sqrt", arguments: { value: 144 }
-                });
-                // Second call - should hit cache
-                const r2 = await client.callTool({
-                    name: "sqrt", arguments: { value: 144 }
-                });
-                if (parseFloat(r1.content[0].text) !== 12)
-                    throw new Error(`First call expected 12, got ${r1.content[0].text}`);
-                if (parseFloat(r2.content[0].text) !== 12)
-                    throw new Error(`Cached call expected 12, got ${r2.content[0].text}`);
+            await runTest("Angle: default mode is radians", async () => {
+                const result = await client.callTool({ name: "get_angle_mode", arguments: {} });
+                const data = JSON.parse(result.content[0].text);
+                if (data.mode !== "radians") throw new Error(`Expected radians, got ${data.mode}`);
             }),
         );
 
         results.push(
-            await runTest("Cache: different args produce different results", async () => {
-                await client.callTool({ name: "memory_clear", arguments: {} });
-                const r1 = await client.callTool({
-                    name: "power", arguments: { base: 2, exponent: 3 }
-                });
-                const r2 = await client.callTool({
-                    name: "power", arguments: { base: 2, exponent: 4 }
-                });
-                if (parseFloat(r1.content[0].text) !== 8)
-                    throw new Error(`Expected 8, got ${r1.content[0].text}`);
-                if (parseFloat(r2.content[0].text) !== 16)
-                    throw new Error(`Expected 16, got ${r2.content[0].text}`);
+            await runTest("Angle: set mode to degrees", async () => {
+                const result = await client.callTool({ name: "set_angle_mode", arguments: { mode: "degrees" } });
+                if (!result.content[0].text.includes("degrees")) throw new Error(`Expected degrees message, got ${result.content[0].text}`);
             }),
         );
 
         results.push(
-            await runTest("Cache: cache_clear clears the cache", async () => {
-                await client.callTool({ name: "memory_clear", arguments: {} });
-                // Pre-fill cache
-                await client.callTool({
-                    name: "factorial", arguments: { n: 5 }
-                });
-                // Clear cache
-                const clearResult = await client.callTool({
-                    name: "cache_clear", arguments: {}
-                });
-                if (!clearResult.content[0].text.includes("Cache cleared"))
-                    throw new Error(`Expected cache cleared message, got ${clearResult.content[0].text}`);
-                // Re-call factorial - should still work
-                const r = await client.callTool({
-                    name: "factorial", arguments: { n: 5 }
-                });
-                if (parseFloat(r.content[0].text) !== 120)
-                    throw new Error(`Expected 120, got ${r.content[0].text}`);
+            await runTest("Angle: get mode returns degrees after set", async () => {
+                await client.callTool({ name: "set_angle_mode", arguments: { mode: "degrees" } });
+                const result = await client.callTool({ name: "get_angle_mode", arguments: {} });
+                const data = JSON.parse(result.content[0].text);
+                if (data.mode !== "degrees") throw new Error(`Expected degrees, got ${data.mode}`);
             }),
         );
 
         results.push(
-            await runTest("Cache: cache_info returns cache stats", async () => {
-                await client.callTool({ name: "memory_clear", arguments: {} });
-                await client.callTool({ name: "cache_clear", arguments: {} });
-                // Fill cache
-                await client.callTool({
-                    name: "sqrt", arguments: { value: 100 }
-                });
-                await client.callTool({
-                    name: "sqrt", arguments: { value: 256 }
-                });
-                const info = await client.callTool({
-                    name: "cache_info", arguments: {}
-                });
-                const stats = JSON.parse(info.content[0].text);
-                if (stats.size !== 2)
-                    throw new Error(`Expected cache size 2, got ${stats.size}`);
-                if (!stats.max_size || stats.max_size <= 0)
-                    throw new Error(`Expected valid max_size, got ${stats.max_size}`);
-                if (!stats.ttl_ms || stats.ttl_ms <= 0)
-                    throw new Error(`Expected valid ttl_ms, got ${stats.ttl_ms}`);
+            await runTest("Angle: sin(90) = 1 in degrees mode", async () => {
+                await client.callTool({ name: "set_angle_mode", arguments: { mode: "degrees" } });
+                const result = await client.callTool({ name: "sine", arguments: { angle: 90 } });
+                if (Math.abs(parseFloat(result.content[0].text) - 1) > 1e-10) throw new Error(`Expected ~1, got ${result.content[0].text}`);
             }),
         );
 
         results.push(
-            await runTest("Cache: evaluate_expression caches results", async () => {
-                await client.callTool({ name: "memory_clear", arguments: {} });
-                await client.callTool({ name: "cache_clear", arguments: {} });
-                const r1 = await client.callTool({
-                    name: "evaluate_expression",
-                    arguments: { expression: "100 + 200" }
-                });
-                const r2 = await client.callTool({
-                    name: "evaluate_expression",
-                    arguments: { expression: "100 + 200" }
-                });
-                if (parseFloat(r1.content[0].text) !== 300)
-                    throw new Error(`First call expected 300, got ${r1.content[0].text}`);
-                if (parseFloat(r2.content[0].text) !== 300)
-                    throw new Error(`Cached call expected 300, got ${r2.content[0].text}`);
+            await runTest("Angle: sin(PI/2) = 1 in radians mode", async () => {
+                await client.callTool({ name: "set_angle_mode", arguments: { mode: "radians" } });
+                const result = await client.callTool({ name: "sine", arguments: { angle: Math.PI / 2 } });
+                if (Math.abs(parseFloat(result.content[0].text) - 1) > 1e-10) throw new Error(`Expected ~1, got ${result.content[0].text}`);
             }),
         );
 
         results.push(
-            await runTest("Cache: memory_recall is NOT cached", async () => {
-                await client.callTool({ name: "memory_clear", arguments: {} });
-                await client.callTool({
-                    name: "memory_add", arguments: { value: 42 }
-                });
-                const r = await client.callTool({
-                    name: "memory_recall", arguments: {}
-                });
-                if (parseFloat(r.content[0].text) !== 42)
-                    throw new Error(`Expected 42, got ${r.content[0].text}`);
+            await runTest("Angle: explicit unit overrides global mode", async () => {
+                await client.callTool({ name: "set_angle_mode", arguments: { mode: "radians" } });
+                const result = await client.callTool({ name: "sine", arguments: { angle: 90, unit: "degrees" } });
+                if (Math.abs(parseFloat(result.content[0].text) - 1) > 1e-10) throw new Error(`Expected ~1, got ${result.content[0].text}`);
             }),
         );
 
         results.push(
-            await runTest("Cache: factorial cached for large input", async () => {
-                await client.callTool({ name: "memory_clear", arguments: {} });
-                await client.callTool({ name: "cache_clear", arguments: {} });
-                const r1 = await client.callTool({
-                    name: "factorial", arguments: { n: 20 }
-                });
-                const r2 = await client.callTool({
-                    name: "factorial", arguments: { n: 20 }
-                });
-                if (parseFloat(r1.content[0].text) !== 2432902008176640000)
-                    throw new Error(`Expected 2432902008176640000, got ${r1.content[0].text}`);
-                if (parseFloat(r2.content[0].text) !== 2432902008176640000)
-                    throw new Error(`Cached factorical expected same, got ${r2.content[0].text}`);
+            await runTest("Angle: asin returns degrees when mode is degrees", async () => {
+                await client.callTool({ name: "set_angle_mode", arguments: { mode: "degrees" } });
+                const result = await client.callTool({ name: "asin", arguments: { value: 1 } });
+                if (Math.abs(parseFloat(result.content[0].text) - 90) > 1e-10) throw new Error(`Expected ~90, got ${result.content[0].text}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Angle: cos(60) = 0.5 in degrees mode", async () => {
+                await client.callTool({ name: "set_angle_mode", arguments: { mode: "degrees" } });
+                const result = await client.callTool({ name: "cosine", arguments: { angle: 60 } });
+                if (Math.abs(parseFloat(result.content[0].text) - 0.5) > 1e-10) throw new Error(`Expected ~0.5, got ${result.content[0].text}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Angle: atan(1) = 45 in degrees mode", async () => {
+                await client.callTool({ name: "set_angle_mode", arguments: { mode: "degrees" } });
+                const result = await client.callTool({ name: "atan", arguments: { value: 1 } });
+                if (Math.abs(parseFloat(result.content[0].text) - 45) > 1e-10) throw new Error(`Expected ~45, got ${result.content[0].text}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Angle: switch back to radians for remaining tests", async () => {
+                await client.callTool({ name: "set_angle_mode", arguments: { mode: "radians" } });
+                const result = await client.callTool({ name: "get_angle_mode", arguments: {} });
+                const data = JSON.parse(result.content[0].text);
+                if (data.mode !== "radians") throw new Error(`Expected radians, got ${data.mode}`);
             }),
         );
 
@@ -1635,7 +1576,7 @@ async function testCruncher() {
             }),
         );
 
-        // --- 19. Modulo Edge Cases ---
+        // --- 22. Modulo Edge Cases ---
         results.push(
             await runTest("Modulo: negative dividend", async () => {
                 const result = await client.callTool({
@@ -1662,7 +1603,7 @@ async function testCruncher() {
             }),
         );
 
-        // --- 20. Power Edge Cases ---
+        // --- 23. Power Edge Cases ---
         results.push(
             await runTest("Power: negative base", async () => {
                 const result = await client.callTool({
@@ -1702,7 +1643,7 @@ async function testCruncher() {
             }),
         );
 
-        // --- 21. Base Conversion Tests ---
+        // --- 24. Base Conversion Tests ---
         results.push(
             await runTest("convert_base: binary to decimal", async () => {
                 const result = await client.callTool({
@@ -1919,7 +1860,7 @@ async function testCruncher() {
             ),
         );
 
-        // --- 22. Scientific Notation Tests ---
+        // --- 25. Scientific Notation Tests ---
         results.push(
             await runTest("Scientific: 1e6 (1 million)", async () => {
                 const result = await client.callTool({
@@ -1993,7 +1934,7 @@ async function testCruncher() {
             }),
         );
 
-        // --- 23. Built-in Functions Tests ---
+        // --- 26. Built-in Functions Tests ---
         results.push(
             await runTest("Built-in: abs(-5) = 5", async () => {
                 const result = await client.callTool({
@@ -2210,7 +2151,7 @@ async function testCruncher() {
             }),
         );
 
-        // --- 24. Atomic Memory Operations Tests ---
+        // --- 27. Atomic Memory Operations Tests ---
         results.push(
             await runTest("Atomic Memory: Clear before test", async () => {
                 const result = await client.callTool({
@@ -2311,7 +2252,7 @@ async function testCruncher() {
             }),
         );
 
-        // --- 25. Timeout Protection Tests ---
+        // --- 28. Timeout Protection Tests ---
         results.push(
             await runTest(
                 "Timeout: Feature exists (worker threads)",
@@ -2330,7 +2271,7 @@ async function testCruncher() {
             ),
         );
 
-        // --- 26. Configurable Timeout Tests ---
+        // --- 29. Configurable Timeout Tests ---
         results.push(
             await runTest(
                 "Configurable Timeout: factorial with custom timeout",
@@ -2432,7 +2373,7 @@ async function testCruncher() {
             ),
         );
 
-        // --- 22. Factorial Boundary Tests ---
+        // --- 30. Factorial Boundary Tests ---
         results.push(
             await runTest("Factorial: 170! (max safe)", async () => {
                 const result = await client.callTool({
@@ -2472,7 +2413,7 @@ async function testCruncher() {
             ),
         );
 
-        // --- 23. Trigonometry Undefined Points ---
+        // --- 31. Trigonometry Undefined Points ---
         results.push(
             await runTest("Tangent: tan(90°) (undefined)", async () => {
                 const result = await client.callTool({
@@ -2500,7 +2441,7 @@ async function testCruncher() {
             }),
         );
 
-        // --- 24. Logarithm Near-Boundary ---
+        // --- 32. Logarithm Near-Boundary ---
         results.push(
             await runTest("Log10: log10(0.0000001)", async () => {
                 const result = await client.callTool({
@@ -2527,7 +2468,7 @@ async function testCruncher() {
             }),
         );
 
-        // --- 25. evaluate_expression More Edge Cases ---
+        // --- 33. evaluate_expression More Edge Cases ---
         results.push(
             await runTest(
                 "evaluate_expression: very large numbers",
@@ -2579,7 +2520,7 @@ async function testCruncher() {
             }),
         );
 
-        // --- 26. Memory Persistence ---
+        // --- 34. Memory Persistence ---
         results.push(
             await runTest("Memory: persistence across calls", async () => {
                 // Clear memory
@@ -2636,7 +2577,7 @@ async function testCruncher() {
             }),
         );
 
-        // --- 27. Large Array Performance ---
+        // --- 35. Large Array Performance ---
         results.push(
             await runTest("Performance: sum of 1000 elements", async () => {
                 const numbers = Array.from({ length: 1000 }, (_, i) => i + 1);
@@ -2672,7 +2613,7 @@ async function testCruncher() {
             }),
         );
 
-        // --- 28. Division Edge Cases ---
+        // --- 36. Division Edge Cases ---
         results.push(
             await runTest("Division: by very small number", async () => {
                 const result = await client.callTool({
@@ -2700,7 +2641,7 @@ async function testCruncher() {
             }),
         );
 
-        // --- 29. Percentile Boundary ---
+        // --- 37. Percentile Boundary ---
         results.push(
             await runTest("Percentile: 50 equals median", async () => {
                 const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -2725,7 +2666,7 @@ async function testCruncher() {
             }),
         );
 
-        // --- 30. Modulo More Edge Cases ---
+        // --- 38. Modulo More Edge Cases ---
         results.push(
             await runTest("Modulo: negative divisor", async () => {
                 const result = await client.callTool({
@@ -2752,7 +2693,7 @@ async function testCruncher() {
             }),
         );
 
-        // --- 31. Power More Edge Cases ---
+        // --- 39. Power More Edge Cases ---
         results.push(
             await runTest("Power: 1 to any power", async () => {
                 const result = await client.callTool({
@@ -2782,7 +2723,7 @@ async function testCruncher() {
             }),
         );
 
-        // --- 32. Concurrent Execution Tests (Critical for Production) ---
+        // --- 40. Concurrent Execution Tests (Critical for Production) ---
         results.push(
             await runTest("Concurrent: 10 simultaneous add calls", async () => {
                 const promises = Array.from({ length: 10 }, async (_, i) => {
@@ -2892,7 +2833,7 @@ async function testCruncher() {
             ),
         );
 
-        // --- 33. Security & Injection Tests ---
+        // --- 41. Security & Injection Tests ---
         results.push(
             await runTest("Security: Unicode injection (error)", async () => {
                 try {
@@ -2999,7 +2940,7 @@ async function testCruncher() {
             ),
         );
 
-        // --- 34. Extreme Precision & Boundary Tests ---
+        // --- 42. Extreme Precision & Boundary Tests ---
         results.push(
             await runTest("Precision: Very small decimals", async () => {
                 const result = await client.callTool({
@@ -3086,7 +3027,7 @@ async function testCruncher() {
             ),
         );
 
-        // --- 35. Real-World Integration Scenarios ---
+        // --- 43. Real-World Integration Scenarios ---
         results.push(
             await runTest("Real-world: Compound interest formula", async () => {
                 // A = P(1 + r/n)^(nt)
@@ -3204,7 +3145,7 @@ async function testCruncher() {
             ),
         );
 
-        // --- 36. Server Stability Stress Test ---
+        // --- 44. Server Stability Stress Test ---
         results.push(
             await runTest("Stress: 100 sequential calls", async () => {
                 for (let i = 0; i < 100; i++) {

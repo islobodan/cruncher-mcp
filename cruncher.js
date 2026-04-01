@@ -16,6 +16,8 @@
  * - v1.2.6: Batch processing tool for executing multiple calculations
  *           in a single request with partial failure tolerance.
  * - v1.2.7: Result caching for expensive operations
+ * - v1.2.8: Angle mode toggle (set_angle_mode/get_angle_mode) with global state,
+ *           trig functions moved to main-thread execution for persistence
  *           (sqrt, power, factorial, trig, logarithms,
  *           evaluate_expression) with TTL and LRU eviction.
  */
@@ -41,6 +43,9 @@ let memoryQueue = Promise.resolve(); // Queue for atomic memory operations (main
 const CACHE_MAX_SIZE = 1000;
 const CACHE_TTL = 300000; // 5 minutes TTL
 const cache = new Map(); // Map<string, { value, timestamp }>
+
+// --- Angle Mode State ---
+let angleMode = "radians"; // Default unit for trigonometric functions
 
 /** Generate a deterministic cache key from tool name + args. */
 function cacheKey(toolName, args) {
@@ -484,6 +489,22 @@ const TOOLS = [
         },
     },
     {
+        name: "set_angle_mode",
+        description: "Set the global angle mode for trigonometric functions. Accepts 'degrees' or 'radians'. Explicit unit parameter on individual calls overrides this global setting.",
+        inputSchema: {
+            type: "object",
+            properties: {
+                mode: { type: "string", enum: ["degrees", "radians"] }
+            },
+            required: ["mode"]
+        }
+    },
+    {
+        name: "get_angle_mode",
+        description: "Get the current global angle mode for trigonometric functions (degrees or radians).",
+        inputSchema: { type: "object", properties: {}, required: [] }
+    },
+    {
         name: "cache_clear",
         description: "Clear all cached computation results from the result cache.",
         inputSchema: { type: "object", properties: {}, required: [] },
@@ -570,8 +591,10 @@ const safeMath = {
  * @param {string} [unit] - The unit ("degrees" or "radians").
  * @returns {number} The angle in radians.
  */
-const toRadians = (angle, unit) =>
-    unit === "degrees" ? angle * (Math.PI / 180) : angle;
+const toRadians = (angle, unit) => {
+    const resolved = unit || angleMode;
+    return resolved === "degrees" ? angle * (Math.PI / 180) : angle;
+};
 
 /**
  * Converts radians to degrees if the unit is "degrees".
@@ -579,8 +602,10 @@ const toRadians = (angle, unit) =>
  * @param {string} [unit] - The unit ("degrees" or "radians").
  * @returns {number} The angle in the specified unit.
  */
-const fromRadians = (radians, unit) =>
-    unit === "degrees" ? radians * (180 / Math.PI) : radians;
+const fromRadians = (radians, unit) => {
+    const resolved = unit || angleMode;
+    return resolved === "degrees" ? radians * (180 / Math.PI) : radians;
+};
 
 // --- Tool Implementations ---
 
@@ -1137,6 +1162,17 @@ const toolHandlers = {
         return JSON.stringify(results);
     },
 
+    /** Set the global angle mode. */
+    set_angle_mode: ({ mode }) => {
+        angleMode = mode;
+        return `Angle mode set to ${mode}`;
+    },
+
+    /** Get the current global angle mode. */
+    get_angle_mode: () => {
+        return JSON.stringify({ mode: angleMode });
+    },
+
     /** Clear the result cache. */
     cache_clear: () => {
         cache.clear();
@@ -1370,7 +1406,7 @@ if (isMainThread) {
         terminal: false,
     });
 
-    console.error("Cruncher v1.2.7 MCP Server starting...");
+    console.error("Cruncher v1.2.8 MCP Server starting...");
 
     rl.on("line", (line) => {
         let message;
@@ -1390,7 +1426,7 @@ if (isMainThread) {
             sendSuccess(message.id, {
                 protocolVersion: "2024-11-05",
                 capabilities: { tools: {} },
-                serverInfo: { name: "Cruncher", version: "1.2.7" },
+                serverInfo: { name: "Cruncher", version: "1.2.8" },
             });
             return;
         }
@@ -1440,9 +1476,37 @@ if (isMainThread) {
                 }
             }
 
-            // Cache management tools run directly in main thread (worker has own memory space)
-            const isCacheMgr = name === "cache_clear" || name === "cache_info";
-            if (isCacheMgr) {
+            // Fast-path: angle management, trig, and cache tools run in main thread.
+            // - angleMode is main-thread state (worker would reset it each call)
+            // - trig are single Math.* calls (no worker overhead needed)
+            // - cache tools operate on main-thread cache
+            const isMainThreadTool = new Set([
+                "set_angle_mode", "get_angle_mode",
+                "sine", "cosine", "tangent", "asin", "acos", "atan",
+                "cache_clear", "cache_info",
+            ]);
+            if (isMainThreadTool.has(name)) {
+                try {
+                    if (toolDef.inputSchema) {
+                        validateArguments(toolDef.inputSchema, args || {}, "root", name);
+                    }
+                    const result = handler(args);
+                    // Cache result for trig functions
+                    if (["sine", "cosine", "tangent", "asin", "acos", "atan"].includes(name) && !NON_CACHEABLE.has(name)) {
+                        const key = cacheKey(name, args);
+                        cacheSet(key, result);
+                    }
+                    sendSuccess(message.id, {
+                        content: [{ type: "text", text: String(result) }],
+                    });
+                } catch (error) {
+                    sendError(message.id, -32603, { message: error.message });
+                }
+                return;
+            }
+
+            // Cache management tools (kept for reference, folded into isMainThreadTool above)
+            if (false) {
                 try {
                     if (toolDef.inputSchema) {
                         validateArguments(toolDef.inputSchema, args || {}, "root", name);

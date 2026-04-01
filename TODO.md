@@ -8,7 +8,7 @@
 | 2 | Atomic Memory Operations | `[x]` | M | 🔴 High | Medium |
 | 3 | Configurable Timeout | `[x]` | L | 🔴 High | High |
 | 4 | More Built-in Functions | `[x]` | L | 🟡 Medium | High |
-| 5 | Angle Mode Toggle | `[]` | L | 🟡 Medium | Medium |
+| 5 | Angle Mode Toggle | `[x]` | L | 🟡 Medium | Medium |
 | 6 | Result Caching | `[x]` | M | 🟡 Medium | High |
 | 7 | Enhanced Error Messages | `[x]` | M | 🟡 Medium | Medium |
 | 8 | Batch Operations | `[x]` | M | 🟡 Medium | High |
@@ -244,49 +244,22 @@ const mathFunctions = {
 ### 5. Angle Mode Toggle
 | Status | Effort | Priority | Impact |
 |--------|--------|----------|--------|
-| `[]`   | L      | 🟡 Medium | Medium |
+| `[x]`   | L      | 🟡 Medium | Medium |
+
+**Implemented**: 2026-04-01
 
 **Description**: Add server-wide angle mode instead of passing unit every time.
 
-**Proposed Tools**:
-```javascript
-{
-  name: "set_angle_mode",
-  description: "Set the angle mode for trigonometric functions",
-  inputSchema: {
-    type: "object",
-    properties: {
-      mode: { type: "string", enum: ["degrees", "radians"] }
-    },
-    required: ["mode"]
-  }
-},
-{
-  name: "get_angle_mode",
-  description: "Get the current angle mode",
-  inputSchema: { type: "object", properties: {} }
-}
-```
+**Implementation Details**:
+- Global `angleMode` variable with default `"radians"`
+- `set_angle_mode` tool: updates global mode (degrees|radians)
+- `get_angle_mode` tool: returns current mode as JSON
+- `toRadians()` and `fromRadians()` helpers default to global mode when `unit` param is omitted
+- Explicit `unit` parameter overrides global mode (backward compatible)
+- Trigonometric functions moved to main-thread execution for state persistence (also eliminates worker overhead for instant Math.* calls)
+- Both management tools AND all 6 trig functions run in main thread
 
-**Implementation**:
-```javascript
-let angleMode = 'degrees'; // default
-
-// Modify trig functions to use global mode if unit not specified
-sin: ({ value, unit }) => {
-  const useUnit = unit || angleMode;
-  // ... existing logic
-}
-```
-
-**Files to Modify**:
-- `cruncher.js` - Add state variable, new tools, modify trig handlers
-
-**Tests to Add**:
-- Set mode to radians, sin(PI/2) = 1
-- Set mode to degrees, sin(90) = 1
-- Get mode returns current mode
-- Explicit unit parameter overrides global mode
+**Tests Added**: 10 angle mode tests (default mode, set/get, degrees, radians, override, inverse trig)
 
 ---
 
@@ -590,7 +563,7 @@ Based on priority, impact, and dependencies:
 | 5 | Result Caching | ✅ Done | High | M | Performance improvement |
 | 6 | Batch Operations | 🟡 Medium | High | M | Reduces round trips |
 | 7 | Enhanced Error Messages | ✅ Done | Medium | M | Improves debugging |
-| 8 | Angle Mode Toggle | 🟡 Medium | Medium | L | Quality of life improvement |
+| 8 | Angle Mode Toggle | ✅ Done | Medium | L | Quality of life improvement |
 | 9 | Unit Conversion | 🟡 Medium | Medium | M | New feature |
 | 10 | Statistics Mode | 🟢 Low | Medium | M | Nice to have |
 | 11 | Expression History | 🟢 Low | Low | L | Nice to have |
