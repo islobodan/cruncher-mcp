@@ -1,6 +1,6 @@
 # Cruncher: The Scientific Calculator MCP Server
 
-[![Version](https://img.shields.io/badge/version-1.2.9-blue.svg)](https://github.com/)
+[![Version](https://img.shields.io/badge/version-1.2.10-blue.svg)](https://github.com/)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen.svg)](https://nodejs.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 

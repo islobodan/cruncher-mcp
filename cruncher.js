@@ -23,6 +23,9 @@
  *           absolute, get_constant, memory_recall, count, min, max) from
  *           workers to main thread. Eliminated double-validation. Dead code
  *           removed. Pre-compiled regexes for evaluate_expression.
+ * - v1.2.10: O(1) tool lookup Map replaced O(n) TOOLS.find(). MEMORY_OPS Set.
+ *            Batch operations now check/store cache. Conditional worker args clone.
+ *            Supported-methods Set in validateMessage.
  */
 
 const readline = require("readline");
@@ -67,6 +70,12 @@ const NON_CACHEABLE = new Set([
 
 /** Trig functions that run in main thread and are cacheable. */
 const TRIG_TOOLS = ["sine", "cosine", "tangent", "asin", "acos", "atan"];
+
+/** Memory ops that need atomic serial execution (Set for O(1) check). */
+const MEMORY_OPS = new Set(["memory_add", "memory_subtract", "memory_clear"]);
+
+/** Tools that support custom timeout param (worker-only). */
+const TIMEOUT_TOOLS = new Set(["factorial", "median", "percentile"]);
 
 /** Instant tools that run in main thread (no worker overhead needed). */
 const MAIN_THREAD_TOOLS = new Set([
@@ -551,6 +560,9 @@ const TOOLS = [
         inputSchema: { type: "object", properties: {}, required: [] },
     },
 ];
+
+/** Pre-built O(1) Tool lookup Map (replaces O(n) TOOLS.find() per call). */
+const TOOL_LOOKUP_MAP = new Map(TOOLS.map(t => [t.name, t]));
 
 // --- Safe Floating Point Math Helpers ---
 
@@ -1154,7 +1166,7 @@ const toolHandlers = {
             const op = operations[i];
             const opName = op.tool || "unknown";
             const opArgs = op.args || {};
-            const opToolDef = TOOLS.find((t) => t.name === opName);
+            const opToolDef = TOOL_LOOKUP_MAP.get(opName);
             const opHandler = toolHandlers[opName];
 
             if (!opToolDef || !opHandler) {
@@ -1168,8 +1180,22 @@ const toolHandlers = {
                     validateArguments(opToolDef.inputSchema, opArgs, "root", opName);
                 }
 
+                // Check cache before executing (batch previously bypassed cache entirely)
+                if (!NON_CACHEABLE.has(opName)) {
+                    const cachedKey = cacheKey(opName, opArgs);
+                    const cachedValue = cacheGet(cachedKey);
+                    if (cachedValue !== null) {
+                        results.push({ index: i, tool: opName, success: true, data: cachedValue });
+                        continue;
+                    }
+                }
+
                 // Execute the tool (runs in main thread, no worker for batch)
                 const result = opHandler(opArgs);
+                // Cache result for cacheable tools
+                if (!NON_CACHEABLE.has(opName)) {
+                    cacheSet(cacheKey(opName, opArgs), result);
+                }
                 results.push({ index: i, tool: opName, success: true, data: result });
             } catch (error) {
                 results.push({ index: i, tool: opName, success: false, error: error.message || String(error) });
@@ -1401,8 +1427,8 @@ const validateMessage = (message) => {
     }
 
     // Validate supported methods
-    const supportedMethods = ["initialize", "tools/list", "tools/call"];
-    if (!supportedMethods.includes(message.method)) {
+    const supportedMethods = new Set(["initialize", "tools/list", "tools/call"]);
+    if (!supportedMethods.has(message.method)) {
         sendError(
             message.id,
             -32601,
@@ -1423,7 +1449,7 @@ if (isMainThread) {
         terminal: false,
     });
 
-    console.error("Cruncher v1.2.9 MCP Server starting...");
+    console.error("Cruncher v1.2.10 MCP Server starting...");
 
     rl.on("line", (line) => {
         let message;
@@ -1443,7 +1469,7 @@ if (isMainThread) {
             sendSuccess(message.id, {
                 protocolVersion: "2024-11-05",
                 capabilities: { tools: {} },
-                serverInfo: { name: "Cruncher", version: "1.2.9" },
+                serverInfo: { name: "Cruncher", version: "1.2.10" },
             });
             return;
         }
@@ -1456,8 +1482,8 @@ if (isMainThread) {
         if (message.method === "tools/call") {
             const { name, arguments: args } = message.params;
 
-            // Find the tool definition and handler
-            const toolDef = TOOLS.find((t) => t.name === name);
+            // O(1) tool lookup via pre-built Map
+            const toolDef = TOOL_LOOKUP_MAP.get(name);
             const handler = toolHandlers[name];
 
             if (!toolDef || !handler) {
@@ -1511,7 +1537,7 @@ if (isMainThread) {
             }
 
             // Check if this is a memory operation (needs atomic locking)
-            const isMemoryOp = ["memory_add", "memory_subtract", "memory_clear"].includes(name);
+            const isMemoryOp = MEMORY_OPS.has(name);
 
             // For memory operations, chain onto the queue to ensure serial execution
             const executeTool = async () => {
@@ -1529,15 +1555,20 @@ if (isMainThread) {
                     await currentQueue;
                 }
 
-                // 2. Safe Execution via Worker Thread (Timeout Protection)
-                // Extract custom timeout if provided (for factorial, median, percentile)
-                const workerArgs = { ...(args || {}) };
-                const customTimeout = workerArgs.timeout;
-                delete workerArgs.timeout; // Remove timeout from args before passing to worker
+                // Only clone args for tools that support custom timeout.
+                // All other tools pass args directly — zero allocation.
+                let workerArgs = args;
+                if (TIMEOUT_TOOLS.has(name)) {
+                    workerArgs = { ...args };
+                    delete workerArgs.timeout;
+                }
+                
+                // Extract custom timeout from original args (if provided)
+                const customTimeout = args && args.timeout;
                 
                 // Use custom timeout if valid, otherwise use default
-                const timeout = (customTimeout && customTimeout >= 100 && customTimeout <= 60000) 
-                    ? customTimeout 
+                const timeout = (customTimeout && customTimeout >= 100 && customTimeout <= 60000)
+                    ? customTimeout
                     : EXECUTION_TIMEOUT;
 
                 // Pass the current memory state to the worker
