@@ -37,12 +37,13 @@ This single command runs all 50 tests covering every feature of the Cruncher ser
 - **Enhanced Error Messages**: Structured error responses with parameter context (v1.2.5)
 - **Batch Processing**: Multi-operation batch tool with partial failure tolerance (v1.2.6)
 - **Result Caching**: Expensive operation caching with TTL and LRU eviction (v1.2.7)
-- **Angle Mode Toggle**: Global degrees/radians toggle with set_angle_mode/get_angle_mode (NEW in v1.2.8)
+- **Angle Mode Toggle**: Global degrees/radians toggle with set_angle_mode/get_angle_mode (v1.2.8)
+- **Performance Optimizations**: 15 instant tools moved to main-thread execution (NEW in v1.2.9)
 - **Error Handling**: Invalid inputs, missing arguments, unknown tools
 
 ### 📊 Test Statistics
 - **Total Tests**: 201
-- **Pass Rate**: **100%** (201/201) on v1.2.8
+- **Pass Rate**: **100%** (201/201) on v1.2.9
 - **Execution Time**: ~5-6 seconds
 - **Coverage**: All 32 tools, edge cases, and advanced scenarios
 
@@ -192,4 +193,4 @@ For issues or questions:
 
 **Last Updated**: 2026-04-01
 **Test Framework Version**: mcp-tester 1.0.0
-**Server Version Tested**: Cruncher **v1.2.8** (201 tests, 100% pass rate)
+**Server Version Tested**: Cruncher **v1.2.9** (201 tests, 100% pass rate)

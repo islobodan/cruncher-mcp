@@ -15,11 +15,14 @@
  *           receivedValue, tool) for better debugging.
  * - v1.2.6: Batch processing tool for executing multiple calculations
  *           in a single request with partial failure tolerance.
- * - v1.2.7: Result caching for expensive operations
+ * - v1.2.7: Result caching (sqrt, power, factorial, log, evaluate_expression, etc.)
+ *           with TTL and LRU eviction.
  * - v1.2.8: Angle mode toggle (set_angle_mode/get_angle_mode) with global state,
- *           trig functions moved to main-thread execution for persistence
- *           (sqrt, power, factorial, trig, logarithms,
- *           evaluate_expression) with TTL and LRU eviction.
+ *           trig functions moved to main-thread execution for persistence.
+ * - v1.2.9: Performance optimizations: moved instant tools (power, sqrt, log,
+ *           absolute, get_constant, memory_recall, count, min, max) from
+ *           workers to main thread. Eliminated double-validation. Dead code
+ *           removed. Pre-compiled regexes for evaluate_expression.
  */
 
 const readline = require("readline");
@@ -47,19 +50,40 @@ const cache = new Map(); // Map<string, { value, timestamp }>
 // --- Angle Mode State ---
 let angleMode = "radians"; // Default unit for trigonometric functions
 
-/** Generate a deterministic cache key from tool name + args. */
+/** Generate a deterministic cache key from tool name + sorted args. */
 function cacheKey(toolName, args) {
-    const sorted = Object.keys(args || {})
-        .sort()
-        .map(k => `${k}=${JSON.stringify(args[k])}`)
-        .join('&');
-    return `${toolName}?${sorted}`;
+    if (!args || !Object.keys(args).length) return toolName;
+    // Sort keys alphabetically for deterministic output
+    const sorted = {};
+    Object.keys(args).sort().forEach(k => { sorted[k] = args[k]; });
+    return toolName + "|" + JSON.stringify(sorted);
 }
 
 /** Tools that should NOT be cached (stateful or management). */
 const NON_CACHEABLE = new Set([
     'memory_add', 'memory_subtract', 'memory_clear', 'memory_recall',
     'batch', 'cache_clear', 'cache_info',
+]);
+
+/** Trig functions that run in main thread and are cacheable. */
+const TRIG_TOOLS = ["sine", "cosine", "tangent", "asin", "acos", "atan"];
+
+/** Instant tools that run in main thread (no worker overhead needed). */
+const MAIN_THREAD_TOOLS = new Set([
+    // Angle management
+    "set_angle_mode", "get_angle_mode",
+    // Trigonometry (instant Math calls)
+    "sine", "cosine", "tangent", "asin", "acos", "atan",
+    // Cache management
+    "cache_clear", "cache_info",
+    // Simple stats (zero-cost)
+    "count", "min", "max",
+    // Math one-liners
+    "power", "sqrt", "logarithm", "natural_log", "absolute",
+    // Constant lookup
+    "get_constant",
+    // Memory recall (single variable read)
+    "memory_recall",
 ]);
 
 /** Return cached value or null if miss/expired. */
@@ -81,6 +105,18 @@ function cacheSet(key, value) {
     }
     cache.set(key, { value, timestamp: Date.now() });
 }
+
+// --- Pre-compiled Regex for evaluate_expression ---
+const RE_NOTATION_CARAT     = /\^/g;
+const RE_SCIENTIFIC_NOTATION = /(\d+\.?\d*)e([+-]?\d+)/gi;
+const RE_FUNC_ABS           = /\babs\s*\(/g;
+const RE_FUNC_ROUND         = /\bround\s*\(/g;
+const RE_FUNC_FLOOR         = /\bfloor\s*\(/g;
+const RE_FUNC_CEIL          = /\bceil\s*\(/g;
+const RE_FUNC_MIN_FUNC      = /\bmin\s*\(/g;
+const RE_FUNC_MAX_FUNC      = /\bmax\s*\(/g;
+const RE_DISALLOWED_CHARS   = /[^0-9+\-*/().% \t*,Mathabspowrndflceigumx]/;
+const RE_VALID_MATH_CALLS   = /Math\.(pow|abs|round|floor|ceil|min|max)\(/g;
 
 // --- Tool Definitions ---
 // This array defines all the calculator functions available to the AI model.
@@ -1006,52 +1042,33 @@ const toolHandlers = {
      * @returns {number} The calculated result.
      */
     evaluate_expression: ({ expression }) => {
+        // Pre-compiled regexes for expression preprocessing
         // 1. Convert mathematical ^ to JavaScript's ** operator
-        let parsedExpr = expression.replace(/\^/g, "**");
+        let parsedExpr = expression.replace(RE_NOTATION_CARAT, "**");
 
-        // 2. Convert scientific notation (e.g., 1e6, 2.5e-3, 1e+6) to safe multiplication
-        // Pattern: number followed by e/E and optional +/- and digits
-        // This must happen BEFORE security check since 'e' would be blocked
+        // 2. Convert scientific notation (1e6, 2.5e-3) to safe multiplication
         parsedExpr = parsedExpr.replace(
-            /(\d+\.?\d*)e([+-]?\d+)/gi,
+            RE_SCIENTIFIC_NOTATION,
             "($1 * Math.pow(10, $2))"
         );
 
         // 3. Convert built-in functions to Math.* equivalents
-        // This must happen BEFORE security check since function names would be blocked
-        const functionMap = {
-            abs: "Math.abs",
-            round: "Math.round",
-            floor: "Math.floor",
-            ceil: "Math.ceil",
-            min: "Math.min",
-            max: "Math.max",
-        };
-
-        for (const [funcName, mathFunc] of Object.entries(functionMap)) {
-            // Match function name followed by opening parenthesis
-            // Use word boundary to avoid partial matches
-            const regex = new RegExp(`\\b${funcName}\\s*\\(`, "g");
-            parsedExpr = parsedExpr.replace(regex, `${mathFunc}(`);
-        }
+        parsedExpr = parsedExpr
+            .replace(RE_FUNC_ABS,    "Math.abs(")
+            .replace(RE_FUNC_ROUND,  "Math.round(")
+            .replace(RE_FUNC_FLOOR,  "Math.floor(")
+            .replace(RE_FUNC_CEIL,   "Math.ceil(")
+            .replace(RE_FUNC_MIN_FUNC, "Math.min(")
+            .replace(RE_FUNC_MAX_FUNC, "Math.max(");
 
         // 4. SECURITY CHECK: Strict Whitelist
-        // Allow: digits, dot, operators, parentheses, whitespace, comma
-        // Allow: Math.pow, Math.abs, Math.round, Math.floor, Math.ceil, Math.min, Math.max
-        // We use a comprehensive allowed character set that includes all letters in these functions
-        const disallowedChars = /[^0-9+\-*/().% \t*,Mathabspowrndflceigumx]/;
-        
-        // Check for any disallowed characters
-        if (disallowedChars.test(parsedExpr)) {
+        if (RE_DISALLOWED_CHARS.test(parsedExpr)) {
             throw new Error(
                 "Security Error: Expression contains invalid characters. Only numbers, basic operators (+, -, *, /, %, ^), and functions (abs, round, floor, ceil, min, max) are allowed.",
             );
         }
-        
-        // Additional check: ensure only valid Math.* functions are used
-        const mathFuncPattern = /Math\.(pow|abs|round|floor|ceil|min|max)\(/g;
-        const sanitizedExpr = parsedExpr.replace(mathFuncPattern, "");
-        // After removing valid Math.* calls, check if any "Math." remains (invalid function)
+        // Verify only valid Math.* functions remain
+        const sanitizedExpr = parsedExpr.replace(RE_VALID_MATH_CALLS, "");
         if (sanitizedExpr.includes("Math.")) {
             throw new Error(
                 "Security Error: Invalid Math function. Only abs, round, floor, ceil, min, max, pow are allowed.",
@@ -1406,7 +1423,7 @@ if (isMainThread) {
         terminal: false,
     });
 
-    console.error("Cruncher v1.2.8 MCP Server starting...");
+    console.error("Cruncher v1.2.9 MCP Server starting...");
 
     rl.on("line", (line) => {
         let message;
@@ -1426,7 +1443,7 @@ if (isMainThread) {
             sendSuccess(message.id, {
                 protocolVersion: "2024-11-05",
                 capabilities: { tools: {} },
-                serverInfo: { name: "Cruncher", version: "1.2.8" },
+                serverInfo: { name: "Cruncher", version: "1.2.9" },
             });
             return;
         }
@@ -1464,7 +1481,24 @@ if (isMainThread) {
                 return;
             }
 
-            // 2. Result cache hit check (skips worker for cacheable tools)
+            // 2. Main-thread fast path (instant calls, no worker overhead)
+            //    Validation already happened above — just execute and return.
+            if (MAIN_THREAD_TOOLS.has(name)) {
+                try {
+                    const result = handler(args);
+                    if (TRIG_TOOLS.includes(name)) {
+                        cacheSet(cacheKey(name, args), result);
+                    }
+                    sendSuccess(message.id, {
+                        content: [{ type: "text", text: String(result) }],
+                    });
+                } catch (error) {
+                    sendError(message.id, -32602, { message: error.message });
+                }
+                return;
+            }
+
+            // 3. Result cache hit check (worker tools only, skips worker spawn)
             if (!NON_CACHEABLE.has(name)) {
                 const key = cacheKey(name, args);
                 const cached = cacheGet(key);
@@ -1474,51 +1508,6 @@ if (isMainThread) {
                     });
                     return;
                 }
-            }
-
-            // Fast-path: angle management, trig, and cache tools run in main thread.
-            // - angleMode is main-thread state (worker would reset it each call)
-            // - trig are single Math.* calls (no worker overhead needed)
-            // - cache tools operate on main-thread cache
-            const isMainThreadTool = new Set([
-                "set_angle_mode", "get_angle_mode",
-                "sine", "cosine", "tangent", "asin", "acos", "atan",
-                "cache_clear", "cache_info",
-            ]);
-            if (isMainThreadTool.has(name)) {
-                try {
-                    if (toolDef.inputSchema) {
-                        validateArguments(toolDef.inputSchema, args || {}, "root", name);
-                    }
-                    const result = handler(args);
-                    // Cache result for trig functions
-                    if (["sine", "cosine", "tangent", "asin", "acos", "atan"].includes(name) && !NON_CACHEABLE.has(name)) {
-                        const key = cacheKey(name, args);
-                        cacheSet(key, result);
-                    }
-                    sendSuccess(message.id, {
-                        content: [{ type: "text", text: String(result) }],
-                    });
-                } catch (error) {
-                    sendError(message.id, -32603, { message: error.message });
-                }
-                return;
-            }
-
-            // Cache management tools (kept for reference, folded into isMainThreadTool above)
-            if (false) {
-                try {
-                    if (toolDef.inputSchema) {
-                        validateArguments(toolDef.inputSchema, args || {}, "root", name);
-                    }
-                    const result = handler(args);
-                    sendSuccess(message.id, {
-                        content: [{ type: "text", text: String(result) }],
-                    });
-                } catch (error) {
-                    sendError(message.id, -32603, { message: error.message });
-                }
-                return;
             }
 
             // Check if this is a memory operation (needs atomic locking)
