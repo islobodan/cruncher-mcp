@@ -117,6 +117,8 @@ async function testCruncher() {
             "memory_add",
             "memory_subtract",
             "batch",
+            "cache_clear",
+            "cache_info",
         ];
 
         results.push(
@@ -993,6 +995,8 @@ async function testCruncher() {
             await runTest("Batch: basic multi-operation", async () => {
                 const result = await client.callTool({
                     name: "batch",
+            "cache_clear",
+            "cache_info",
                     arguments: {
                         operations: [
                             { tool: "add", args: { a: 10, b: 20 } },
@@ -1012,6 +1016,8 @@ async function testCruncher() {
             await runTest("Batch: partial failure continues", async () => {
                 const result = await client.callTool({
                     name: "batch",
+            "cache_clear",
+            "cache_info",
                     arguments: {
                         operations: [
                             { tool: "add", args: { a: 1, b: 2 } },
@@ -1032,6 +1038,8 @@ async function testCruncher() {
             await runTest("Batch: nonexistent tool", async () => {
                 const result = await client.callTool({
                     name: "batch",
+            "cache_clear",
+            "cache_info",
                     arguments: {
                         operations: [
                             { tool: "nonexistent", args: {} },
@@ -1049,6 +1057,8 @@ async function testCruncher() {
                 try {
                     await client.callTool({
                         name: "batch",
+            "cache_clear",
+            "cache_info",
                         arguments: { operations: [] },
                     });
                     throw new Error("Should have thrown an error");
@@ -1064,6 +1074,8 @@ async function testCruncher() {
             await runTest("Batch: with evaluate_expression", async () => {
                 const result = await client.callTool({
                     name: "batch",
+            "cache_clear",
+            "cache_info",
                     arguments: {
                         operations: [
                             { tool: "evaluate_expression", args: { expression: "2 + 3" } },
@@ -1083,6 +1095,8 @@ async function testCruncher() {
                     const ops = Array.from({ length: 51 }, (_, i) => ({ tool: "add", args: { a: i, b: 1 } }));
                     await client.callTool({
                         name: "batch",
+            "cache_clear",
+            "cache_info",
                         arguments: { operations: ops },
                     });
                     throw new Error("Should have thrown an error");
@@ -1094,7 +1108,139 @@ async function testCruncher() {
             }),
         );
 
-        // --- 13. Extended evaluate_expression Tests ---
+        // ========== 13. Result Caching Tests ==========
+        console.log("\n💾 13. Result Caching Tests");
+        results.push(
+            await runTest("Cache: sqrt hits cache on repeated call", async () => {
+                await client.callTool({ name: "memory_clear", arguments: {} });
+                // First call
+                const r1 = await client.callTool({
+                    name: "sqrt", arguments: { value: 144 }
+                });
+                // Second call - should hit cache
+                const r2 = await client.callTool({
+                    name: "sqrt", arguments: { value: 144 }
+                });
+                if (parseFloat(r1.content[0].text) !== 12)
+                    throw new Error(`First call expected 12, got ${r1.content[0].text}`);
+                if (parseFloat(r2.content[0].text) !== 12)
+                    throw new Error(`Cached call expected 12, got ${r2.content[0].text}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Cache: different args produce different results", async () => {
+                await client.callTool({ name: "memory_clear", arguments: {} });
+                const r1 = await client.callTool({
+                    name: "power", arguments: { base: 2, exponent: 3 }
+                });
+                const r2 = await client.callTool({
+                    name: "power", arguments: { base: 2, exponent: 4 }
+                });
+                if (parseFloat(r1.content[0].text) !== 8)
+                    throw new Error(`Expected 8, got ${r1.content[0].text}`);
+                if (parseFloat(r2.content[0].text) !== 16)
+                    throw new Error(`Expected 16, got ${r2.content[0].text}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Cache: cache_clear clears the cache", async () => {
+                await client.callTool({ name: "memory_clear", arguments: {} });
+                // Pre-fill cache
+                await client.callTool({
+                    name: "factorial", arguments: { n: 5 }
+                });
+                // Clear cache
+                const clearResult = await client.callTool({
+                    name: "cache_clear", arguments: {}
+                });
+                if (!clearResult.content[0].text.includes("Cache cleared"))
+                    throw new Error(`Expected cache cleared message, got ${clearResult.content[0].text}`);
+                // Re-call factorial - should still work
+                const r = await client.callTool({
+                    name: "factorial", arguments: { n: 5 }
+                });
+                if (parseFloat(r.content[0].text) !== 120)
+                    throw new Error(`Expected 120, got ${r.content[0].text}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Cache: cache_info returns cache stats", async () => {
+                await client.callTool({ name: "memory_clear", arguments: {} });
+                await client.callTool({ name: "cache_clear", arguments: {} });
+                // Fill cache
+                await client.callTool({
+                    name: "sqrt", arguments: { value: 100 }
+                });
+                await client.callTool({
+                    name: "sqrt", arguments: { value: 256 }
+                });
+                const info = await client.callTool({
+                    name: "cache_info", arguments: {}
+                });
+                const stats = JSON.parse(info.content[0].text);
+                if (stats.size !== 2)
+                    throw new Error(`Expected cache size 2, got ${stats.size}`);
+                if (!stats.max_size || stats.max_size <= 0)
+                    throw new Error(`Expected valid max_size, got ${stats.max_size}`);
+                if (!stats.ttl_ms || stats.ttl_ms <= 0)
+                    throw new Error(`Expected valid ttl_ms, got ${stats.ttl_ms}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Cache: evaluate_expression caches results", async () => {
+                await client.callTool({ name: "memory_clear", arguments: {} });
+                await client.callTool({ name: "cache_clear", arguments: {} });
+                const r1 = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "100 + 200" }
+                });
+                const r2 = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "100 + 200" }
+                });
+                if (parseFloat(r1.content[0].text) !== 300)
+                    throw new Error(`First call expected 300, got ${r1.content[0].text}`);
+                if (parseFloat(r2.content[0].text) !== 300)
+                    throw new Error(`Cached call expected 300, got ${r2.content[0].text}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Cache: memory_recall is NOT cached", async () => {
+                await client.callTool({ name: "memory_clear", arguments: {} });
+                await client.callTool({
+                    name: "memory_add", arguments: { value: 42 }
+                });
+                const r = await client.callTool({
+                    name: "memory_recall", arguments: {}
+                });
+                if (parseFloat(r.content[0].text) !== 42)
+                    throw new Error(`Expected 42, got ${r.content[0].text}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Cache: factorial cached for large input", async () => {
+                await client.callTool({ name: "memory_clear", arguments: {} });
+                await client.callTool({ name: "cache_clear", arguments: {} });
+                const r1 = await client.callTool({
+                    name: "factorial", arguments: { n: 20 }
+                });
+                const r2 = await client.callTool({
+                    name: "factorial", arguments: { n: 20 }
+                });
+                if (parseFloat(r1.content[0].text) !== 2432902008176640000)
+                    throw new Error(`Expected 2432902008176640000, got ${r1.content[0].text}`);
+                if (parseFloat(r2.content[0].text) !== 2432902008176640000)
+                    throw new Error(`Cached factorical expected same, got ${r2.content[0].text}`);
+            }),
+        );
+
+        // --- 14. Extended evaluate_expression Tests ---
         results.push(
             await runTest("evaluate_expression: simple addition", async () => {
                 const result = await client.callTool({
@@ -1184,7 +1330,7 @@ async function testCruncher() {
             ),
         );
 
-        // --- 12. Extended Constants Tests ---
+        // --- 15. Extended Constants Tests ---
         const constantsToTest = [
             { name: "tau", expected: 2 * Math.PI },
             { name: "phi", expected: 1.618033988749895 },
@@ -1216,7 +1362,7 @@ async function testCruncher() {
             );
         }
 
-        // --- 13. Trigonometry Radians Tests ---
+        // --- 16. Trigonometry Radians Tests ---
         results.push(
             await runTest("Sine in radians: sin(π/2)", async () => {
                 const result = await client.callTool({
@@ -1276,7 +1422,7 @@ async function testCruncher() {
             }),
         );
 
-        // --- 14. Statistical Edge Cases ---
+        // --- 17. Statistical Edge Cases ---
         results.push(
             await runTest("Percentile 0 (min)", async () => {
                 const result = await client.callTool({
@@ -1332,7 +1478,7 @@ async function testCruncher() {
             }),
         );
 
-        // --- 15. Floating Point Precision Tests ---
+        // --- 18. Floating Point Precision Tests ---
         results.push(
             await runTest("Safe math: 1.1 + 2.2", async () => {
                 const result = await client.callTool({
@@ -1372,7 +1518,7 @@ async function testCruncher() {
             }),
         );
 
-        // --- 16. Factorial Edge Cases ---
+        // --- 19. Factorial Edge Cases ---
         results.push(
             await runTest("Factorial: 1!", async () => {
                 const result = await client.callTool({
@@ -1417,7 +1563,7 @@ async function testCruncher() {
             }),
         );
 
-        // --- 17. Absolute Value Tests ---
+        // --- 20. Absolute Value Tests ---
         results.push(
             await runTest("Absolute: positive", async () => {
                 const result = await client.callTool({
@@ -1444,7 +1590,7 @@ async function testCruncher() {
             }),
         );
 
-        // --- 18. Logarithm Edge Cases ---
+        // --- 21. Logarithm Edge Cases ---
         results.push(
             await runTest("Log10: log10(1)", async () => {
                 const result = await client.callTool({

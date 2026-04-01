@@ -9,7 +9,7 @@
 | 3 | Configurable Timeout | `[x]` | L | 🔴 High | High |
 | 4 | More Built-in Functions | `[x]` | L | 🟡 Medium | High |
 | 5 | Angle Mode Toggle | `[]` | L | 🟡 Medium | Medium |
-| 6 | Result Caching | `[]` | M | 🟡 Medium | High |
+| 6 | Result Caching | `[x]` | M | 🟡 Medium | High |
 | 7 | Enhanced Error Messages | `[x]` | M | 🟡 Medium | Medium |
 | 8 | Batch Operations | `[x]` | M | 🟡 Medium | High |
 | 9 | Unit Conversion Tool | `[]` | M | 🟡 Medium | Medium |
@@ -293,53 +293,20 @@ sin: ({ value, unit }) => {
 ### 6. Result Caching
 | Status | Effort | Priority | Impact |
 |--------|--------|----------|--------|
-| `[]`   | M      | 🟡 Medium | High   |
+| `[x]`   | M      | 🟡 Medium | High   |
+
+**Implemented**: 2026-04-01
 
 **Description**: Cache expensive calculations to improve performance for repeated operations.
 
-**Proposed Implementation**:
-```javascript
-const cache = new Map();
-const MAX_CACHE_SIZE = 1000;
-const CACHE_TTL = 60000; // 1 minute
-
-const getCachedOrCompute = (key, compute) => {
-  if (cache.has(key)) {
-    const cached = cache.get(key);
-    if (Date.now() - cached.timestamp < CACHE_TTL) {
-      return cached.value;
-    }
-    cache.delete(key);
-  }
-  
-  const result = compute();
-  
-  if (cache.size >= MAX_CACHE_SIZE) {
-    const firstKey = cache.keys().next().value;
-    cache.delete(firstKey);
-  }
-  
-  cache.set(key, { value: result, timestamp: Date.now() });
-  return result;
-};
-
-// Usage in factorial:
-factorial: ({ n }) => getCachedOrCompute(`factorial:${n}`, () => {
-  // ... existing logic
-})
-```
-
-**Cache Key Strategy**:
-- `evaluate_expression:${expression}`
-- `factorial:${n}`
-- `sqrt:${value}`
-
-**Files to Modify**:
-- `cruncher.js` - Add cache module, wrap expensive operations
-
-**Tests to Add**:
-- Second call to same expression is faster
-- Cache respects TTL
+**Implementation Details**:
+- Main thread cache (Map) that intercepts worker results and stores them
+- Cache hit check happens in main thread before worker spawn — zero-cost hits
+- 1000 entry LRU-eviction FIFO cache with 5-minute TTL
+- Non-cacheable tools: memory_clear/ad/subtract/recall, batch, cache_clear, cache_info
+- `cache_clear` tool: clears all cached results
+- `cache_info` tool: returns JSON with size, max_size, ttl_ms stats
+- Both management tools run directly in main thread (avoiding worker isolation)
 - Cache evicts oldest when full
 
 ---
@@ -620,7 +587,7 @@ Based on priority, impact, and dependencies:
 | ✅ 2 | Configurable Timeout | 🔴 High | High | L | **DONE** - For factorial/median/percentile |
 | ✅ 3 | Atomic Memory Operations | 🔴 High | Medium | M | **DONE** - Fixes concurrency bug |
 | ✅ 4 | More Built-in Functions | 🟡 Medium | High | L | **DONE** - Added abs/round/floor/ceil/min/max |
-| 5 | Result Caching | 🟡 Medium | High | M | Performance improvement |
+| 5 | Result Caching | ✅ Done | High | M | Performance improvement |
 | 6 | Batch Operations | 🟡 Medium | High | M | Reduces round trips |
 | 7 | Enhanced Error Messages | ✅ Done | Medium | M | Improves debugging |
 | 8 | Angle Mode Toggle | 🟡 Medium | Medium | L | Quality of life improvement |

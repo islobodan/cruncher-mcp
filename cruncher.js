@@ -15,6 +15,9 @@
  *           receivedValue, tool) for better debugging.
  * - v1.2.6: Batch processing tool for executing multiple calculations
  *           in a single request with partial failure tolerance.
+ * - v1.2.7: Result caching for expensive operations
+ *           (sqrt, power, factorial, trig, logarithms,
+ *           evaluate_expression) with TTL and LRU eviction.
  */
 
 const readline = require("readline");
@@ -33,6 +36,46 @@ const EXECUTION_TIMEOUT = parseInt(process.env.CRUNCHER_TIMEOUT, 10) || 3000;
 // A simple variable to store the memory value for M+, M-, MR, MC functions.
 let memory = 0;
 let memoryQueue = Promise.resolve(); // Queue for atomic memory operations (main thread)
+
+// --- Cache State ---
+const CACHE_MAX_SIZE = 1000;
+const CACHE_TTL = 300000; // 5 minutes TTL
+const cache = new Map(); // Map<string, { value, timestamp }>
+
+/** Generate a deterministic cache key from tool name + args. */
+function cacheKey(toolName, args) {
+    const sorted = Object.keys(args || {})
+        .sort()
+        .map(k => `${k}=${JSON.stringify(args[k])}`)
+        .join('&');
+    return `${toolName}?${sorted}`;
+}
+
+/** Tools that should NOT be cached (stateful or management). */
+const NON_CACHEABLE = new Set([
+    'memory_add', 'memory_subtract', 'memory_clear', 'memory_recall',
+    'batch', 'cache_clear', 'cache_info',
+]);
+
+/** Return cached value or null if miss/expired. */
+function cacheGet(key) {
+    const entry = cache.get(key);
+    if (!entry) return null;
+    if (Date.now() - entry.timestamp > CACHE_TTL) {
+        cache.delete(key);
+        return null;
+    }
+    return entry.value;
+}
+
+/** Store result in cache with LRU eviction. */
+function cacheSet(key, value) {
+    if (cache.size >= CACHE_MAX_SIZE) {
+        const first = cache.keys().next().value;
+        cache.delete(first);
+    }
+    cache.set(key, { value, timestamp: Date.now() });
+}
 
 // --- Tool Definitions ---
 // This array defines all the calculator functions available to the AI model.
@@ -439,6 +482,16 @@ const TOOLS = [
             },
             required: ["operations"],
         },
+    },
+    {
+        name: "cache_clear",
+        description: "Clear all cached computation results from the result cache.",
+        inputSchema: { type: "object", properties: {}, required: [] },
+    },
+    {
+        name: "cache_info",
+        description: "Get information about the current result cache (size, entries, TTL).",
+        inputSchema: { type: "object", properties: {}, required: [] },
     },
 ];
 
@@ -1083,6 +1136,21 @@ const toolHandlers = {
 
         return JSON.stringify(results);
     },
+
+    /** Clear the result cache. */
+    cache_clear: () => {
+        cache.clear();
+        return "Cache cleared successfully";
+    },
+
+    /** Get cache statistics. */
+    cache_info: () => {
+        return JSON.stringify({
+            size: cache.size,
+            max_size: CACHE_MAX_SIZE,
+            ttl_ms: CACHE_TTL,
+        });
+    },
 };
 
 /**
@@ -1302,7 +1370,7 @@ if (isMainThread) {
         terminal: false,
     });
 
-    console.error("Cruncher v1.2.6 MCP Server starting...");
+    console.error("Cruncher v1.2.7 MCP Server starting...");
 
     rl.on("line", (line) => {
         let message;
@@ -1322,7 +1390,7 @@ if (isMainThread) {
             sendSuccess(message.id, {
                 protocolVersion: "2024-11-05",
                 capabilities: { tools: {} },
-                serverInfo: { name: "Cruncher", version: "1.2.6" },
+                serverInfo: { name: "Cruncher", version: "1.2.7" },
             });
             return;
         }
@@ -1356,6 +1424,35 @@ if (isMainThread) {
                     sendError(message.id, error.code, error);
                 } else {
                     sendError(message.id, -32602, { message: error.message });
+                }
+                return;
+            }
+
+            // 2. Result cache hit check (skips worker for cacheable tools)
+            if (!NON_CACHEABLE.has(name)) {
+                const key = cacheKey(name, args);
+                const cached = cacheGet(key);
+                if (cached !== null) {
+                    sendSuccess(message.id, {
+                        content: [{ type: "text", text: String(cached) }],
+                    });
+                    return;
+                }
+            }
+
+            // Cache management tools run directly in main thread (worker has own memory space)
+            const isCacheMgr = name === "cache_clear" || name === "cache_info";
+            if (isCacheMgr) {
+                try {
+                    if (toolDef.inputSchema) {
+                        validateArguments(toolDef.inputSchema, args || {}, "root", name);
+                    }
+                    const result = handler(args);
+                    sendSuccess(message.id, {
+                        content: [{ type: "text", text: String(result) }],
+                    });
+                } catch (error) {
+                    sendError(message.id, -32603, { message: error.message });
                 }
                 return;
             }
@@ -1413,6 +1510,12 @@ if (isMainThread) {
                     if (result.success) {
                         // Sync the main thread's memory with the worker's potentially modified memory
                         memory = result.newMemory;
+
+                        // 3. Store result in cache (cacheable tools only)
+                        if (!NON_CACHEABLE.has(name)) {
+                            const key = cacheKey(name, args);
+                            cacheSet(key, result.data);
+                        }
                         sendSuccess(message.id, {
                             content: [{ type: "text", text: String(result.data) }],
                         });
