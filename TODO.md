@@ -583,7 +583,7 @@ Based on priority, impact, and dependencies:
 
 | Date | Version | Changes |
 |------|---------|---------|
-| 2026-04-02 | v1.2.19 | Tiered tool exposure (CRUNCHER_TOOL_SET: minimal/standard/full) |
+| 2026-04-02 | v1.2.20 | Tiered tool exposure (CRUNCHER_TOOL_SET: minimal/standard/full) |
 | 2026-04-02 | v1.2.11 | Context token optimization (~40% description reduction) |
 | 2026-04-02 | v1.2.10 | O(1) tool lookup, batch cache, conditional worker clone |
 | 2026-04-02 | v1.2.9 | Moved 15 instant tools from workers to main thread |

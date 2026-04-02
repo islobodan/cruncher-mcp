@@ -26,7 +26,7 @@
  * - v1.2.11: Context token optimization (~40% reduction in tool descriptions).
  *            De-emphasized individual math tools in favor of evaluate_expression.
  *            Trimmed redundant descriptions and repetitive patterns.
- * - v1.2.19: Tiered tool exposure + constants in evaluate_expression via CRUNCHER_TOOL_SET env var.
+ * - v1.2.20: Tiered tool exposure + constants in evaluate_expression via CRUNCHER_TOOL_SET env var.
  *            minimal (5), standard (26), full (36, default) tool sets.
  *            Reduces context token usage by up to 90% for minimal mode.
  */
@@ -60,7 +60,7 @@ const TOOL_TIERS = {
     minimal: [
         "evaluate_expression", "add", "subtract", "multiply", "divide",
     ],
-    // Standard: minimal + trig, stats, memory, constants, base conversion (39 tools)
+    // Standard: core math + trig, common stats, constants (33 tools)
     standard: [
         "evaluate_expression",
         "add", "subtract", "multiply", "divide",
@@ -70,11 +70,9 @@ const TOOL_TIERS = {
         "set_angle_mode", "get_angle_mode",
         "sum", "avg", "min", "max", "count", "variance", "std_dev",
         "percentage_of", "percentage_change", "percentage_reverse",
-        "median", "range", "percentile",
-        "convert_base",
-        "memory_add", "memory_subtract", "memory_clear", "memory_recall",
+        "median", "range",
     ],
-    // Full means all tools (adds batch, cache management)
+    // Full: standard + base conversion, advanced stats, memory ops, admin tools
     full: null,
 };
 
@@ -1723,7 +1721,7 @@ if (isMainThread) {
         terminal: false,
     });
 
-    console.error(`Cruncher v1.2.19 MCP Server starting...`);
+    console.error(`Cruncher v1.2.20 MCP Server starting...`);
     console.error(`  Tool set: ${TOOL_SET} (${TOOLS.length} tools exposed)`);
 
     rl.on("line", (line) => {
@@ -1744,7 +1742,7 @@ if (isMainThread) {
             sendSuccess(message.id, {
                 protocolVersion: "2024-11-05",
                 capabilities: { tools: {} },
-                serverInfo: { name: "Cruncher", version: "1.2.19" },
+                serverInfo: { name: "Cruncher", version: "1.2.20" },
             });
             return;
         }

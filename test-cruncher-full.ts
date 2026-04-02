@@ -4144,10 +4144,10 @@ async function testCruncher() {
         );
 
         results.push(
-            await runTest("Standard tier: Exactly 39 tools exposed", async () => {
+            await runTest("Standard tier: Exactly 33 tools exposed", async () => {
                 const tools = await standardClient.listTools();
-                if (tools.length !== 39) {
-                    throw new Error(`Expected 39 tools in standard mode, got ${tools.length}`);
+                if (tools.length !== 33) {
+                    throw new Error(`Expected 33 tools in standard mode, got ${tools.length}`);
                 }
             }),
         );
@@ -4166,12 +4166,12 @@ async function testCruncher() {
         );
 
         results.push(
-            await runTest("Standard tier: Includes stats, memory, and trig tools", async () => {
+            await runTest("Standard tier: Includes stats and trig tools", async () => {
                 const tools = await standardClient.listTools();
                 const toolNames = tools.map((t) => t.name);
                 const expectedStandardExtras = [
                     "sqrt", "power", "factorial", "sum", "avg", "min", "max", "count",
-                    "median", "memory_add", "memory_clear", "get_constant", "convert_base",
+                    "median", "get_constant",
                     "sine", "cosine", "tangent", "asin", "acos", "atan",
                     "set_angle_mode", "get_angle_mode",
                     "variance", "std_dev",
@@ -4187,10 +4187,14 @@ async function testCruncher() {
         );
 
         results.push(
-            await runTest("Standard tier: Batch/cache excluded (admin-only)", async () => {
+            await runTest("Standard tier: Advanced/exclusive tools excluded", async () => {
                 const tools = await standardClient.listTools();
                 const toolNames = tools.map((t) => t.name);
-                const banned = ["batch", "cache_clear", "cache_info"];
+                const banned = [
+                    "batch", "cache_clear", "cache_info",  // admin
+                    "percentile", "convert_base",  // specialist
+                    "memory_add", "memory_subtract", "memory_clear", "memory_recall",  // memory
+                ];
                 const present = banned.filter((name) => toolNames.includes(name));
                 if (present.length > 0) {
                     throw new Error(`Unexpected tools in standard: ${present.join(", ")}`);
@@ -4206,18 +4210,6 @@ async function testCruncher() {
                 });
                 if (parseFloat(result.content[0].text) !== 720) {
                     throw new Error(`Expected 720, got ${result.content[0].text}`);
-                }
-            }),
-        );
-
-        results.push(
-            await runTest("Standard tier: memory_add works", async () => {
-                const result = await standardClient.callTool({
-                    name: "memory_add",
-                    arguments: { value: 42 },
-                });
-                if (!result.content[0].text.includes("42")) {
-                    throw new Error(`Expected result containing 42, got: ${result.content[0].text}`);
                 }
             }),
         );
