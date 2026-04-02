@@ -201,9 +201,21 @@ If you're using LibreChat, you can add the following configuration to your libre
 
 > "Store 99 in memory, add 5, then recall the total."
 
-> 
-
 > "What's the 75th percentile of [10, 20, 30, 40, 50]?"
+
+> "Convert 11010 from binary to decimal."
+
+> "Batch: square root of 144, add 10, then raise to power 2."
+
+> "Switch trigonometric functions to radians mode."
+
+> "Clear the result cache and show cache statistics."
+
+> "Recall what's in memory, then subtract 15 and store the result."
+
+> "What's the 95th percentile of [23, 45, 12, 67, 89, 34, 56, 78, 90, 11]?"
+
+> "Convert 0xFF from hex to binary."
 
 ---
 
