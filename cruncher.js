@@ -26,7 +26,7 @@
  * - v1.2.11: Context token optimization (~40% reduction in tool descriptions).
  *            De-emphasized individual math tools in favor of evaluate_expression.
  *            Trimmed redundant descriptions and repetitive patterns.
- * - v1.2.14: Tiered tool exposure + constants in evaluate_expression via CRUNCHER_TOOL_SET env var.
+ * - v1.2.15: Tiered tool exposure + constants in evaluate_expression via CRUNCHER_TOOL_SET env var.
  *            minimal (5), standard (26), full (36, default) tool sets.
  *            Reduces context token usage by up to 90% for minimal mode.
  */
@@ -189,6 +189,18 @@ const RE_FUNC_FLOOR         = /\bfloor\s*\(/g;
 const RE_FUNC_CEIL          = /\bceil\s*\(/g;
 const RE_FUNC_MIN_FUNC      = /\bmin\s*\(/g;
 const RE_FUNC_MAX_FUNC      = /\bmax\s*\(/g;
+// Trigonometric functions (radians only — same as standard math)
+const RE_FUNC_SIN           = /\bsin\s*\(/g;
+const RE_FUNC_COS           = /\bcos\s*\(/g;
+const RE_FUNC_TAN           = /\btan\s*\(/g;
+const RE_FUNC_ASIN          = /\basin\s*\(/g;
+const RE_FUNC_ACOS          = /\bacos\s*\(/g;
+const RE_FUNC_ATAN          = /\batan\s*\(/g;
+// Math helpers
+const RE_FUNC_SQRT          = /\bsqrt\s*\(/g;
+const RE_FUNC_LOG           = /\blog10\s*\(/g;        // log10() → Math.log10()
+const RE_FUNC_LN            = /\bln\s*\(/g;           // ln() → Math.log()
+const RE_FUNC_LOG_BASE      = /\blog\s*\(([^,)]+)\s*,\s*([^)]+)\)/g;  // log(x,base)
 // Constants pattern: longest names first to avoid partial matches (e_charge before e,
 // euler_mascheroni before e, sqrt2 before pi, tau before tau). Built dynamically.
 const RE_CONSTANTS = (() => {
@@ -196,8 +208,8 @@ const RE_CONSTANTS = (() => {
     const escaped = names.map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
     return new RegExp(`\\b(${escaped.join('|')})\\b`, 'g');
 })();
-const RE_DISALLOWED_CHARS   = /[^0-9+\-*/().% \t*,Mathabspowrndflceigumx]/;
-const RE_VALID_MATH_CALLS   = /Math\.(pow|abs|round|floor|ceil|min|max)\(/g;
+const RE_DISALLOWED_CHARS   = /[^0-9+\-*/().% \t*,Mathabspowrndflceigumsxqtogv1]/;
+const RE_VALID_MATH_CALLS   = /Math\.(pow|abs|round|floor|ceil|min|max|sin|cos|tan|asin|acos|atan|sqrt|log10|log)\(/g;
 
 // --- Master Tool Definitions (full catalog) ---
 // Filtered at startup via CRUNCHER_TOOL_SET to optimize context token usage.
@@ -1172,7 +1184,23 @@ const toolHandlers = {
             .replace(RE_FUNC_FLOOR,  "Math.floor(")
             .replace(RE_FUNC_CEIL,   "Math.ceil(")
             .replace(RE_FUNC_MIN_FUNC, "Math.min(")
-            .replace(RE_FUNC_MAX_FUNC, "Math.max(");
+            .replace(RE_FUNC_MAX_FUNC, "Math.max(")
+            // Trigonometric (radians — standard math convention)
+            .replace(RE_FUNC_SIN,    "Math.sin(")
+            .replace(RE_FUNC_COS,    "Math.cos(")
+            .replace(RE_FUNC_TAN,    "Math.tan(")
+            .replace(RE_FUNC_ASIN,   "Math.asin(")
+            .replace(RE_FUNC_ACOS,   "Math.acos(")
+            .replace(RE_FUNC_ATAN,   "Math.atan(")
+            // Math helpers
+            .replace(RE_FUNC_SQRT,   "Math.sqrt(")
+            .replace(RE_FUNC_LOG,    "Math.log10(")
+            .replace(RE_FUNC_LN,     "Math.log(");
+
+        // 3.1. Handle log(x, base) → Math.log(x) / Math.log(base)
+        parsedExpr = parsedExpr.replace(RE_FUNC_LOG_BASE, "Math.log($1) / Math.log($2)");
+
+        // 3.5. Substitute constant names with their numeric values
 
         // 3.5. Substitute constant names with their numeric values
         //    e.g., "pi * 2" → "3.141592653589793 * 2"
@@ -1184,14 +1212,19 @@ const toolHandlers = {
         // 4. SECURITY CHECK: Strict Whitelist
         if (RE_DISALLOWED_CHARS.test(parsedExpr)) {
             throw new Error(
-                "Security Error: Expression contains invalid characters. Only numbers, basic operators (+, -, *, /, %, ^), and functions (abs, round, floor, ceil, min, max) are allowed.",
+                "Security Error: Expression contains invalid characters. " +
+                "Only numbers, basic operators (+, -, *, /, %, ^), parentheses, commas, " +
+                "functions (abs, round, floor, ceil, min, max, sin, cos, tan, asin, acos, atan, sqrt, log10, ln, log) " +
+                "and constants (pi, e, tau, phi, sqrt2, c, g, G, h, k, R, NA, euler_mascheroni) " +
+                "are allowed.",
             );
         }
         // Verify only valid Math.* functions remain
         const sanitizedExpr = parsedExpr.replace(RE_VALID_MATH_CALLS, "");
         if (sanitizedExpr.includes("Math.")) {
             throw new Error(
-                "Security Error: Invalid Math function. Only abs, round, floor, ceil, min, max, pow are allowed.",
+                "Security Error: Invalid Math function. " +
+                "Only abs, round, floor, ceil, min, max, pow, sin, cos, tan, asin, acos, atan, sqrt, log10, log are allowed.",
             );
         }
 
@@ -1199,9 +1232,17 @@ const toolHandlers = {
             // 5. Evaluate safely
             // Because we strictly verified the contents above, this is now safe to run.
             const result = new Function("return (" + parsedExpr + ")")();
-            if (!Number.isFinite(result) || isNaN(result)) {
+            if (result === Infinity || result === -Infinity) {
                 throw new Error(
-                    "Expression did not result in a valid finite number.",
+                    "Domain Error: Expression evaluated to infinity. " +
+                    "Check for division by zero or overflow (e.g., exp(1000)).",
+                );
+            }
+            if (isNaN(result)) {
+                // Try to give a more helpful message by re-evaluating sub-expressions
+                throw new Error(
+                    "Domain Error: Expression evaluated to NaN. " +
+                    "Check for: sqrt(negative), log(negative/zero), asin/acos out of [-1,1], or 0/0.",
                 );
             }
             return result;
@@ -1557,7 +1598,7 @@ if (isMainThread) {
         terminal: false,
     });
 
-    console.error(`Cruncher v1.2.14 MCP Server starting...`);
+    console.error(`Cruncher v1.2.15 MCP Server starting...`);
     console.error(`  Tool set: ${TOOL_SET} (${TOOLS.length} tools exposed)`);
 
     rl.on("line", (line) => {
@@ -1578,7 +1619,7 @@ if (isMainThread) {
             sendSuccess(message.id, {
                 protocolVersion: "2024-11-05",
                 capabilities: { tools: {} },
-                serverInfo: { name: "Cruncher", version: "1.2.14" },
+                serverInfo: { name: "Cruncher", version: "1.2.15" },
             });
             return;
         }

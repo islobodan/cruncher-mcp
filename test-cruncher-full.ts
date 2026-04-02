@@ -2693,6 +2693,246 @@ async function testCruncher() {
             }),
         );
 
+        // --- 35b. Extended evaluate_expression Built-ins ---
+        console.log("\n🧮 35b. Additional evaluate_expression Built-ins Tests");
+
+        // Trigonometric functions
+        results.push(
+            await runTest("Trig: sin(pi/2) = 1", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "sin(pi / 2)" },
+                });
+                if (Math.abs(parseFloat(result.content[0].text) - 1) > 1e-10)
+                    throw new Error(`Expected 1, got ${result.content[0].text}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Trig: cos(pi) = -1", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "cos(pi)" },
+                });
+                if (Math.abs(parseFloat(result.content[0].text) - (-1)) > 1e-10)
+                    throw new Error(`Expected -1, got ${result.content[0].text}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Trig: tan(pi/4) ≈ 1", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "tan(pi / 4)" },
+                });
+                if (Math.abs(parseFloat(result.content[0].text) - 1) > 1e-10)
+                    throw new Error(`Expected ~1, got ${result.content[0].text}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Trig: asin(1) = pi/2", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "asin(1)" },
+                });
+                const got = parseFloat(result.content[0].text);
+                if (Math.abs(got - Math.PI / 2) > 1e-10)
+                    throw new Error(`Expected ${Math.PI / 2}, got ${got}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Trig: acos(0) = pi/2", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "acos(0)" },
+                });
+                const got = parseFloat(result.content[0].text);
+                if (Math.abs(got - Math.PI / 2) > 1e-10)
+                    throw new Error(`Expected ${Math.PI / 2}, got ${got}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Trig: atan(1) = pi/4", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "atan(1)" },
+                });
+                const got = parseFloat(result.content[0].text);
+                if (Math.abs(got - Math.PI / 4) > 1e-10)
+                    throw new Error(`Expected ${Math.PI / 4}, got ${got}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Trig: sin(pi/6) + cos(pi/3) = 1", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "sin(pi/6) + cos(pi/3)" },
+                });
+                if (Math.abs(parseFloat(result.content[0].text) - 1) > 1e-10)
+                    throw new Error(`Expected 1, got ${result.content[0].text}`);
+            }),
+        );
+
+        // sqrt and logarithmic functions
+        results.push(
+            await runTest("Math: sqrt(144) = 12", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "sqrt(144)" },
+                });
+                if (parseFloat(result.content[0].text) !== 12)
+                    throw new Error(`Expected 12, got ${result.content[0].text}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Math: sqrt(2) * sqrt(2) = 2", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "sqrt(2) * sqrt(2)" },
+                });
+                if (Math.abs(parseFloat(result.content[0].text) - 2) > 1e-10)
+                    throw new Error(`Expected 2, got ${result.content[0].text}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Math: log10(1000) = 3", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "log10(1000)" },
+                });
+                if (parseFloat(result.content[0].text) !== 3)
+                    throw new Error(`Expected 3, got ${result.content[0].text}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Math: ln(e) = 1", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "ln(e)" },
+                });
+                if (Math.abs(parseFloat(result.content[0].text) - 1) > 1e-10)
+                    throw new Error(`Expected 1, got ${result.content[0].text}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Math: log(8, 2) = 3 (arbitrary base)", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "log(8, 2)" },
+                });
+                if (parseFloat(result.content[0].text) !== 3)
+                    throw new Error(`Expected 3, got ${result.content[0].text}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Math: log(100, 10) = 2", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "log(100, 10)" },
+                });
+                if (parseFloat(result.content[0].text) !== 2)
+                    throw new Error(`Expected 2, got ${result.content[0].text}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Math: Combined sin + sqrt + log10", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "sin(pi / 6) + sqrt(16) + log10(100)" },
+                });
+                if (Math.abs(parseFloat(result.content[0].text) - 6.5) > 1e-10)
+                    throw new Error(`Expected 6.5, got ${result.content[0].text}`);
+            }),
+        );
+
+        // --- 35c. Error Messaging Tests ---
+        console.log("\n💬 35c. Error Messaging Tests");
+
+        results.push(
+            await runTest("Error: sqrt(-1) gives domain hint", async () => {
+                try {
+                    await client.callTool({
+                        name: "evaluate_expression",
+                        arguments: { expression: "sqrt(-1)" },
+                    });
+                    throw new Error("Expected error but got result");
+                } catch (error) {
+                    const msg = error instanceof Error ? error.message : String(error);
+                    if (!msg.includes("NaN") && !msg.includes("Domain")) {
+                        throw new Error(`Expected domain/NaN hint, got: ${msg}`);
+                    }
+                    if (!msg.includes("sqrt(negative)")) {
+                        throw new Error(`Missing sqrt(negative) hint, got: ${msg}`);
+                    }
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Error: ln(0) gives infinity or domain hint", async () => {
+                try {
+                    await client.callTool({
+                        name: "evaluate_expression",
+                        arguments: { expression: "ln(0)" },
+                    });
+                    throw new Error("Expected error but got result");
+                } catch (error) {
+                    const msg = error instanceof Error ? error.message : String(error);
+                    if (!msg.includes("infinity") && !msg.includes("Domain") && !msg.includes("NaN")) {
+                        throw new Error(`Expected domain/infinity/NaN hint, got: ${msg}`);
+                    }
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Error: asin(5) gives domain hint", async () => {
+                try {
+                    await client.callTool({
+                        name: "evaluate_expression",
+                        arguments: { expression: "asin(5)" },
+                    });
+                    throw new Error("Expected error but got result");
+                } catch (error) {
+                    const msg = error instanceof Error ? error.message : String(error);
+                    if (!msg.includes("NaN") && !msg.includes("Domain")) {
+                        throw new Error(`Expected domain/NaN hint, got: ${msg}`);
+                    }
+                    if (!msg.includes("asin/acos out of")) {
+                        throw new Error(`Missing asin/acos hint, got: ${msg}`);
+                    }
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Error: 1/0 gives infinity/zero hint", async () => {
+                try {
+                    await client.callTool({
+                        name: "evaluate_expression",
+                        arguments: { expression: "1 / 0" },
+                    });
+                    throw new Error("Expected error but got result");
+                } catch (error) {
+                    const msg = error instanceof Error ? error.message : String(error);
+                    if (!msg.includes("infinity") && !msg.includes("division by zero")) {
+                        throw new Error(`Expected infinity/division hint, got: ${msg}`);
+                    }
+                }
+            }),
+        );
+
+
         // --- 36. Fuzzy Tool Name Matching Tests ---
         console.log("\n🔍 36. Fuzzy Tool Name Matching Tests");
 
