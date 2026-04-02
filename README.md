@@ -42,6 +42,7 @@ Cruncher provides a comprehensive set of calculator functions built completely f
 *   **Logarithms**: Base-10 Logarithm and Natural Logarithm (ln).
 *   **Statistical Functions**: Sum, Average, Median, Min, Max, Range, Count, **Variance**, and **Standard Deviation** for arrays of numbers.
 *   **Percentage Functions**: Percentage-of, percentage-change, and reverse-percentage calculations.
+*   **Unit Conversion**: 80+ conversions across 8 categories (length, weight, temperature, area, volume, time, speed, digital_storage).
 *   **Convenience Functions**: Absolute Value.
 *   **Constants**: Easy access to Math (`pi`, `e`, `tau`, `phi`, `sqrt2`, `euler_mascheroni`), Physics (`c`, `g`, `G`, `h`, `k`, `R`), and Chemistry constants (`NA`, `e_charge`, `m_e`, `m_p`).
 *   **Memory Functions**: `M+`, `M-`, `MR` (Memory Recall), and `MC` (Memory Clear) — full tier only.
@@ -222,6 +223,8 @@ Cruncher exposes its functions as individual MCP tools. Here is the full list:
 | `sqrt` | Calculates the square root of a value. | `value` (number) |
 | **Number Theory** | | |
 | `factorial` | Calculates the factorial of a non-negative integer (n!). | `n` (number, non-negative integer) |
+| **Unit Conversion** | | |
+| `convert_unit` | Convert between common units. 8 categories, 80+ units. | `value` (number), `category` (string), `from` (string), `to` (string) |
 | **Base Conversion (Full Tier)** | | |
 | `convert_base` | Converts between bases 2, 8, 10, 16. | `value` (string), `from_base` (2, 8, 10, 16), `to_base` (2, 8, 10, 16) |
 | **Trigonometry** | | |
@@ -272,7 +275,7 @@ Cruncher exposes its functions as individual MCP tools. Here is the full list:
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `CRUNCHER_TIMEOUT` | `3000` | Worker thread execution timeout (ms). Range 100-60000 |
-| `CRUNCHER_TOOL_SET` | `standard` | Controls tool exposure: `minimal` (5), `standard` (33 **default**), `full` (41) |
+| `CRUNCHER_TOOL_SET` | `standard` | Controls tool exposure: `minimal` (5), `standard` (34 **default**), `full` (41) |
 
 
 
@@ -378,8 +381,8 @@ The `CRUNCHER_TOOL_SET` environment variable lets you optimize context token usa
 | Tier | Tools | Token Budget | Use Case |
 |------|-------|-------------|----------|
 | `minimal` | 5 | ~160 tokens | Basic arithmetic. All complex math via `evaluate_expression` |
-| `standard` | 33 | ~1,100 tokens | Arithmetic, trig, stats, percentages, constants (**default**) |
-| `full` | 41 | ~1,500 tokens | Standard + memory, base conversion, percentile, batch, cache |
+| `standard` | 34 | ~1,150 tokens | Arithmetic, trig, stats, percentages, constants, unit conversion (**default**) |
+| `full` | 42 | ~1,500 tokens | Standard + memory, base conversion, percentile, batch, cache |
 
 **Note**: Even in `minimal` mode, `evaluate_expression` handles complex math — individual tools (`sin`, `sqrt`, etc.) just aren't registered as separate MCP tool calls. This saves up to **90%** on context tokens.
 

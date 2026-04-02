@@ -30,6 +30,7 @@
 * - v1.2.16 to v1.2.19: Percentage tools, std_dev/variance, built-ins, fuzzy matching, error messages.
  *            minimal (5), standard (26), full (36, default) tool sets.
  *            Reduces context token usage by up to 90% for minimal mode.
+ * - v1.2.22: Added convert_unit tool with 6 unit categories.
  */
 
 const readline = require("readline");
@@ -61,7 +62,7 @@ const TOOL_TIERS = {
     minimal: [
         "evaluate_expression", "add", "subtract", "multiply", "divide",
     ],
-    // Standard: core math + trig, common stats, constants (33 tools)
+    // Standard: core math + trig, common stats, constants, unit conversion (34 tools)
     standard: [
         "evaluate_expression",
         "add", "subtract", "multiply", "divide",
@@ -72,6 +73,7 @@ const TOOL_TIERS = {
         "sum", "avg", "min", "max", "count", "variance", "std_dev",
         "percentage_of", "percentage_change", "percentage_reverse",
         "median", "range",
+        "convert_unit",
     ],
     // Full: standard + base conversion, advanced stats, memory ops, admin tools
     full: null,
@@ -139,6 +141,8 @@ const MAIN_THREAD_TOOLS = new Set([
     "get_constant",
     // Memory recall (single variable read)
     "memory_recall",
+    // Unit conversion
+    "convert_unit",
 ]);
 
 /** Return cached value or null if miss/expired. */
@@ -666,6 +670,24 @@ const toolsAll = [
         },
     },
     {
+        name: "convert_unit",
+        description:
+            "Convert between common units. Categories: length, weight, temperature, area, volume, time, speed, digital_storage.",
+        inputSchema: {
+            type: "object",
+            properties: {
+                value: { type: "number" },
+                category: {
+                    type: "string",
+                    enum: ["length", "weight", "temperature", "area", "volume", "time", "speed", "digital_storage"],
+                },
+                from: { type: "string" },
+                to: { type: "string" },
+            },
+            required: ["value", "category", "from", "to"],
+        },
+    },
+    {
         name: "batch",
         description:
             "Execute multiple tool calls sequentially. Returns array of results.",
@@ -767,6 +789,131 @@ const findClosestToolName = (typedName) => {
         }
     }
     return bestName;
+};
+
+// --- Unit Conversion Tables ---
+// Each entry stores: { unit_key: factor_to_base_unit }
+// For temperature (special case), handled separately.
+const UNIT_CONVERSIONS = {
+    // Length → meters
+    length: {
+        m: 1,
+        km: 1000,
+        cm: 0.01,
+        mm: 0.001,
+        um: 1e-6,
+        nm: 1e-9,
+        in: 0.0254,
+        ft: 0.3048,
+        yd: 0.9144,
+        mi: 1609.344,
+        nmi: 1852, // nautical mile
+    },
+    // Weight → kilograms
+    weight: {
+        kg: 1,
+        g: 0.001,
+        mg: 1e-6,
+        ug: 1e-9,
+        lb: 0.45359237,
+        oz: 0.028349523125,
+        st: 6.35029318, // stone
+        t: 1000, // metric ton
+    },
+    // Temperature — special handling (not linear)
+    temperature: {
+        C: null,
+        F: null,
+        K: null,
+    },
+    // Area → square meters
+    area: {
+        m2: 1,
+        km2: 1e6,
+        cm2: 1e-4,
+        ft2: 0.09290304,
+        ac: 4046.8564224,
+        ha: 1e4,
+        in2: 0.00064516,
+        yd2: 0.83612736,
+        mi2: 2589988.110336,
+    },
+    // Volume → liters
+    volume: {
+        L: 1,
+        mL: 0.001,
+        m3: 1000,
+        cm3: 0.001,
+        gal: 3.785411784, // US gallon
+        qt: 0.946352946, // US quart
+        pt: 0.473176473, // US pint
+        cup: 0.2365882365, // US cup
+        floz: 0.029573529563, // US fluid ounce
+        tbsp: 0.014786764782, // US tablespoon
+        tsp: 0.004928921594, // US teaspoon
+        imp_gal: 4.54609, // Imperial gallon
+    },
+    // Time → seconds
+    time: {
+        s: 1,
+        ms: 0.001,
+        us: 1e-6,
+        ns: 1e-9,
+        min: 60,
+        hr: 3600,
+        day: 86400,
+        week: 604800,
+        month: 2629746, // average month (30.44 days)
+        year: 31556952, // Julian year
+    },
+    // Speed → meters per second
+    speed: {
+        "m/s": 1,
+        "km/h": 1 / 3.6,
+        mph: 0.44704,
+        kn: 0.514444, // knots
+        "ft/s": 0.3048,
+        mach: 343, // at sea level, 20°C
+        c: 299792458, // speed of light
+    },
+    // Digital storage → bytes
+    digital_storage: {
+        B: 1,
+        KB: 1024,
+        MB: 1048576,
+        GB: 1073741824,
+        TB: 1099511627776,
+        PB: 1125899906842624,
+        b: 0.125, // bits
+        Kb: 128,
+        Mb: 131072,
+        Gb: 134217728,
+    },
+};
+
+/**
+ * Convert temperature between C, F, and K.
+ * @param {number} value - The source value.
+ * @param {string} from - Source unit (C, F, or K).
+ * @param {string} to - Target unit (C, F, or K).
+ * @returns {number} The converted value.
+ */
+const convertTemperature = (value, from, to) => {
+    // Convert to Celsius first
+    let celsius;
+    switch (from) {
+        case 'C': celsius = value; break;
+        case 'F': celsius = (value - 32) * 5 / 9; break;
+        case 'K': celsius = value - 273.15; break;
+        default: throw new Error(`Unknown temperature unit: ${from}`);
+    }
+    // Convert from Celsius to target
+    switch (to) {
+        case 'C': return celsius;
+        case 'F': return celsius * 9 / 5 + 32;
+        case 'K': return celsius + 273.15;
+        default: throw new Error(`Unknown temperature unit: ${to}`);
+    }
 };
 
 // --- Safe Floating Point Math Helpers ---
@@ -1394,17 +1541,11 @@ const toolHandlers = {
 
         // Validate the value matches the source base
         if (!validChars[from_base].test(value)) {
-            throw new Error(
-                `Invalid characters for base ${from_base}. Expected: ${
-                    from_base === 2
-                        ? "binary (0-1)"
-                        : from_base === 8
-                          ? "octal (0-7)"
-                          : from_base === 10
-                            ? "decimal (0-9)"
-                            : "hexadecimal (0-F)"
-                }.`,
-            );
+            const label = from_base === 2 ? "binary (0-1)"
+                : from_base === 8 ? "octal (0-7)"
+                : from_base === 10 ? "decimal (0-9)"
+                : "hexadecimal (0-F)";
+            throw new Error("Invalid characters for base " + from_base + ". Expected: " + label + ".");
         }
 
         // Step 1: Convert from source base to decimal (integer)
@@ -1417,6 +1558,64 @@ const toolHandlers = {
 
         // Step 3: Convert from decimal to target base
         return decimalValue.toString(to_base).toUpperCase();
+    },
+
+    /**
+     * Converts between common units of measurement.
+     * Categories: length, weight, temperature, area, volume, time, speed, digital_storage.
+     * @param {Object} args - The arguments object.
+     * @param {number} args.value - The numeric value to convert.
+     * @param {string} args.category - Unit category.
+     * @param {string} args.from - Source unit.
+     * @param {string} args.to - Target unit.
+     * @returns {string} JSON string with converted value, labels, and formula.
+     */
+    convert_unit: ({ value, category, from, to }) => {
+        const conversions = UNIT_CONVERSIONS[category];
+        if (!conversions) {
+            throw new Error(`Unknown unit category: ${category}. Valid: ${Object.keys(UNIT_CONVERSIONS).join(', ')}`);
+        }
+
+        const fromLower = from.toLowerCase();
+        const toLower = to.toLowerCase();
+
+        // Normalize keys (match case-insensitively)
+        const fromKey = Object.keys(conversions).find(k => k.toLowerCase() === fromLower);
+        const toKey = Object.keys(conversions).find(k => k.toLowerCase() === toLower);
+
+        if (!fromKey) {
+            throw new Error(`Unknown ${category} unit: ${from}. Available: ${Object.keys(conversions).filter(k => conversions[k] !== null).join(', ')}`);
+        }
+        if (!toKey) {
+            throw new Error(`Unknown ${category} unit: ${to}. Available: ${Object.keys(conversions).filter(k => conversions[k] !== null).join(', ')}`);
+        }
+
+        // Same unit, trivial
+        if (fromKey === toKey) {
+            return JSON.stringify({ value, from: fromKey, to: toKey, result: value });
+        }
+
+        let result;
+
+        // Temperature needs special handling (non-linear)
+        if (category === 'temperature') {
+            result = convertTemperature(value, fromKey, toKey);
+        } else {
+            // Convert: source → base unit → target
+            const sourceToBase = conversions[fromKey];
+            const targetToBase = conversions[toKey];
+            // Value in base unit = value * sourceToBase
+            // Target value = valueInBase / targetToBase
+            result = (value * sourceToBase) / targetToBase;
+        }
+
+        return JSON.stringify({
+            value,
+            from: fromKey,
+            to: toKey,
+            result: parseFloat(result.toPrecision(15)),
+            category,
+        });
     },
 
     /**

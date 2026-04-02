@@ -1860,6 +1860,338 @@ async function testCruncher() {
             ),
         );
 
+        // --- 24b. Unit Conversion Tests ---
+        results.push(
+            await runTest("convert_unit: length km to m", async () => {
+                const result = await client.callTool({
+                    name: "convert_unit",
+                    arguments: { value: 1, category: "length", from: "km", to: "m" },
+                });
+                const parsed = JSON.parse(result.content[0].text);
+                if (parsed.result !== 1000) {
+                    throw new Error(`Expected 1000, got ${parsed.result}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("convert_unit: length mi to km", async () => {
+                const result = await client.callTool({
+                    name: "convert_unit",
+                    arguments: { value: 1, category: "length", from: "mi", to: "km" },
+                });
+                const parsed = JSON.parse(result.content[0].text);
+                if (Math.abs(parsed.result - 1.609344) > 0.001) {
+                    throw new Error(`Expected ~1.609344, got ${parsed.result}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("convert_unit: weight lb to kg", async () => {
+                const result = await client.callTool({
+                    name: "convert_unit",
+                    arguments: { value: 1, category: "weight", from: "lb", to: "kg" },
+                });
+                const parsed = JSON.parse(result.content[0].text);
+                if (Math.abs(parsed.result - 0.45359237) > 1e-9) {
+                    throw new Error(`Expected ~0.45359237, got ${parsed.result}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("convert_unit: weight oz to g", async () => {
+                const result = await client.callTool({
+                    name: "convert_unit",
+                    arguments: { value: 1, category: "weight", from: "oz", to: "g" },
+                });
+                const parsed = JSON.parse(result.content[0].text);
+                if (Math.abs(parsed.result - 28.349523125) > 1e-6) {
+                    throw new Error(`Expected ~28.349523125, got ${parsed.result}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("convert_unit: temperature C to F (32°F freez)", async () => {
+                const result = await client.callTool({
+                    name: "convert_unit",
+                    arguments: { value: 0, category: "temperature", from: "C", to: "F" },
+                });
+                const parsed = JSON.parse(result.content[0].text);
+                if (parsed.result !== 32) {
+                    throw new Error(`Expected 32, got ${parsed.result}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("convert_unit: temperature C to F (212°F boil)", async () => {
+                const result = await client.callTool({
+                    name: "convert_unit",
+                    arguments: { value: 100, category: "temperature", from: "C", to: "F" },
+                });
+                const parsed = JSON.parse(result.content[0].text);
+                if (parsed.result !== 212) {
+                    throw new Error(`Expected 212, got ${parsed.result}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("convert_unit: temperature C to K", async () => {
+                const result = await client.callTool({
+                    name: "convert_unit",
+                    arguments: { value: 0, category: "temperature", from: "C", to: "K" },
+                });
+                const parsed = JSON.parse(result.content[0].text);
+                if (Math.abs(parsed.result - 273.15) > 0.01) {
+                    throw new Error(`Expected 273.15, got ${parsed.result}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("convert_unit: temperature F to K", async () => {
+                const result = await client.callTool({
+                    name: "convert_unit",
+                    arguments: { value: 32, category: "temperature", from: "F", to: "K" },
+                });
+                const parsed = JSON.parse(result.content[0].text);
+                if (Math.abs(parsed.result - 273.15) > 0.01) {
+                    throw new Error(`Expected 273.15, got ${parsed.result}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("convert_unit: area ha to m2", async () => {
+                const result = await client.callTool({
+                    name: "convert_unit",
+                    arguments: { value: 1, category: "area", from: "ha", to: "m2" },
+                });
+                const parsed = JSON.parse(result.content[0].text);
+                if (parsed.result !== 10000) {
+                    throw new Error(`Expected 10000, got ${parsed.result}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("convert_unit: volume gal to L", async () => {
+                const result = await client.callTool({
+                    name: "convert_unit",
+                    arguments: { value: 1, category: "volume", from: "gal", to: "L" },
+                });
+                const parsed = JSON.parse(result.content[0].text);
+                if (Math.abs(parsed.result - 3.785411784) > 1e-6) {
+                    throw new Error(`Expected ~3.785411784, got ${parsed.result}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("convert_unit: volume L to mL", async () => {
+                const result = await client.callTool({
+                    name: "convert_unit",
+                    arguments: { value: 1, category: "volume", from: "L", to: "mL" },
+                });
+                const parsed = JSON.parse(result.content[0].text);
+                if (parsed.result !== 1000) {
+                    throw new Error(`Expected 1000, got ${parsed.result}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("convert_unit: time hr to s", async () => {
+                const result = await client.callTool({
+                    name: "convert_unit",
+                    arguments: { value: 1, category: "time", from: "hr", to: "s" },
+                });
+                const parsed = JSON.parse(result.content[0].text);
+                if (parsed.result !== 3600) {
+                    throw new Error(`Expected 3600, got ${parsed.result}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("convert_unit: time week to day", async () => {
+                const result = await client.callTool({
+                    name: "convert_unit",
+                    arguments: { value: 1, category: "time", from: "week", to: "day" },
+                });
+                const parsed = JSON.parse(result.content[0].text);
+                if (parsed.result !== 7) {
+                    throw new Error(`Expected 7, got ${parsed.result}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("convert_unit: speed km/h to m/s", async () => {
+                const result = await client.callTool({
+                    name: "convert_unit",
+                    arguments: { value: 36, category: "speed", from: "km/h", to: "m/s" },
+                });
+                const parsed = JSON.parse(result.content[0].text);
+                if (parsed.result !== 10) {
+                    throw new Error(`Expected 10, got ${parsed.result}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("convert_unit: digital_storage GB to MB", async () => {
+                const result = await client.callTool({
+                    name: "convert_unit",
+                    arguments: { value: 1, category: "digital_storage", from: "GB", to: "MB" },
+                });
+                const parsed = JSON.parse(result.content[0].text);
+                if (parsed.result !== 1024) {
+                    throw new Error(`Expected 1024, got ${parsed.result}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("convert_unit: digital_storage TB to GB", async () => {
+                const result = await client.callTool({
+                    name: "convert_unit",
+                    arguments: { value: 2, category: "digital_storage", from: "TB", to: "GB" },
+                });
+                const parsed = JSON.parse(result.content[0].text);
+                if (parsed.result !== 2048) {
+                    throw new Error(`Expected 2048, got ${parsed.result}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("convert_unit: same unit (no-op)", async () => {
+                const result = await client.callTool({
+                    name: "convert_unit",
+                    arguments: { value: 42, category: "length", from: "m", to: "m" },
+                });
+                const parsed = JSON.parse(result.content[0].text);
+                if (parsed.result !== 42) {
+                    throw new Error(`Expected 42, got ${parsed.result}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("convert_unit: case-insensitive units", async () => {
+                const result = await client.callTool({
+                    name: "convert_unit",
+                    arguments: { value: 1, category: "length", from: "KM", to: "M" },
+                });
+                const parsed = JSON.parse(result.content[0].text);
+                if (parsed.result !== 1000) {
+                    throw new Error(`Expected 1000, got ${parsed.result}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("convert_unit: invalid category error", async () => {
+                try {
+                    await client.callTool({
+                        name: "convert_unit",
+                        arguments: { value: 1, category: "pressure", from: "Pa", to: "psi" },
+                    });
+                    throw new Error("Should have thrown an error for invalid category");
+                } catch (error: any) {
+                    const msg = error.message || "";
+                    // Schema enum validation returns "Must be one of"
+                    // Or the handler could return "Unknown unit category"
+                    const isValidationError =
+                        msg.includes("Must be one of") ||
+                        msg.includes("enum") ||
+                        msg.includes("Unknown") ||
+                        msg.includes("pressure");
+                    if (!isValidationError) {
+                        throw new Error("Expected error for invalid category: " + msg);
+                    }
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("convert_unit: invalid unit in category error", async () => {
+                try {
+                    await client.callTool({
+                        name: "convert_unit",
+                        arguments: { value: 1, category: "length", from: "lightyear", to: "m" },
+                    });
+                    throw new Error("Should have thrown an error for invalid unit");
+                } catch (error: any) {
+                    const msg = error.message || "";
+                    if (!msg.includes("Unknown") && !msg.includes("unit") && !msg.includes("lightyear")) {
+                        throw new Error("Expected error for invalid unit: " + msg);
+                    }
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("convert_unit: result includes category", async () => {
+                const result = await client.callTool({
+                    name: "convert_unit",
+                    arguments: { value: 5, category: "weight", from: "kg", to: "g" },
+                });
+                const parsed = JSON.parse(result.content[0].text);
+                if (parsed.category !== "weight") {
+                    throw new Error(`Expected category 'weight', got ${parsed.category}`);
+                }
+                if (parsed.result !== 5000) {
+                    throw new Error(`Expected 5000, got ${parsed.result}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("convert_unit: length ft to m", async () => {
+                const result = await client.callTool({
+                    name: "convert_unit",
+                    arguments: { value: 1, category: "length", from: "ft", to: "m" },
+                });
+                const parsed = JSON.parse(result.content[0].text);
+                if (Math.abs(parsed.result - 0.3048) > 1e-6) {
+                    throw new Error(`Expected 0.3048, got ${parsed.result}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("convert_unit: speed mph to km/h", async () => {
+                const result = await client.callTool({
+                    name: "convert_unit",
+                    arguments: { value: 60, category: "speed", from: "mph", to: "km/h" },
+                });
+                const parsed = JSON.parse(result.content[0].text);
+                // 60 mph ≈ 96.56064 km/h
+                if (Math.abs(parsed.result - 96.56064) > 0.01) {
+                    throw new Error(`Expected ~96.56064, got ${parsed.result}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("convert_unit: volume imp_gal to L", async () => {
+                const result = await client.callTool({
+                    name: "convert_unit",
+                    arguments: { value: 1, category: "volume", from: "imp_gal", to: "L" },
+                });
+                const parsed = JSON.parse(result.content[0].text);
+                if (Math.abs(parsed.result - 4.54609) > 0.001) {
+                    throw new Error(`Expected ~4.54609, got ${parsed.result}`);
+                }
+            }),
+        );
+
         // --- 25. Scientific Notation Tests ---
         results.push(
             await runTest("Scientific: 1e6 (1 million)", async () => {
@@ -4144,10 +4476,10 @@ async function testCruncher() {
         );
 
         results.push(
-            await runTest("Standard tier: Exactly 33 tools exposed", async () => {
+            await runTest("Standard tier: Exactly 34 tools exposed", async () => {
                 const tools = await standardClient.listTools();
-                if (tools.length !== 33) {
-                    throw new Error(`Expected 33 tools in standard mode, got ${tools.length}`);
+                if (tools.length !== 34) {
+                    throw new Error(`Expected 34 tools in standard mode, got ${tools.length}`);
                 }
             }),
         );
