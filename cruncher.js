@@ -26,7 +26,7 @@
  * - v1.2.11: Context token optimization (~40% reduction in tool descriptions).
  *            De-emphasized individual math tools in favor of evaluate_expression.
  *            Trimmed redundant descriptions and repetitive patterns.
- * - v1.2.12: Tiered tool exposure via CRUNCHER_TOOL_SET env var.
+ * - v1.2.13: Tiered tool exposure + constants in evaluate_expression via CRUNCHER_TOOL_SET env var.
  *            minimal (5), standard (26), full (36, default) tool sets.
  *            Reduces context token usage by up to 90% for minimal mode.
  */
@@ -157,6 +157,29 @@ function cacheSet(key, value) {
     cache.set(key, { value, timestamp: Date.now() });
 }
 
+// --- Physical & Mathematical Constants ---
+// Shared between 'get_constant' tool and 'evaluate_expression' constant substitution.
+const CONSTANTS = {
+    // Math
+    pi: Math.PI,
+    e: Math.E,
+    tau: 2 * Math.PI,
+    phi: 1.618033988749895,
+    sqrt2: Math.SQRT2,
+    euler_mascheroni: 0.5772156649015329,
+    // Physics (SI Units)
+    c: 299792458,
+    g: 9.80665,
+    G: 6.6743e-11,
+    h: 6.62607015e-34,
+    k: 1.380649e-23,
+    R: 8.314462618,
+    NA: 6.02214076e23,
+    e_charge: 1.602176634e-19,
+    m_e: 9.1093837015e-31,
+    m_p: 1.67262192369e-27,
+};
+
 // --- Pre-compiled Regex for evaluate_expression ---
 const RE_NOTATION_CARAT     = /\^/g;
 const RE_SCIENTIFIC_NOTATION = /(\d+\.?\d*)e([+-]?\d+)/gi;
@@ -166,6 +189,13 @@ const RE_FUNC_FLOOR         = /\bfloor\s*\(/g;
 const RE_FUNC_CEIL          = /\bceil\s*\(/g;
 const RE_FUNC_MIN_FUNC      = /\bmin\s*\(/g;
 const RE_FUNC_MAX_FUNC      = /\bmax\s*\(/g;
+// Constants pattern: longest names first to avoid partial matches (e_charge before e,
+// euler_mascheroni before e, sqrt2 before pi, tau before tau). Built dynamically.
+const RE_CONSTANTS = (() => {
+    const names = Object.keys(CONSTANTS).sort((a, b) => b.length - a.length);
+    const escaped = names.map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    return new RegExp(`\\b(${escaped.join('|')})\\b`, 'g');
+})();
 const RE_DISALLOWED_CHARS   = /[^0-9+\-*/().% \t*,Mathabspowrndflceigumx]/;
 const RE_VALID_MATH_CALLS   = /Math\.(pow|abs|round|floor|ceil|min|max)\(/g;
 
@@ -872,29 +902,7 @@ const toolHandlers = {
      * @throws {Error} If the constant name is unknown.
      */
     get_constant: ({ name }) => {
-        const constants = {
-            // Math
-            pi: Math.PI,
-            e: Math.E,
-            tau: 2 * Math.PI,
-            phi: 1.618033988749895, // Golden ratio
-            sqrt2: Math.SQRT2,
-            euler_mascheroni: 0.5772156649015329,
-            // Physics (SI Units)
-            c: 299792458, // Speed of light (m/s)
-            g: 9.80665, // Standard gravity (m/s^2)
-            G: 6.6743e-11, // Gravitational constant (m^3/kg/s^2)
-            h: 6.62607015e-34, // Planck constant (J*s)
-            k: 1.380649e-23, // Boltzmann constant (J/K)
-            R: 8.314462618, // Ideal gas constant (J/mol*K)
-            // Chemistry/Atomic
-            NA: 6.02214076e23, // Avogadro constant (1/mol)
-            e_charge: 1.602176634e-19, // Elementary charge (C)
-            m_e: 9.1093837015e-31, // Electron mass (kg)
-            m_p: 1.67262192369e-27, // Proton mass (kg)
-        };
-
-        if (name in constants) return constants[name];
+        if (name in CONSTANTS) return CONSTANTS[name];
         throw new Error(`Unknown constant: ${name}`);
     },
 
@@ -1117,6 +1125,13 @@ const toolHandlers = {
             .replace(RE_FUNC_CEIL,   "Math.ceil(")
             .replace(RE_FUNC_MIN_FUNC, "Math.min(")
             .replace(RE_FUNC_MAX_FUNC, "Math.max(");
+
+        // 3.5. Substitute constant names with their numeric values
+        //    e.g., "pi * 2" → "3.141592653589793 * 2"
+        //    Use word boundaries so "pi" doesn't match inside other identifiers.
+        //    Longest constant names are matched first to avoid partial collisions.
+        //    Required explicit operator: "2 * pi", not "2pi".
+        parsedExpr = parsedExpr.replace(RE_CONSTANTS, (match) => CONSTANTS[match].toString());
 
         // 4. SECURITY CHECK: Strict Whitelist
         if (RE_DISALLOWED_CHARS.test(parsedExpr)) {
@@ -1494,7 +1509,7 @@ if (isMainThread) {
         terminal: false,
     });
 
-    console.error(`Cruncher v1.2.12 MCP Server starting...`);
+    console.error(`Cruncher v1.2.13 MCP Server starting...`);
     console.error(`  Tool set: ${TOOL_SET} (${TOOLS.length} tools exposed)`);
 
     rl.on("line", (line) => {
@@ -1515,7 +1530,7 @@ if (isMainThread) {
             sendSuccess(message.id, {
                 protocolVersion: "2024-11-05",
                 capabilities: { tools: {} },
-                serverInfo: { name: "Cruncher", version: "1.2.12" },
+                serverInfo: { name: "Cruncher", version: "1.2.13" },
             });
             return;
         }

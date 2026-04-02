@@ -38,7 +38,7 @@ This single command runs all 50 tests covering every feature of the Cruncher ser
 - **Batch Processing**: Multi-operation batch tool with partial failure tolerance (v1.2.6)
 - **Result Caching**: Expensive operation caching with TTL and LRU eviction (v1.2.7)
 - **Tiered Tool Exposure**: `CRUNCHER_TOOL_SET` env var (minimal/standard/full) — controls
-  how many tools are exposed to reduce context token usage (v1.2.12)
+  how many tools are exposed to reduce context token usage (v1.2.13)
    - **Context Token Optimization**: 40% description token reduction (~560 tokens saved),
      evaluate_expression promoted as PRIMARY tool, redundant descriptions eliminated (v1.2.11)
 - **Algorithm Optimizations**: O(1) tool lookup Map, batch cache support,
@@ -50,7 +50,7 @@ This single command runs all 50 tests covering every feature of the Cruncher ser
 
 ### 📊 Test Statistics
 - **Total Tests**: 221
-- **Pass Rate**: **100%** (221/221) on v1.2.12
+- **Pass Rate**: **100%** (221/221) on v1.2.13
 - **Execution Time**: ~5-6 seconds
 - **Coverage**: All **36 tools** (filtered by active tier), edge cases, and advanced scenarios
 
@@ -200,4 +200,4 @@ For issues or questions:
 
 **Last Updated**: 2026-04-01
 **Test Framework Version**: mcp-tester 1.0.0
-**Server Version Tested**: Cruncher **v1.2.12** (221 tests, 100% pass rate)
+**Server Version Tested**: Cruncher **v1.2.13** (221 tests, 100% pass rate)

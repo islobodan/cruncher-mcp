@@ -2520,6 +2520,180 @@ async function testCruncher() {
             }),
         );
 
+        // --- 34. Constants in evaluate_expression ---
+        console.log("\n🔬 34. Constants in evaluate_expression Tests");
+
+        results.push(
+            await runTest("Constants: 2 * pi", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "2 * pi" },
+                });
+                const got = parseFloat(result.content[0].text);
+                if (Math.abs(got - 2 * Math.PI) > 1e-10)
+                    throw new Error(`Expected ${2 * Math.PI}, got ${got}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Constants: pi ^ 2", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "pi ^ 2" },
+                });
+                const got = parseFloat(result.content[0].text);
+                if (Math.abs(got - Math.PI ** 2) > 1e-10)
+                    throw new Error(`Expected ${Math.PI ** 2}, got ${got}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Constants: e + 1", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "e + 1" },
+                });
+                const got = parseFloat(result.content[0].text);
+                if (Math.abs(got - (Math.E + 1)) > 1e-10)
+                    throw new Error(`Expected ${Math.E + 1}, got ${got}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Constants: tau / 2 = pi", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "tau / 2" },
+                });
+                const got = parseFloat(result.content[0].text);
+                if (Math.abs(got - Math.PI) > 1e-10)
+                    throw new Error(`Expected ${Math.PI}, got ${got}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Constants: sqrt2 * sqrt2 = 2", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "sqrt2 * sqrt2" },
+                });
+                const got = parseFloat(result.content[0].text);
+                if (Math.abs(got - 2) > 1e-10)
+                    throw new Error(`Expected 2, got ${got}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Constants: e * e", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "e * e" },
+                });
+                const got = parseFloat(result.content[0].text);
+                if (Math.abs(got - Math.E * Math.E) > 1e-10)
+                    throw new Error(`Expected ${Math.E * Math.E}, got ${got}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Constants: phi * 2", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "phi * 2" },
+                });
+                const got = parseFloat(result.content[0].text);
+                const expected = 1.618033988749895 * 2;
+                if (Math.abs(got - expected) > 1e-10)
+                    throw new Error(`Expected ${expected}, got ${got}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Constants: G * 1e11", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "G * 1e11" },
+                });
+                const got = parseFloat(result.content[0].text);
+                const expected = 6.6743e-11 * 1e11;
+                if (Math.abs(got - expected) > 1e-6)
+                    throw new Error(`Expected ${expected}, got ${got}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Constants: c = speed of light", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "c" },
+                });
+                const got = parseFloat(result.content[0].text);
+                if (got !== 299792458)
+                    throw new Error(`Expected 299792458, got ${got}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Constants: R + 2", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "R + 2" },
+                });
+                const got = parseFloat(result.content[0].text);
+                const expected = 8.314462618 + 2;
+                if (Math.abs(got - expected) > 1e-8)
+                    throw new Error(`Expected ${expected}, got ${got}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Constants: k * 1e23", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "k * 1e23" },
+                });
+                const got = parseFloat(result.content[0].text);
+                const expected = 1.380649e-23 * 1e23;
+                if (Math.abs(got - expected) > 1e-10)
+                    throw new Error(`Expected ${expected}, got ${got}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Constants: Scientific notation still works (1e6)", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "1e6" },
+                });
+                if (parseFloat(result.content[0].text) !== 1e6)
+                    throw new Error(`Expected 1e6, got ${result.content[0].text}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Constants: 2.5e-3 notation", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "2.5e-3" },
+                });
+                if (parseFloat(result.content[0].text) !== 2.5e-3)
+                    throw new Error(`Expected 0.0025, got ${result.content[0].text}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Constants: Combined expression 2 * pi * 5", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "2 * pi * 5" },
+                });
+                const got = parseFloat(result.content[0].text);
+                if (Math.abs(got - 2 * Math.PI * 5) > 1e-10)
+                    throw new Error(`Expected ${2 * Math.PI * 5}, got ${got}`);
+            }),
+        );
+
+        // --- 35. Memory Persistence ---
         // --- 34. Memory Persistence ---
         results.push(
             await runTest("Memory: persistence across calls", async () => {

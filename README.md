@@ -1,6 +1,6 @@
 # Cruncher: The Scientific Calculator MCP Server
 
-[![Version](https://img.shields.io/badge/version-1.2.12-blue.svg)](https://github.com/)
+[![Version](https://img.shields.io/badge/version-1.2.13-blue.svg)](https://github.com/)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen.svg)](https://nodejs.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -254,6 +254,45 @@ Cruncher exposes its functions as individual MCP tools. Here is the full list:
 | `CRUNCHER_TIMEOUT` | `3000` | Worker thread execution timeout (ms). Range 100-60000 |
 | `CRUNCHER_TOOL_SET` | `full` | Controls how many tools are exposed: `minimal` (5), `standard` (26), or `full` (36) |
 
+
+### Constants in Expressions
+
+You can now use mathematical and physical constant names directly inside `evaluate_expression`:
+
+| Constant | Description | Value |
+|----------|-------------|-------|
+| `pi` | π (circle ratio) | 3.14159... |
+| `e` | Euler's number | 2.71828... |
+| `tau` | τ = 2π | 6.28318... |
+| `phi` | Golden ratio (φ) | 1.61803... |
+| `sqrt2` | √2 | 1.41421... |
+| `euler_mascheroni` | Euler-Mascheroni (γ) | 0.57721... |
+| `c` | Speed of light (m/s) | 299792458 |
+| `g` | Gravity (m/s²) | 9.80665 |
+| `G` | Gravitational constant | 6.6743e-11 |
+| `h` | Planck constant (J·s) | 6.62607015e-34 |
+| `k` | Boltzmann constant (J/K) | 1.380649e-23 |
+| `R` | Ideal gas constant (J/mol·K) | 8.314462618 |
+| `NA` | Avogadro constant (1/mol) | 6.02214076e23 |
+| `e_charge` | Elementary charge (C) | 1.602176634e-19 |
+| `m_e` | Electron mass (kg) | 9.1093837015e-31 |
+| `m_p` | Proton mass (kg) | 1.67262192369e-27 |
+
+**Examples:**
+```
+2 * pi * 5       → 31.4159...
+phi ^ 2          → 2.61803...
+G * 1e11         → 6.6743
+sqrt2 * sqrt2    → 2
+e * e            → 7.38906...
+c * 2            → 599584916
+```
+
+**Rules:**
+- Use explicit operators: `2 * pi` works, `2pi` does not (no implicit multiplication)
+- Constants coexist with scientific notation: `1e6` and `e * 2` both work correctly
+- Longest constant names match first: `euler_mascheroni` won't become `299792458uler_mascheroni`
+
 ### Tiered Tool Exposure
 
 The `CRUNCHER_TOOL_SET` environment variable lets you optimize context token usage by exposing only the tools you actually need:
@@ -284,7 +323,7 @@ Example MCP config (`claude_desktop_config.json`):
 
 Cruncher is a plain Node.js JavaScript application that communicates over **standard input/output (stdio)**. This makes it a lightweight, portable, and secure MCP server. The entire flow for a single tool call looks like this:
 
-1.  **Initialization**: On startup, the server listens for an `initialize` request from the MCP client and responds with its capabilities and version info (`v1.2.12`).
+1.  **Initialization**: On startup, the server listens for an `initialize` request from the MCP client and responds with its capabilities and version info (`v1.2.13`).
 2.  **Tool Discovery**: The client sends a `tools/list` request, and the server responds with the full list of available calculator tools and their `inputSchema`, which defines the required arguments and their types.
 3.  **Input Validation**: Before any tool is executed, the server runs a custom recursive `validateArguments` function against the tool's `inputSchema`. This ensures required fields are present, types are correct (number, string, array), enum values are valid, and min/max constraints are respected — all without any external library.
 4.  **Worker Thread Execution**: Once validated, the tool call is handed off to an isolated Node.js `worker_thread`. This completely protects the main thread (and its `stdio` communication) from being blocked by a long-running or infinite calculation.
