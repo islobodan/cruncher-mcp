@@ -1,8 +1,10 @@
 # Cruncher: The Scientific Calculator MCP Server
 
-[![Version](https://img.shields.io/badge/version-1.2.20-blue.svg)](https://github.com/)
-[![Node.js Version](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen.svg)](https://nodejs.org/)
+[![Version](https://img.shields.io/badge/version-1.2.23-blue.svg)](https://github.com/islobodan/cruncher-mcp)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Tests](https://img.shields.io/badge/tests-302%20%7C%20100%25-brightgreen.svg)](TEST_REPORT.md)
+[![Status](https://img.shields.io/badge/status-feature--complete-brightgreen.svg)](TODO.md)
 
 A powerful scientific calculator for your AI assistant, built as a **Model Context Protocol (MCP)** server. Cruncher allows compatible AI clients (like Claude Desktop) to perform complex mathematical calculations, handle memory, perform statistical analysis, and access scientific constants with a simple, secure, and standardized interface.
 
@@ -53,7 +55,7 @@ Get Cruncher up and running with Claude Desktop in just a few minutes.
 
 ### Step 1: Prerequisites
 
-Ensure you have **Node.js** (version 16.0.0 or newer) installed on your system. You can download it from [nodejs.org](https://nodejs.org/).
+Ensure you have **Node.js** (version 18.0.0 or newer) installed on your system. You can download it from [nodejs.org](https://nodejs.org/).
 
 ### Step 2: Download the Server
 

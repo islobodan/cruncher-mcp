@@ -55,7 +55,7 @@ This single command runs all 50 tests covering every feature of the Cruncher ser
 
 ### 📊 Test Statistics
 - **Total Tests**: 302
-- **Pass Rate**: **100%** (302/302) on v1.2.22
+- **Pass Rate**: **100%** (302/302) on v1.2.23
 - **Execution Time**: ~8-10 seconds
 - **Coverage**: All **42 tools**, edge cases, concurrency, and advanced scenarios
 - **Tier Coverage**: minimal (5 tools), standard (34 tools), full (42 tools)
@@ -206,4 +206,4 @@ For issues or questions:
 
 **Last Updated**: 2026-04-02
 **Test Framework Version**: mcp-tester 1.0.0
-**Server Version Tested**: Cruncher **v1.2.22** (302 tests, 100% pass rate)
+**Server Version Tested**: Cruncher **v1.2.23** (302 tests, 100% pass rate)

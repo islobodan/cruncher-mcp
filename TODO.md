@@ -263,6 +263,7 @@ state storage duplicates functionality already provided by the MCP conversation 
 
 ---
 
+**Version**: v1.2.23
 **Last Updated**: 2026-04-02
 **Total Tasks**: 15
 **Completed**: 13 ✅

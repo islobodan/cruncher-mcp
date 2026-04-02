@@ -6,6 +6,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [1.2.23] — 2026-04-02
+
+### Added
+- **`CHANGELOG.md`** — Complete version history from v1.0.0 to v1.2.22
+- **`CONTRIBUTING.md`** — Developer guide with tool-adding workflow, test examples, PR checklist
+- **`SECURITY.md`** — 5-layer expression security model, threat matrix, deployment best practices
+- **`.editorconfig`** — Consistent 4-space JS/TS, 2-space JSON/YAML, LF endings
+- **`package.json`** — Scripts (`start`, `test`, `test:quick`, `check-syntax`), metadata, binary entry
+
+### Changed
+- All GitHub URLs point to correct repo: `islobodan/cruncher-mcp`
+- Node.js requirement: >= 16 → >= 18
+- README badges now link to correct sources
+- TODO.md: 3 low-impact items marked intentionally skipped
+  - Complex numbers: niche, LLM iterates conversationally
+  - Progress streaming: worker timeout handles long ops
+  - Expression history: redundant with LLM conversation context
+
+### Why
+- Production-grade repo requires standard metadata files
+- Enables `npm start`, `npm test` conventions
+- SECURITY.md documents expression whitelist + worker isolation for audit
+- CONTRIBUTING.md reduces onboarding friction for new contributors
+- TODO.md closure signals project maturity
+
+---
+
 ## [1.2.22] — 2026-04-02
 
 ### Added
