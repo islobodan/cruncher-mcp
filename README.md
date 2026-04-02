@@ -33,16 +33,18 @@ Cruncher provides a comprehensive set of calculator functions built completely f
     *   **Strict Input Validation**: Custom schema validator prevents AI hallucinations and invalid data.
     *   **Infinite Loop Protection**: Utilizes Node.js `worker_threads` with a 3-second strict timeout to prevent complex calculations from freezing the server.
     *   **Accurate Decimal Math**: Uses an integer-scaling approach to prevent classic JS floating-point errors (e.g., `0.1 + 0.2 === 0.3`).
+*   **Tiered Tool Exposure**: Three tiers (`minimal`, `standard` default, `full`) to optimize context token usage.
 *   **Basic Arithmetic**: Addition, Subtraction, Multiplication, Division, Modulo.
 *   **Expression Evaluation**: Safely compute entire plain-text math strings (e.g. `(5 + 3) * 10 / 2`).
 *   **Power & Roots**: Exponentiation (`a^b`), Square Root.
 *   **Number Theory**: Factorial (n!).
 *   **Trigonometry**: Sine, Cosine, Tangent, Arcsine (`asin`), Arccosine (`acos`), and Arctangent (`atan`) (with support for degrees and radians).
 *   **Logarithms**: Base-10 Logarithm and Natural Logarithm (ln).
-*   **Statistical Functions**: Sum, Average, Median, Min, Max, Range, Count, and Percentile for arrays of numbers.
+*   **Statistical Functions**: Sum, Average, Median, Min, Max, Range, Count, **Variance**, and **Standard Deviation** for arrays of numbers.
+*   **Percentage Functions**: Percentage-of, percentage-change, and reverse-percentage calculations.
 *   **Convenience Functions**: Absolute Value.
 *   **Constants**: Easy access to Math (`pi`, `e`, `tau`, `phi`, `sqrt2`, `euler_mascheroni`), Physics (`c`, `g`, `G`, `h`, `k`, `R`), and Chemistry constants (`NA`, `e_charge`, `m_e`, `m_p`).
-*   **Memory Functions**: `M+`, `M-`, `MR` (Memory Recall), and `MC` (Memory Clear).
+*   **Memory Functions**: `M+`, `M-`, `MR` (Memory Recall), and `MC` (Memory Clear) — full tier only.
 
 ## 🚀 Installation & Usage
 
@@ -76,7 +78,7 @@ You need to tell Claude Desktop where to find the Cruncher server.
           "command": "node",
           "args": ["C:/Users/YOUR_USERNAME/mcp-servers/cruncher.js"],
           "env": {
-            "CRUNCHER_TIMEOUT": "5000"
+            "CRUNCHER_TOOL_SET": "standard"
           }
         }
       }
@@ -112,7 +114,7 @@ If you use Cline for agentic coding in VS Code, open the MCP configuration file 
       "command": "node",
       "args": ["/path/to/cruncher.js"],
       "env": {
-        "CRUNCHER_TIMEOUT": "5000"
+        "CRUNCHER_TOOL_SET": "standard"
       }
     }
   }
@@ -131,7 +133,7 @@ mcpServers:
     args:
       - "/path/to/cruncher.js"
     env:
-      CRUNCHER_TIMEOUT: "5000"
+      CRUNCHER_TOOL_SET: "standard"
 ```
 3. Restart Goose. You can now ask Goose to run calculations like `evaluate_expression` or `median` directly.
 
@@ -142,7 +144,7 @@ Zed’s built‑in AI pane supports MCP connections.
    - **Name**: `cruncher`
    - **Command**: `node`
    - **Args**: `/absolute/path/to/cruncher.js`
-   - **Env** (optional): `CRUNCHER_TIMEOUT=5000`
+   - **Env** (optional): `CRUNCHER_TOOL_SET=standard`
 3. Save. The Zed AI can now call Cruncher for precise arithmetic and statistics.
 
 ### LM Studio (Local LLM + MCP)
@@ -151,7 +153,7 @@ LM Studio runs LLMs entirely offline and now includes an MCP client.
 2. Click **Add Server** and provide:
    - **Executable**: `node`
    - **Arguments**: `/absolute/path/to/cruncher.js`
-   - **Environment** (optional): `CRUNCHER_TIMEOUT=5000`
+   - **Environment** (optional): `CRUNCHER_TOOL_SET=standard`
 3. Confirm. Your private model (e.g., Llama 3, DeepSeek‑V2) can now offload math to Cruncher without any network traffic.
 
 ### LibreChat Configuration
@@ -168,31 +170,37 @@ If you're using LibreChat, you can add the following configuration to your libre
       CRUNCHER_TIMEOUT: "5000"
 ```
 
-#### Example Questions for Claude
+**Example Questions for Claude**
 
 > "What is the angle in degrees whose sine is 0.5?"
 
-> "Calculate the average, median, and max of this list of numbers: [15, 22, 8, 41, 19, 30]"
+> "Calculate the average, median, and range of these numbers: [15, 22, 8, 41, 19, 30]"
 
 > "What is 2 raised to the power of 10?"
 
-> "What is the 75th percentile of [10, 20, 30, 40, 50]?"
+> "What is the standard deviation of [10, 12, 8, 14, 6]?"
+
+> "What is 15% of 240?"
+
+> "A stock went from $50 to $75. What's the percentage change?"
+
+> "What is the variance of test scores [85, 92, 78, 90, 88]?"
 
 > "Calculate the range of values in [3, 7, 2, 9, 1]"
 
-> "What is 17 modulo 5?"
+> "Evaluate the expression: sin(pi/4) + sqrt(16) + log10(100)"
 
 > "What is 10 factorial?"
 
-> "Convert the binary number 1010 to decimal."
+> "What is 17 modulo 5?"
 
-> "What is FF in hexadecimal when converted to binary?"
+**Full Tier Examples** (with `CRUNCHER_TOOL_SET=full`):
 
-> "Evaluate the expression: (15 + 20) * 3 / 2"
+> "Store 99 in memory, add 5, then recall the total."
 
-> "Store 99 in memory."
+> 
 
-> "Add 5 to memory and then tell me what the total now is."
+> "What's the 75th percentile of [10, 20, 30, 40, 50]?"
 
 ---
 
@@ -214,8 +222,8 @@ Cruncher exposes its functions as individual MCP tools. Here is the full list:
 | `sqrt` | Calculates the square root of a value. | `value` (number) |
 | **Number Theory** | | |
 | `factorial` | Calculates the factorial of a non-negative integer (n!). | `n` (number, non-negative integer) |
-| **Base Conversion** | | |
-| `convert_base` | Converts a number between different bases (binary, octal, decimal, hexadecimal). | `value` (string), `from_base` (number: 2, 8, 10, or 16), `to_base` (number: 2, 8, 10, or 16) |
+| **Base Conversion (Full Tier)** | | |
+| `convert_base` | Converts between bases 2, 8, 10, 16. | `value` (string), `from_base` (2, 8, 10, 16), `to_base` (2, 8, 10, 16) |
 | **Trigonometry** | | |
 | `sine` | Calculates the sine of an angle. | `angle` (number), `unit` (degrees/radians, optional) |
 | `cosine` | Calculates the cosine of an angle. | `angle` (number), `unit` (degrees/radians, optional) |
@@ -234,16 +242,28 @@ Cruncher exposes its functions as individual MCP tools. Here is the full list:
 | `max` | Finds the maximum value in an array of numbers. | `numbers` (array of numbers) |
 | `count` | Counts the number of elements in an array. | `numbers` (array of numbers) |
 | `range` | Calculates the range (max - min) of an array. | `numbers` (array of numbers) |
-| `percentile` | Calculates the value at a given percentile (0-100). | `numbers` (array of numbers), `percentile` (number, 0-100) |
+| `percentile` | Calculates the value at a given percentile (0-100). **Full tier.** | `numbers` (array of numbers), `percentile` (number, 0-100) |
+| `variance` | Variance of an array. Sample (n-1) or population (n). | `numbers` (array of numbers), `population` (boolean, optional) |
+| `std_dev` | Standard deviation. Sample (n-1) or population (n). | `numbers` (array of numbers), `population` (boolean, optional) |
+| `percentage_of` | What is X% of Y? e.g., 15% of 200 = 30. | `percent` (number), `total` (number) |
+| `percentage_change` | % change from A to B. e.g., 50→80 = 60%. | `from` (number), `to` (number) |
+| `percentage_reverse` | X is Y% of what? e.g., 30 is 15% of 200. | `value` (number), `percent` (number) |
 | **Other** | | |
 | `absolute` | Calculates the absolute value of a number. | `value` (number) |
 | **Constants** | | |
 | `get_constant` | Returns the value of a mathematical, physical, or chemical constant. | `name` ("pi", "e", "tau", "phi", "sqrt2", "euler_mascheroni", "c", "g", "G", "h", "k", "R", "NA", "e_charge", "m_e", "m_p") |
-| **Memory Functions** | | |
+| **Memory Functions (Full Tier)** | | |
 | `memory_clear` | Clears the calculator memory (MC). | (no arguments) |
 | `memory_recall` | Recalls the value stored in memory (MR). | (no arguments) |
 | `memory_add` | Adds a value to the current memory (M+). | `value` (number) |
 | `memory_subtract` | Subtracts a value from the current memory (M-). | `value` (number) |
+| **Angle Mode (Full Tier)** | | |
+| `set_angle_mode` | Set global angle mode (default: radians). | `mode` ("degrees" or "radians") |
+| `get_angle_mode` | Get current angle mode. | (no arguments) |
+| **Admin Tools (Full Tier)** | | |
+| `batch` | Execute multiple tool calls sequentially. | `operations` (array of {tool, arguments}) |
+| `cache_clear` | Clear computation cache. | (no arguments) |
+| `cache_info` | Show cache stats. | (no arguments) |
 
 ## ⚙️ Configuration
 
@@ -252,7 +272,7 @@ Cruncher exposes its functions as individual MCP tools. Here is the full list:
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `CRUNCHER_TIMEOUT` | `3000` | Worker thread execution timeout (ms). Range 100-60000 |
-| `CRUNCHER_TOOL_SET` | `full` | Controls how many tools are exposed: `minimal` (5), `standard` (26), or `full` (36) |
+| `CRUNCHER_TOOL_SET` | `standard` | Controls tool exposure: `minimal` (5), `standard` (33 **default**), `full` (41) |
 
 
 
@@ -358,8 +378,8 @@ The `CRUNCHER_TOOL_SET` environment variable lets you optimize context token usa
 | Tier | Tools | Token Budget | Use Case |
 |------|-------|-------------|----------|
 | `minimal` | 5 | ~160 tokens | Basic arithmetic. All complex math via `evaluate_expression` |
-| `standard` | 26 | ~800 tokens | Arithmetic + statistics, memory, constants, base conversion |
-| `full` | 36 | ~1,600 tokens | Everything: trig, batch, cache management, angle mode (default) |
+| `standard` | 33 | ~1,100 tokens | Arithmetic, trig, stats, percentages, constants (**default**) |
+| `full` | 41 | ~1,500 tokens | Standard + memory, base conversion, percentile, batch, cache |
 
 **Note**: Even in `minimal` mode, `evaluate_expression` handles complex math — individual tools (`sin`, `sqrt`, etc.) just aren't registered as separate MCP tool calls. This saves up to **90%** on context tokens.
 

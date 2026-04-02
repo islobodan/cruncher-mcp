@@ -26,7 +26,8 @@
  * - v1.2.11: Context token optimization (~40% reduction in tool descriptions).
  *            De-emphasized individual math tools in favor of evaluate_expression.
  *            Trimmed redundant descriptions and repetitive patterns.
- * - v1.2.20: Tiered tool exposure + constants in evaluate_expression via CRUNCHER_TOOL_SET env var.
+ * - v1.2.20: Standard tier refinement (memory, convert_base, percentile moved to full).
+* - v1.2.16 to v1.2.19: Percentage tools, std_dev/variance, built-ins, fuzzy matching, error messages.
  *            minimal (5), standard (26), full (36, default) tool sets.
  *            Reduces context token usage by up to 90% for minimal mode.
  */
