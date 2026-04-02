@@ -97,6 +97,10 @@ This document summarizes the comprehensive test suite for the Cruncher MCP Serve
 ✅ **Base Conversion**: All 4 bases (binary, octal, decimal, hex) with proper validation  
 ✅ **Scientific Notation**: Expressions like `1e6`, `2.5e-3` work correctly  
 ✅ **Atomic Memory Operations**: Concurrent memory operations are properly serialized  
+✅ **Tiered Tool Exposure (v1.2.12)**: `CRUNCHER_TOOL_SET` env var with minimal (5),
+  standard (26), full (36) tiers. Up to 90% context token reduction for minimal mode.
+✅ **Context Token Optimization (v1.2.11)**: ~40% reduction in tool description tokens (~560 tokens
+  saved). evaluate_expression promoted as PRIMARY tool, redundant descriptions eliminated.
 ✅ **Performance Optimizations (v1.2.10)**: O(1) tool lookup Map replaced O(n) TOOLS.find().
 MEMORY_OPS Set. Batch operations now check/store cache. Conditional worker args clone
 (zero allocation for non-timeout tools). Supported-methods Set in validateMessage.
