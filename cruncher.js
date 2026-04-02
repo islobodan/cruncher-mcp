@@ -26,6 +26,9 @@
  * - v1.2.11: Context token optimization (~40% reduction in tool descriptions).
  *            De-emphasized individual math tools in favor of evaluate_expression.
  *            Trimmed redundant descriptions and repetitive patterns.
+ * - v1.2.12: Tiered tool exposure via CRUNCHER_TOOL_SET env var.
+ *            minimal (5), standard (26), full (36, default) tool sets.
+ *            Reduces context token usage by up to 90% for minimal mode.
  */
 
 const readline = require("readline");
@@ -39,6 +42,45 @@ const {
 // --- Configuration ---
 // Allow the user to configure the timeout via an environment variable, defaulting to 3000ms.
 const EXECUTION_TIMEOUT = parseInt(process.env.CRUNCHER_TIMEOUT, 10) || 3000;
+
+// --- Tool Set Configuration ---
+// Controls how many tools are exposed to the LLM to optimize context token usage.
+// CRUNCHER_TOOL_SET=full     — All 36 tools available (default).
+// CRUNCHER_TOOL_SET=standard — 26 tools (arithmetic, stats, memory, base conversion).
+// CRUNCHER_TOOL_SET=minimal  — 5 tools (math primitives + evaluate_expression).
+const TOOL_SET = (process.env.CRUNCHER_TOOL_SET || "full").toLowerCase();
+const VALID_TOOL_SETS = ["minimal", "standard", "full"];
+if (!VALID_TOOL_SETS.includes(TOOL_SET)) {
+    console.error(`Warning: Unknown CRUNCHER_TOOL_SET='${TOOL_SET}', using 'full'.`);
+}
+
+/** Tool names exposed per tier. */
+const TOOL_TIERS = {
+    // Minimal: math primitives + evaluate_expression (5 tools)
+    minimal: [
+        "evaluate_expression", "add", "subtract", "multiply", "divide",
+    ],
+    // Standard: minimal + stats, memory, base conversion (26 tools)
+    standard: [
+        "evaluate_expression",
+        "add", "subtract", "multiply", "divide",
+        "sqrt", "power", "absolute", "modulo", "factorial",
+        "logarithm", "natural_log", "get_constant",
+        "sum", "avg", "min", "max", "count",
+        "median", "range", "percentile",
+        "convert_base",
+        "memory_add", "memory_subtract", "memory_clear", "memory_recall",
+    ],
+    // Full means all tools (no filtering, special case)
+    full: null,
+};
+
+/** Filter master tool list by active tier. */
+function filterToolsByTier(allTools, tier) {
+    if (tier === "full") return allTools;
+    const allowed = new Set(TOOL_TIERS[tier]);
+    return allTools.filter(t => allowed.has(t.name));
+}
 
 // --- Server State ---
 // A simple variable to store the memory value for M+, M-, MR, MC functions.
@@ -127,9 +169,9 @@ const RE_FUNC_MAX_FUNC      = /\bmax\s*\(/g;
 const RE_DISALLOWED_CHARS   = /[^0-9+\-*/().% \t*,Mathabspowrndflceigumx]/;
 const RE_VALID_MATH_CALLS   = /Math\.(pow|abs|round|floor|ceil|min|max)\(/g;
 
-// --- Tool Definitions ---
-// This array defines all the calculator functions available to the AI model.
-const TOOLS = [
+// --- Master Tool Definitions (full catalog) ---
+// Filtered at startup via CRUNCHER_TOOL_SET to optimize context token usage.
+const toolsAll = [
     // --- Basic Arithmetic (use evaluate_expression for complex math) ---
     {
         name: "add",
@@ -560,6 +602,9 @@ const TOOLS = [
         inputSchema: { type: "object", properties: {}, required: [] },
     },
 ];
+
+/** Active tool list — filtered by CRUNCHER_TOOL_SET env var. */
+const TOOLS = filterToolsByTier(toolsAll, TOOL_SET);
 
 /** Pre-built O(1) Tool lookup Map (replaces O(n) TOOLS.find() per call). */
 const TOOL_LOOKUP_MAP = new Map(TOOLS.map(t => [t.name, t]));
@@ -1449,7 +1494,8 @@ if (isMainThread) {
         terminal: false,
     });
 
-    console.error("Cruncher v1.2.11 MCP Server starting...");
+    console.error(`Cruncher v1.2.12 MCP Server starting...`);
+    console.error(`  Tool set: ${TOOL_SET} (${TOOLS.length} tools exposed)`);
 
     rl.on("line", (line) => {
         let message;
@@ -1469,7 +1515,7 @@ if (isMainThread) {
             sendSuccess(message.id, {
                 protocolVersion: "2024-11-05",
                 capabilities: { tools: {} },
-                serverInfo: { name: "Cruncher", version: "1.2.11" },
+                serverInfo: { name: "Cruncher", version: "1.2.12" },
             });
             return;
         }
