@@ -7,6 +7,7 @@
 | 1 | Scientific Notation Support | `[x]` | L | 🔴 High | High |
 | O1 | Performance Optimizations | `[x]` | M | 🔴 High | High |
 | O2 | Context Token Optimization | `[x]` | L | 🔴 High | High |
+| O3 | Tiered Tool Exposure | `[x]` | L | 🔴 High | High |
 | 2 | Atomic Memory Operations | `[x]` | M | 🔴 High | Medium |
 | 3 | Configurable Timeout | `[x]` | L | 🔴 High | High |
 | 4 | More Built-in Functions | `[x]` | L | 🟡 Medium | High |
@@ -578,6 +579,10 @@ Based on priority, impact, and dependencies:
 
 | Date | Version | Changes |
 |------|---------|---------|
+| 2026-04-02 | v1.2.12 | Tiered tool exposure (CRUNCHER_TOOL_SET: minimal/standard/full) |
+| 2026-04-02 | v1.2.11 | Context token optimization (~40% description reduction) |
+| 2026-04-02 | v1.2.10 | O(1) tool lookup, batch cache, conditional worker clone |
+| 2026-04-02 | v1.2.9 | Moved 15 instant tools from workers to main thread |
 | 2026-03-13 | v1.2.1 | Added `convert_base` tool (32 tools total) |
 | 2026-03-11 | v1.2.0 | Added `evaluate_expression`, worker threads, strict validation |
 | 2026-03-01 | v1.1.0 | Added statistics functions, memory operations |

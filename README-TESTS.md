@@ -37,10 +37,12 @@ This single command runs all 50 tests covering every feature of the Cruncher ser
 - **Enhanced Error Messages**: Structured error responses with parameter context (v1.2.5)
 - **Batch Processing**: Multi-operation batch tool with partial failure tolerance (v1.2.6)
 - **Result Caching**: Expensive operation caching with TTL and LRU eviction (v1.2.7)
+- **Tiered Tool Exposure**: `CRUNCHER_TOOL_SET` env var (minimal/standard/full) — controls
+  how many tools are exposed to reduce context token usage (v1.2.12)
    - **Context Token Optimization**: 40% description token reduction (~560 tokens saved),
-     evaluate_expression promoted as PRIMARY tool, redundant descriptions eliminated (v1.2.12)
+     evaluate_expression promoted as PRIMARY tool, redundant descriptions eliminated (v1.2.11)
 - **Algorithm Optimizations**: O(1) tool lookup Map, batch cache support,
-  conditional worker args clone, Set-based method validation (v1.2.12)
+  conditional worker args clone, Set-based method validation (v1.2.10)
 - **Worker Elimination**: 15 instant tools moved to main-thread execution,
   dead code cleanup, double-validation elimination, pre-compiled regexes (v1.2.9)
 - **Angle Mode Toggle**: Global degrees/radians toggle with set_angle_mode/get_angle_mode (v1.2.8)
@@ -50,7 +52,7 @@ This single command runs all 50 tests covering every feature of the Cruncher ser
 - **Total Tests**: 201
 - **Pass Rate**: **100%** (201/201) on v1.2.12
 - **Execution Time**: ~5-6 seconds
-- **Coverage**: All 32 tools, edge cases, and advanced scenarios
+- **Coverage**: All **36 tools** (filtered by active tier), edge cases, and advanced scenarios
 
 ## Test Framework
 

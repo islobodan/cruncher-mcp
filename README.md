@@ -245,11 +245,46 @@ Cruncher exposes its functions as individual MCP tools. Here is the full list:
 | `memory_add` | Adds a value to the current memory (M+). | `value` (number) |
 | `memory_subtract` | Subtracts a value from the current memory (M-). | `value` (number) |
 
+## ⚙️ Configuration
+
+### Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `CRUNCHER_TIMEOUT` | `3000` | Worker thread execution timeout (ms). Range 100-60000 |
+| `CRUNCHER_TOOL_SET` | `full` | Controls how many tools are exposed: `minimal` (5), `standard` (26), or `full` (36) |
+
+### Tiered Tool Exposure
+
+The `CRUNCHER_TOOL_SET` environment variable lets you optimize context token usage by exposing only the tools you actually need:
+
+| Tier | Tools | Token Budget | Use Case |
+|------|-------|-------------|----------|
+| `minimal` | 5 | ~160 tokens | Basic arithmetic. All complex math via `evaluate_expression` |
+| `standard` | 26 | ~800 tokens | Arithmetic + statistics, memory, constants, base conversion |
+| `full` | 36 | ~1,600 tokens | Everything: trig, batch, cache management, angle mode (default) |
+
+**Note**: Even in `minimal` mode, `evaluate_expression` handles complex math — individual tools (`sin`, `sqrt`, etc.) just aren't registered as separate MCP tool calls. This saves up to **90%** on context tokens.
+
+Example MCP config (`claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "cruncher-minimal": {
+      "command": "node",
+      "args": ["/path/to/cruncher.js"],
+      "env": { "CRUNCHER_TOOL_SET": "minimal" }
+    }
+  }
+}
+```
+
 ## ⛏️ How It Works (For Developers)
 
 Cruncher is a plain Node.js JavaScript application that communicates over **standard input/output (stdio)**. This makes it a lightweight, portable, and secure MCP server. The entire flow for a single tool call looks like this:
 
-1.  **Initialization**: On startup, the server listens for an `initialize` request from the MCP client and responds with its capabilities and version info (`v1.2.8`).
+1.  **Initialization**: On startup, the server listens for an `initialize` request from the MCP client and responds with its capabilities and version info (`v1.2.12`).
 2.  **Tool Discovery**: The client sends a `tools/list` request, and the server responds with the full list of available calculator tools and their `inputSchema`, which defines the required arguments and their types.
 3.  **Input Validation**: Before any tool is executed, the server runs a custom recursive `validateArguments` function against the tool's `inputSchema`. This ensures required fields are present, types are correct (number, string, array), enum values are valid, and min/max constraints are respected — all without any external library.
 4.  **Worker Thread Execution**: Once validated, the tool call is handed off to an isolated Node.js `worker_thread`. This completely protects the main thread (and its `stdio` communication) from being blocked by a long-running or infinite calculation.
