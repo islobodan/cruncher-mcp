@@ -26,7 +26,7 @@
  * - v1.2.11: Context token optimization (~40% reduction in tool descriptions).
  *            De-emphasized individual math tools in favor of evaluate_expression.
  *            Trimmed redundant descriptions and repetitive patterns.
- * - v1.2.15: Tiered tool exposure + constants in evaluate_expression via CRUNCHER_TOOL_SET env var.
+ * - v1.2.16: Tiered tool exposure + constants in evaluate_expression via CRUNCHER_TOOL_SET env var.
  *            minimal (5), standard (26), full (36, default) tool sets.
  *            Reduces context token usage by up to 90% for minimal mode.
  */
@@ -322,7 +322,7 @@ const toolsAll = [
     {
         name: "asin",
         description:
-            'Arcsine. Input must be [-1, 1]. Result in radians by default, or degrees with unit param.',
+            'Arcsine. Result in radians by default, or degrees with unit param.',
         inputSchema: {
             type: "object",
             properties: {
@@ -335,7 +335,7 @@ const toolsAll = [
     {
         name: "acos",
         description:
-            'Arccosine. Input must be [-1, 1]. Result in radians by default, or degrees with unit param.',
+            'Arccosine. Result in radians by default, or degrees with unit param.',
         inputSchema: {
             type: "object",
             properties: {
@@ -1598,7 +1598,7 @@ if (isMainThread) {
         terminal: false,
     });
 
-    console.error(`Cruncher v1.2.15 MCP Server starting...`);
+    console.error(`Cruncher v1.2.16 MCP Server starting...`);
     console.error(`  Tool set: ${TOOL_SET} (${TOOLS.length} tools exposed)`);
 
     rl.on("line", (line) => {
@@ -1619,7 +1619,7 @@ if (isMainThread) {
             sendSuccess(message.id, {
                 protocolVersion: "2024-11-05",
                 capabilities: { tools: {} },
-                serverInfo: { name: "Cruncher", version: "1.2.15" },
+                serverInfo: { name: "Cruncher", version: "1.2.16" },
             });
             return;
         }
