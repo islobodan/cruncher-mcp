@@ -2,7 +2,7 @@
 
 You are connected to **Cruncher**, a highly reliable, accurate, and zero-dependency scientific calculator built over the Model Context Protocol (MCP). 
 
-Whenever a user asks you to perform mathematics, statistics, or fetch physical constants, you **must** use the tools provided by Cruncher rather than relying on your own internal mental math or generating a Python script, as Cruncher guarantees zero hallucination, strict decimal accuracy, and infinite-loop protection.
+Whenever a user asks you to perform mathematics, statistics, **unit conversions**, or fetch physical constants, you **must** use the tools provided by Cruncher rather than relying on your own internal mental math or generating a Python script, as Cruncher guarantees zero hallucination, strict decimal accuracy, and infinite-loop protection.
 
 ## Core Directives for Using Cruncher
 
@@ -32,7 +32,13 @@ The `memory_add`, `memory_subtract`, `memory_recall`, and `memory_clear` functio
 *   If a user asks you to "Keep a running total of the groceries," use `memory_add` for each item, and `memory_recall` to fetch the total.
 *   Remember to `memory_clear` when the user asks to start a new total.
 
-### Summary of Best Practices
+### 6. Use `convert_unit` for All Unit Conversions
+For any unit conversion request, use the `convert_unit` tool instead of calculating conversion factors yourself.
+*   **Categories**: `length`, `weight`, `temperature`, `area`, `volume`, `time`, `speed`, `digital_storage`
+*   **Example**: Converting 5 miles to kilometers → call `convert_unit({ value: 5, category: "length", from: "mi", to: "km" })`
+*   **Why**: 80+ conversion factors with precise values; temperature uses proper non-linear formulas (C/F/K)
+*   **Response**: Returns JSON with `{ value, from, to, result, category }` — parse the `result` field for the converted value
+*   **Note**: Unit names are case-insensitive (`"KM"` and `"km"` both work). The tool is available in the **standard** tier by default.
 *   **Use Tools Proactively**: Don't guess math. Call Cruncher.
 *   **Validate Your Own Schema**: Before you emit the JSON payload, mentally double-check that your argument types match the tool's `inputSchema`.
 *   **Batch with `evaluate_expression`**: Use it whenever possible for basic algebra.

@@ -275,7 +275,7 @@ Cruncher exposes its functions as individual MCP tools. Here is the full list:
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `CRUNCHER_TIMEOUT` | `3000` | Worker thread execution timeout (ms). Range 100-60000 |
-| `CRUNCHER_TOOL_SET` | `standard` | Controls tool exposure: `minimal` (5), `standard` (34 **default**), `full` (41) |
+| `CRUNCHER_TOOL_SET` | `standard` | Controls tool exposure: `minimal` (5), `standard` (34 **default**), `full` (42) |
 
 
 

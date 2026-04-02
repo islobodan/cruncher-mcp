@@ -77,9 +77,9 @@
 ### O4: Tiered Tool Exposure (v1.2.12)
 **Implemented**: 2026-04-02
 
-- `CRUNCHER_TOOL_SET` env var: `minimal` (5), `standard` (33 **default**), `full` (41)
+- `CRUNCHER_TOOL_SET` env var: `minimal` (5), `standard` (34 **default**), `full` (42)
 - Dynamic tool filtering at startup
-- Standard tier: Core math, trig, stats, percentages, constants
+- Standard tier: Core math, trig, stats, percentages, constants, unit conversion
 - Full tier: Standard + memory, base conversion, percentile, batch, cache management
 
 ### O5: Constants in evaluate_expression (v1.2.13)
@@ -126,6 +126,18 @@
 - `percentage_change`: From→To % change (50→80 = +60%)
 - `percentage_reverse`: X is Y% of what? (30 is 15% of 200)
 - Anti-hallucination: LLM picks the semantically correct tool
+
+### O11: Unit Conversion Tool (v1.2.22)
+**Implemented**: 2026-04-02
+
+- `convert_unit` tool: 80+ conversions across 8 categories
+- **Categories**: length, weight, temperature, area, volume, time, speed, digital_storage
+- **Temperature handled separately** (non-linear C/F/K formulas)
+- **Other categories** use base-unit factor tables (e.g., all lengths → meters → target)
+- **Case-insensitive** unit matching (`"KM"` and `"km"` both work)
+- Returns structured JSON: `{ value, from, to, result, category }`
+- Added to **standard** tier (33→34 tools)
+- 25 new tests covering all categories, edge cases, and validation errors
 
 ### Statistics Mode: Done (v1.2.18)
 **Implemented**: 2026-04-02
@@ -185,24 +197,15 @@ Variance and standard deviation with sample/population mode are now fully implem
 
 ---
 
-## Remaining Tasks
+## Recently Merged into "Done": Unit Conversion (v1.2.22)
 
-### 9. Unit Conversion Tool
-| Status | Effort | Priority | Impact |
-|--------|--------|----------|--------|
-| `[]`   | M      | 🟡 Medium | Medium |
-
-**Description**: Add common unit conversions beyond base conversion.
-
-**Categories**:
-- Length (m, km, cm, mm, in, ft, yd, mi)
-- Weight (kg, g, mg, lb, oz)
-- Temperature (C, F, K)
-- Area (m², km², ft², ac, ha)
-- Volume (L, mL, gal, qt, pt, cup)
-- Time (s, min, hr, day, week)
+The `convert_unit` tool is fully implemented with 8 categories, 80+ units,
+base-unit factor conversion tables, non-linear temp formulas, case-insensitive
+matching, structured JSON output, and 25 dedicated tests. See O11 above.
 
 ---
+
+## Remaining Tasks
 
 ### 10. Complex Number Support
 | Status | Effort | Priority | Impact |
@@ -222,7 +225,7 @@ Variance and standard deviation with sample/population mode are now fully implem
 
 ---
 
-### 13. Expression History
+### 12. Expression History
 | Status | Effort | Priority | Impact |
 |--------|--------|----------|--------|
 | `[]`   | L      | 🟢 Low   | Low    |
@@ -243,7 +246,8 @@ Variance and standard deviation with sample/population mode are now fully implem
 | v1.2.18 | 269 | 100% | std_dev & variance |
 | v1.2.19 | 279 | 100% | Percentage functions |
 | v1.2.20 | 278 | 100% | Tier refinement |
-| **v1.2.21** | **278** | **100%** | **Documentation audit** |
+| v1.2.21 | 278 | 100% | Documentation audit |
+| **v1.2.22** | **302** | **100%** | **Unit conversion (8 cat, 80+ units, 25 tests)** |
 
 ---
 
@@ -251,7 +255,8 @@ Variance and standard deviation with sample/population mode are now fully implem
 
 | Date | Version | Changes |
 |------|---------|---------|
-| 2026-04-02 | v1.2.21 | Comprehensive README.md audit: fixed tier counts (33/41), default=standard, added missing tools, updated examples |
+| 2026-04-02 | v1.2.22 | Unit conversion: 8 categories (length, weight, temp, area, volume, time, speed, digital_storage), 80+ units, JSON structured output |
+| 2026-04-02 | v1.2.21 | Comprehensive README.md audit: fixed tier counts (34/42), default=standard, added missing tools, updated examples |
 | 2026-04-02 | v1.2.20 | Standard tier refinement: moved memory, convert_base, percentile to full tier |
 | 2026-04-02 | v1.2.19 | Percentage tools: percentage_of, percentage_change, percentage_reverse |
 | 2026-04-02 | v1.2.18 | std_dev & variance: standard deviation and variance (sample + population) |
