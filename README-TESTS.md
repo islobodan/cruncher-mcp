@@ -31,7 +31,7 @@ This single command runs all 50 tests covering every feature of the Cruncher ser
 - **Statistics**: sum, avg, median, min, max, count, range, percentile
 - **Memory**: M+, M-, MR, MC operations (with atomic locking for concurrent calls)
 - **Base Conversion**: Binary, octal, decimal, hexadecimal conversions
-- **Unit Conversion**: 80+ conversions across 8 categories (length, weight, temperature, area, volume, time, speed, digital_storage) via `convert_unit` (v1.2.22)
+- **Unit Conversion**: 25 tests across 8 categories, 80+ conversions across 8 categories (length, weight, temperature, area, volume, time, speed, digital_storage) via `convert_unit` (v1.2.22)
 - **Scientific Notation**: `1e6`, `2.5e-3`, `1e+6` expressions
 - **Built-in Functions**: `abs()`, `round()`, `floor()`, `ceil()`, `min()`, `max()`
 - **Configurable Timeout**: Custom timeout for factorial, median, percentile (v1.2.4)
@@ -55,7 +55,7 @@ This single command runs all 50 tests covering every feature of the Cruncher ser
 
 ### 📊 Test Statistics
 - **Total Tests**: 302
-- **Pass Rate**: **100%** (302/302) on v1.2.23
+- **Pass Rate**: **100%** (330/330) on v1.2.23
 - **Execution Time**: ~8-10 seconds
 - **Coverage**: All **42 tools**, edge cases, concurrency, and advanced scenarios
 - **Tier Coverage**: minimal (5 tools), standard (34 tools), full (42 tools)
@@ -109,7 +109,7 @@ RUN npx tsx test-cruncher-full.ts
 
 📊 TEST SUMMARY
 ============================================================
-Total Tests: 302
+Total Tests: 330
 Passed: 221
 Failed: 0
 Success Rate: 100.00%
@@ -206,4 +206,4 @@ For issues or questions:
 
 **Last Updated**: 2026-04-02
 **Test Framework Version**: mcp-tester 1.0.0
-**Server Version Tested**: Cruncher **v1.2.23** (302 tests, 100% pass rate)
+**Server Version Tested**: Cruncher **v1.2.23** (330 tests, 100% pass rate)

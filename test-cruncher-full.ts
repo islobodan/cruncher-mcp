@@ -4553,6 +4553,429 @@ async function testCruncher() {
         );
 
 
+        results.push(
+            await runTest("Standard tier: server stop", async () => {
+                await standardClient.stop();
+            }),
+        );
+
+        // --- 46. Tier Exposure + Functional Tests ---
+        // Full-mode client tests for tools NOT in standard
+        console.log("\n🔓 46. Full-Mode Exclusive Tool Tests");
+
+        results.push(
+            await runTest("Full mode: convert_base available", async () => {
+                // Full mode was used for the main test run, so convert_base should work
+                const result = await client.callTool({
+                    name: "convert_base",
+                    arguments: { value: "1010", from_base: 2, to_base: 10 },
+                });
+                if (result.content[0].text !== "10") {
+                    throw new Error(`Expected '10', got '${result.content[0].text}'`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Full mode: batch available", async () => {
+                const result = await client.callTool({
+                    name: "batch",
+                    arguments: { operations: [{ tool: "add", args: { a: 1, b: 2 } }] },
+                });
+                const data = JSON.parse(result.content[0].text);
+                if (!data[0].success) throw new Error("Batch should work in full mode");
+            }),
+        );
+
+        results.push(
+            await runTest("Full mode: cache_clear and cache_info", async () => {
+                // clear then info
+                await client.callTool({ name: "cache_clear", arguments: {} });
+                const result = await client.callTool({ name: "cache_info", arguments: {} });
+                const data = JSON.parse(result.content[0].text);
+                if (typeof data.size !== "number") throw new Error("cache_info should return size");
+                if (typeof data.max_size !== "number") throw new Error("cache_info should return max_size");
+            }),
+        );
+
+        results.push(
+            await runTest("Full mode: percentile works", async () => {
+                const result = await client.callTool({
+                    name: "percentile",
+                    arguments: { numbers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], percentile: 90 },
+                });
+                // Percentile interpolation varies by implementation
+                const val = parseFloat(result.content[0].text);
+                if (Math.abs(val - 9.1) > 1e-10) {
+                    throw new Error(`Expected ~9.1, got ${val}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Full mode: range works", async () => {
+                const result = await client.callTool({
+                    name: "range",
+                    arguments: { numbers: [3, 7, 1, 9, 5] },
+                });
+                if (parseFloat(result.content[0].text) !== 8) {
+                    throw new Error(`Expected 8, got ${result.content[0].text}`);
+                }
+            }),
+        );
+
+
+        // --- 47. Missing evaluate_expression Built-ins ---
+        console.log("\n🧮 47. Missing evaluate_expression Built-in Tests");
+
+        results.push(
+            await runTest("eval_expression: log(x, base) — log(16, 2) = 4", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "log(16, 2)" },
+                });
+                if (parseFloat(result.content[0].text) !== 4) {
+                    throw new Error(`Expected 4, got ${result.content[0].text}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("eval_expression: log(x, base) — log(1000, 10) ≈ 3", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "log(1000, 10)" },
+                });
+                const got = parseFloat(result.content[0].text);
+                if (Math.abs(got - 3) > 1e-10) {
+                    throw new Error(`Expected ~3, got ${got}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("eval_expression: euler_mascheroni constant", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "euler_mascheroni" },
+                });
+                const got = parseFloat(result.content[0].text);
+                if (Math.abs(got - 0.5772156649015329) > 1e-10) {
+                    throw new Error(`Expected ~0.5772, got ${got}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("eval_expression: h (Planck) constant", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "h" },
+                });
+                const got = parseFloat(result.content[0].text);
+                if (Math.abs(got - 6.62607015e-34) / 6.62607015e-34 > 1e-10) {
+                    throw new Error(`Expected 6.62607015e-34, got ${got}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("eval_expression: NA (Avogadro) constant", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "NA" },
+                });
+                const got = parseFloat(result.content[0].text);
+                if (Math.abs(got - 6.02214076e23) / 6.02214076e23 > 1e-10) {
+                    throw new Error(`Expected 6.02214076e23, got ${got}`);
+                }
+            }),
+        );
+
+
+        // --- 48. evaluate_expression Security / Injection ---
+        console.log("\n🔒 48. evaluate_expression Security Tests");
+
+        results.push(
+            await runTest("Security: eval() injection blocked", async () => {
+                try {
+                    await client.callTool({
+                        name: "evaluate_expression",
+                        arguments: { expression: "eval('5+5')" },
+                    });
+                    throw new Error("Should have thrown");
+                } catch (e: any) {
+                    const msg = e instanceof Error ? e.message : String(e);
+                    if (!msg.includes("Security Error") && !msg.includes("invalid")) {
+                        throw new Error(`Expected security error, got: ${msg}`);
+                    }
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Security: require() injection blocked", async () => {
+                try {
+                    await client.callTool({
+                        name: "evaluate_expression",
+                        arguments: { expression: "require('fs')" },
+                    });
+                    throw new Error("Should have thrown");
+                } catch (e: any) {
+                    const msg = e instanceof Error ? e.message : String(e);
+                    if (!msg.includes("Security Error") && !msg.includes("invalid")) {
+                        throw new Error(`Expected security error, got: ${msg}`);
+                    }
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Security: process global — blocked or terminated", async () => {
+                try {
+                    await client.callTool({
+                        name: "evaluate_expression",
+                        arguments: { expression: "process.exit()" },
+                    });
+                    throw new Error("Should have thrown");
+                } catch (e: any) {
+                    const msg = e instanceof Error ? e.message : String(e);
+                    if (!msg.includes("Security Error") && !msg.includes("invalid") && !msg.includes("Timeout") && !msg.includes("terminated")) {
+                        throw new Error(`Expected security/timeout error, got: ${msg}`);
+                    }
+                }
+            }),
+        );
+
+
+        // --- 49. Missing variance / std_dev Edge Cases ---
+        console.log("\n📊 49. Variance/StdDev Edge Cases");
+
+        results.push(
+            await runTest("variance: single element sample throws", async () => {
+                try {
+                    await client.callTool({
+                        name: "variance",
+                        arguments: { numbers: [42] },
+                    });
+                    throw new Error("Should have thrown");
+                } catch (e: any) {
+                    const msg = e instanceof Error ? e.message : String(e);
+                    if (!msg.includes("≥2") && !msg.includes("2 values") && !msg.includes("single") && !msg.includes("sample")) {
+                        throw new Error(`Expected sample error, got: ${msg}`);
+                    }
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("std_dev: single element sample throws", async () => {
+                try {
+                    await client.callTool({
+                        name: "std_dev",
+                        arguments: { numbers: [42] },
+                    });
+                    throw new Error("Should have thrown");
+                } catch (e: any) {
+                    const msg = e instanceof Error ? e.message : String(e);
+                    if (!msg.includes("≥2") && !msg.includes("2 values") && !msg.includes("single") && !msg.includes("sample")) {
+                        throw new Error(`Expected sample error, got: ${msg}`);
+                    }
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("std_dev: negative numbers variance", async () => {
+                const result = await client.callTool({
+                    name: "variance",
+                    arguments: { numbers: [-2, -4, -6, -8, -10], population: true },
+                });
+                // Variance of [-2,-4,-6,-8,-10] — mean=-6, sum sq diff=40, var=8
+                if (parseFloat(result.content[0].text) !== 8) {
+                    throw new Error(`Expected 8, got ${result.content[0].text}`);
+                }
+            }),
+        );
+
+
+        // --- 50. convert_unit More Edge Cases ---
+        console.log("\n🔄 50. convert_unit More Edge Cases");
+
+        results.push(
+            await runTest("convert_unit: reverse km to m", async () => {
+                const result = await client.callTool({
+                    name: "convert_unit",
+                    arguments: { value: 5, category: "length", from: "m", to: "km" },
+                });
+                const parsed = JSON.parse(result.content[0].text);
+                if (parsed.result !== 0.005) {
+                    throw new Error(`Expected 0.005, got ${parsed.result}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("convert_unit: negative temperature conversion", async () => {
+                const result = await client.callTool({
+                    name: "convert_unit",
+                    arguments: { value: -40, category: "temperature", from: "C", to: "F" },
+                });
+                const parsed = JSON.parse(result.content[0].text);
+                if (parsed.result !== -40) {
+                    throw new Error(`Expected -40 (C/F meet), got ${parsed.result}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("convert_unit: zero to Kelvin", async () => {
+                const result = await client.callTool({
+                    name: "convert_unit",
+                    arguments: { value: -273.15, category: "temperature", from: "C", to: "K" },
+                });
+                const parsed = JSON.parse(result.content[0].text);
+                if (Math.abs(parsed.result) > 0.01) {
+                    throw new Error(`Expected ~0, got ${parsed.result}`);
+                }
+            }),
+        );
+
+
+        // --- 51. Batch Boundary (49 ops — right below limit) ---
+        console.log("\n📦 51. Batch Boundary Tests");
+
+        results.push(
+            await runTest("Batch: 49 operations (just below 50 limit)", async () => {
+                const ops = Array.from({ length: 49 }, (_, i) =>
+                    ({ tool: "add", args: { a: i, b: 1 } })
+                );
+                const result = await client.callTool({
+                    name: "batch",
+                    arguments: { operations: ops },
+                });
+                const data = JSON.parse(result.content[0].text);
+                if (data.length !== 49) throw new Error(`Expected 49, got ${data.length}`);
+                // Verify a few random results
+                for (const idx of [0, 24, 48]) {
+                    if (!data[idx].success) throw new Error(`Op ${idx} failed`);
+                    if (data[idx].data !== idx + 1) throw new Error(`Op ${idx}: expected ${idx + 1}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Batch: 50 operations (exact limit)", async () => {
+                const ops = Array.from({ length: 50 }, (_, i) =>
+                    ({ tool: "add", args: { a: i, b: 0 } })
+                );
+                const result = await client.callTool({
+                    name: "batch",
+                    arguments: { operations: ops },
+                });
+                const data = JSON.parse(result.content[0].text);
+                if (data.length !== 50) throw new Error(`Expected 50, got ${data.length}`);
+                if (!data[49].success || data[49].data !== 49) throw new Error("Last op failed");
+            }),
+        );
+
+        results.push(
+            await runTest("Batch: mixed eval + stats", async () => {
+                const result = await client.callTool({
+                    name: "batch",
+                    arguments: {
+                        operations: [
+                            { tool: "evaluate_expression", args: { expression: "2 + 3" } },
+                            { tool: "avg", args: { numbers: [2, 4, 6] } },
+                            { tool: "sqrt", args: { value: 81 } },
+                        ],
+                    },
+                });
+                const data = JSON.parse(result.content[0].text);
+                if (!data[0].success || parseFloat(data[0].data) !== 5) throw new Error("eval_expr failed");
+                if (!data[1].success || parseFloat(data[1].data) !== 4) throw new Error("avg failed");
+                if (!data[2].success || parseFloat(data[2].data) !== 9) throw new Error("sqrt failed");
+            }),
+        );
+
+
+        // --- 52. Fuzzy Tool Name — More Edge Cases ---
+        console.log("\n🔍 52. Fuzzy Tool Name — Additional Edge Cases");
+
+        results.push(
+            await runTest("Fuzzy: fctorial -> factorial (dropped char)", async () => {
+                try {
+                    await client.callTool({ name: "fctorial", arguments: { n: 3 } });
+                    throw new Error("Expected fuzzy suggestion");
+                } catch (e: any) {
+                    const msg = e instanceof Error ? e.message : String(e);
+                    if (!msg.includes("Did you mean 'factorial'?")) {
+                        throw new Error(`Expected factorial suggestion, got: ${msg}`);
+                    }
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Fuzzy: multply -> multiply (dropped letter)", async () => {
+                try {
+                    await client.callTool({ name: "multply", arguments: { a: 3, b: 4 } });
+                    throw new Error("Expected fuzzy suggestion");
+                } catch (e: any) {
+                    const msg = e instanceof Error ? e.message : String(e);
+                    if (!msg.includes("Did you mean 'multiply'?")) {
+                        throw new Error(`Expected multiply suggestion, got: ${msg}`);
+                    }
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Fuzzy: sub -> subtract (short prefix)", async () => {
+                try {
+                    await client.callTool({ name: "sub", arguments: { a: 5, b: 2 } });
+                    throw new Error("Expected fuzzy suggestion");
+                } catch (e: any) {
+                    const msg = e instanceof Error ? e.message : String(e);
+                    if (!msg.includes("Did you mean 'subtract'?")) {
+                        throw new Error(`Expected subtract suggestion, got: ${msg}`);
+                    }
+                }
+            }),
+        );
+
+        // --- 53. evaluate_expression Constants — Remaining ---
+        console.log("\n🔬 53. Remaining Constant Expression Tests");
+
+        results.push(
+            await runTest("eval_expression: e_charge * 1e19", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "e_charge * 1e19" },
+                });
+                const got = parseFloat(result.content[0].text);
+                const expected = 1.602176634e-19 * 1e19;
+                if (Math.abs(got - expected) / expected > 1e-10) {
+                    throw new Error(`Expected ${expected}, got ${got}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("eval_expression: m_e * 1e31", async () => {
+                const result = await client.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "m_e * 1e31" },
+                });
+                const got = parseFloat(result.content[0].text);
+                const expected = 9.1093837015e-31 * 1e31;
+                if (Math.abs(got - expected) / expected > 1e-10) {
+                    throw new Error(`Expected ${expected}, got ${got}`);
+                }
+            }),
+        );
+
+
         // ========== Summary ==========
         console.log("\n" + "=".repeat(60));
         console.log("📊 TEST SUMMARY");

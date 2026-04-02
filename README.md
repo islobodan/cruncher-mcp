@@ -3,7 +3,7 @@
 [![Version](https://img.shields.io/badge/version-1.2.23-blue.svg)](https://github.com/islobodan/cruncher-mcp)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Tests](https://img.shields.io/badge/tests-302%20%7C%20100%25-brightgreen.svg)](TEST_REPORT.md)
+[![Tests](https://img.shields.io/badge/tests-330%20%7C%20100%25-brightgreen.svg)](TEST_REPORT.md)
 [![Status](https://img.shields.io/badge/status-feature--complete-brightgreen.svg)](TODO.md)
 
 A powerful scientific calculator for your AI assistant, built as a **Model Context Protocol (MCP)** server. Cruncher allows compatible AI clients (like Claude Desktop) to perform complex mathematical calculations, handle memory, perform statistical analysis, and access scientific constants with a simple, secure, and standardized interface.
@@ -263,7 +263,7 @@ Cruncher exposes its functions as individual MCP tools. Here is the full list:
 | `memory_add` | Adds a value to the current memory (M+). | `value` (number) |
 | `memory_subtract` | Subtracts a value from the current memory (M-). | `value` (number) |
 | **Angle Mode (Full Tier)** | | |
-| `set_angle_mode` | Set global angle mode (default: radians). | `mode` ("degrees" or "radians") |
+| `set_angle_mode` | Set global angle mode (default: degrees). | `mode` ("degrees" or "radians") |
 | `get_angle_mode` | Get current angle mode. | (no arguments) |
 | **Admin Tools (Full Tier)** | | |
 | `batch` | Execute multiple tool calls sequentially. | `operations` (array of {tool, arguments}) |
@@ -312,8 +312,8 @@ Beyond basic arithmetic, `evaluate_expression` supports these functions natively
 
 | Function | Description | Example | Result |
 |----------|-------------|---------|--------|
-| `sin(x)` | Sine (radians) | `sin(pi / 2)` | 1 |
-| `cos(x)` | Cosine (radians) | `cos(pi)` | -1 |
+| `sin(x)` | Sine (radians, always in expressions) | `sin(pi / 2)` | 1 |
+| `cos(x)` | Cosine (radians, always in expressions) | `cos(pi)` | -1 |
 | `tan(x)` | Tangent (radians) | `tan(pi / 4)` | ~1 |
 | `asin(x)` | Arc-sine (result in radians) | `asin(1)` | π/2 |
 | `acos(x)` | Arc-cosine (result in radians) | `acos(0)` | π/2 |
@@ -406,7 +406,7 @@ Example MCP config (`claude_desktop_config.json`):
 
 Cruncher is a plain Node.js JavaScript application that communicates over **standard input/output (stdio)**. This makes it a lightweight, portable, and secure MCP server. The entire flow for a single tool call looks like this:
 
-1.  **Initialization**: On startup, the server listens for an `initialize` request from the MCP client and responds with its capabilities and version info (`v1.2.20`).
+1.  **Initialization**: On startup, the server listens for an `initialize` request from the MCP client and responds with its capabilities and version info (`v1.2.23`).
 2.  **Tool Discovery**: The client sends a `tools/list` request, and the server responds with the full list of available calculator tools and their `inputSchema`, which defines the required arguments and their types.
 3.  **Input Validation**: Before any tool is executed, the server runs a custom recursive `validateArguments` function against the tool's `inputSchema`. This ensures required fields are present, types are correct (number, string, array), enum values are valid, and min/max constraints are respected — all without any external library.
 4.  **Worker Thread Execution**: Once validated, the tool call is handed off to an isolated Node.js `worker_thread`. This completely protects the main thread (and its `stdio` communication) from being blocked by a long-running or infinite calculation.

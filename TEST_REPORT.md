@@ -8,7 +8,7 @@ This document summarizes the comprehensive test suite for the Cruncher MCP Serve
 - **Runner**: `tsx` (TypeScript execution without compilation)
 - **Test File**: `test-cruncher-full.ts` (single comprehensive suite)
 - **Total Tests**: 302
-- **Pass Rate**: **100%** (302/302 tests passed) on v1.2.23
+- **Pass Rate**: **100%** (330/330 tests passed) on v1.2.23
 
 ## Test Categories
 
