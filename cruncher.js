@@ -649,7 +649,7 @@ const toolsAll = [
     {
         name: "evaluate_expression",
         description:
-            "Evaluate a mathematical expression. PRIMARY tool for ALL math: +, -, *, /, %, ^, parentheses, decimals, scientific notation (1e6), functions (abs, round, floor, ceil, min, max).",
+            "Evaluate a mathematical expression. PRIMARY tool for ALL math: +, -, *, /, %, ^. Functions: sqrt, sin, cos, tan, asin, acos, atan, log10, ln, log(x,base), abs, round, floor, ceil, min, max. Constants: pi, e, tau, phi, sqrt2, euler_mascheroni, c, g, G, h, k, R, NA, e_charge, m_e, m_p. Parentheses and scientific notation (1e6) supported. Use explicit operators: 2 * pi, not 2pi.",,
         inputSchema: {
             type: "object",
             properties: { expression: { type: "string" } },
