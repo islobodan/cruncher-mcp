@@ -3180,6 +3180,261 @@ async function testCruncher() {
             }),
         );
 
+
+        // --- 45. Tiered Tool Exposure (CRUNCHER_TOOL_SET) Tests ---
+        console.log("\n🎛️ 45. Tiered Tool Exposure Tests");
+
+        // --- Minimal mode test ---
+        const minimalClient = new MCPClient({
+            name: "minimal-tier-test",
+            version: "1.0.0",
+            timeout: TEST_TIMEOUT,
+            logLevel: "none",
+        });
+        const expectedMinimalTools = [
+            "evaluate_expression",
+            "add",
+            "subtract",
+            "multiply",
+            "divide",
+        ];
+
+        results.push(
+            await runTest("Minimal tier: Start server with CRUNCHER_TOOL_SET=minimal", async () => {
+                await minimalClient.start({
+                    command: "node",
+                    args: ["cruncher.js"],
+                    env: { CRUNCHER_TOOL_SET: "minimal", NODE_ENV: "test" },
+                });
+            }),
+        );
+
+        results.push(
+            await runTest("Minimal tier: Exactly 5 tools exposed", async () => {
+                const tools = await minimalClient.listTools();
+                if (tools.length !== 5) {
+                    throw new Error(`Expected 5 tools in minimal mode, got ${tools.length}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Minimal tier: Core math tools present", async () => {
+                const tools = await minimalClient.listTools();
+                const toolNames = tools.map((t) => t.name);
+                const missing = expectedMinimalTools.filter(
+                    (name) => !toolNames.includes(name),
+                );
+                if (missing.length > 0) {
+                    throw new Error(`Missing minimal tools: ${missing.join(", ")}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Minimal tier: Trigonometry tools excluded", async () => {
+                const tools = await minimalClient.listTools();
+                const toolNames = tools.map((t) => t.name);
+                const banned = ["sine", "cosine", "tangent", "asin", "acos", "atan"];
+                const present = banned.filter((name) => toolNames.includes(name));
+                if (present.length > 0) {
+                    throw new Error(`Unexpected tools in minimal: ${present.join(", ")}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Minimal tier: Statistics tools excluded", async () => {
+                const tools = await minimalClient.listTools();
+                const toolNames = tools.map((t) => t.name);
+                const banned = ["median", "percentile", "range", "count"];
+                const present = banned.filter((name) => toolNames.includes(name));
+                if (present.length > 0) {
+                    throw new Error(`Unexpected tools in minimal: ${present.join(", ")}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Minimal tier: Batch/cache/memory tools excluded", async () => {
+                const tools = await minimalClient.listTools();
+                const toolNames = tools.map((t) => t.name);
+                const banned = ["batch", "cache_clear", "cache_info", "memory_add", "memory_subtract", "memory_clear", "memory_recall"];
+                const present = banned.filter((name) => toolNames.includes(name));
+                if (present.length > 0) {
+                    throw new Error(`Unexpected tools in minimal: ${present.join(", ")}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Minimal tier: evaluate_expression works", async () => {
+                const result = await minimalClient.callTool({
+                    name: "evaluate_expression",
+                    arguments: { expression: "100 / 4 + 10" },
+                });
+                if (parseFloat(result.content[0].text) !== 35) {
+                    throw new Error(`Expected 35, got ${result.content[0].text}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Minimal tier: add works", async () => {
+                const result = await minimalClient.callTool({
+                    name: "add",
+                    arguments: { a: 42, b: 58 },
+                });
+                if (parseFloat(result.content[0].text) !== 100) {
+                    throw new Error(`Expected 100, got ${result.content[0].text}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Minimal tier: multiply works", async () => {
+                const result = await minimalClient.callTool({
+                    name: "multiply",
+                    arguments: { a: 7, b: 8 },
+                });
+                if (parseFloat(result.content[0].text) !== 56) {
+                    throw new Error(`Expected 56, got ${result.content[0].text}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Minimal tier: sine returns Tool not found error", async () => {
+                try {
+                    await minimalClient.callTool({
+                        name: "sine",
+                        arguments: { angle: 0 },
+                    });
+                    throw new Error("Expected MCP error for unknown tool, but call succeeded");
+                } catch (err) {
+                    const msg = err instanceof Error ? err.message : String(err);
+                    if (!msg.includes("not found")) {
+                        throw new Error(`Expected 'not found' error, got: ${msg}`);
+                    }
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Minimal tier: server stop", async () => {
+                await minimalClient.stop();
+            }),
+        );
+
+        // --- Standard mode test ---
+        const standardClient = new MCPClient({
+            name: "standard-tier-test",
+            version: "1.0.0",
+            timeout: TEST_TIMEOUT,
+            logLevel: "none",
+        });
+
+        results.push(
+            await runTest("Standard tier: Start server with CRUNCHER_TOOL_SET=standard", async () => {
+                await standardClient.start({
+                    command: "node",
+                    args: ["cruncher.js"],
+                    env: { CRUNCHER_TOOL_SET: "standard", NODE_ENV: "test" },
+                });
+            }),
+        );
+
+        results.push(
+            await runTest("Standard tier: Exactly 26 tools exposed", async () => {
+                const tools = await standardClient.listTools();
+                if (tools.length !== 26) {
+                    throw new Error(`Expected 26 tools in standard mode, got ${tools.length}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Standard tier: Includes all minimal tools", async () => {
+                const tools = await standardClient.listTools();
+                const toolNames = tools.map((t) => t.name);
+                const missing = expectedMinimalTools.filter(
+                    (name) => !toolNames.includes(name),
+                );
+                if (missing.length > 0) {
+                    throw new Error(`Missing minimal tools in standard: ${missing.join(", ")}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Standard tier: Includes stats and memory tools", async () => {
+                const tools = await standardClient.listTools();
+                const toolNames = tools.map((t) => t.name);
+                const expectedStandardExtras = ["sqrt", "power", "factorial", "sum", "avg", "min", "max", "count", "median", "memory_add", "memory_clear", "get_constant", "convert_base"];
+                const missing = expectedStandardExtras.filter(
+                    (name) => !toolNames.includes(name),
+                );
+                if (missing.length > 0) {
+                    throw new Error(`Missing standard tools: ${missing.join(", ")}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Standard tier: Trigonometry tools excluded", async () => {
+                const tools = await standardClient.listTools();
+                const toolNames = tools.map((t) => t.name);
+                const banned = ["sine", "cosine", "tangent", "asin", "acos", "atan"];
+                const present = banned.filter((name) => toolNames.includes(name));
+                if (present.length > 0) {
+                    throw new Error(`Unexpected tools in standard: ${present.join(", ")}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Standard tier: Batch/angle/cache excluded", async () => {
+                const tools = await standardClient.listTools();
+                const toolNames = tools.map((t) => t.name);
+                const banned = ["batch", "cache_clear", "cache_info", "set_angle_mode", "get_angle_mode"];
+                const present = banned.filter((name) => toolNames.includes(name));
+                if (present.length > 0) {
+                    throw new Error(`Unexpected tools in standard: ${present.join(", ")}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Standard tier: factorial works", async () => {
+                const result = await standardClient.callTool({
+                    name: "factorial",
+                    arguments: { n: 6 },
+                });
+                if (parseFloat(result.content[0].text) !== 720) {
+                    throw new Error(`Expected 720, got ${result.content[0].text}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Standard tier: memory_add works", async () => {
+                const result = await standardClient.callTool({
+                    name: "memory_add",
+                    arguments: { value: 42 },
+                });
+                if (!result.content[0].text.includes("42")) {
+                    throw new Error(`Expected result containing 42, got: ${result.content[0].text}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Standard tier: server stop", async () => {
+                await standardClient.stop();
+            }),
+        );
+
+
         // ========== Summary ==========
         console.log("\n" + "=".repeat(60));
         console.log("📊 TEST SUMMARY");

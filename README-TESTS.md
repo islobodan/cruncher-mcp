@@ -15,7 +15,7 @@ This single command runs all 50 tests covering every feature of the Cruncher ser
 
 | File | Description | Tests | Use Case |
 |------|-------------|-------|----------|
-| `test-cruncher-full.ts` | Comprehensive test suite | 201 | Full regression testing, CI/CD |
+| `test-cruncher-full.ts` | Comprehensive test suite | 221 | Full regression testing, CI/CD |
 | `TEST_REPORT.md` | Test results and analysis | - | Documentation |
 
 ## Test Coverage
@@ -49,8 +49,8 @@ This single command runs all 50 tests covering every feature of the Cruncher ser
 - **Error Handling**: Invalid inputs, missing arguments, unknown tools
 
 ### 📊 Test Statistics
-- **Total Tests**: 201
-- **Pass Rate**: **100%** (201/201) on v1.2.12
+- **Total Tests**: 221
+- **Pass Rate**: **100%** (221/221) on v1.2.12
 - **Execution Time**: ~5-6 seconds
 - **Coverage**: All **36 tools** (filtered by active tier), edge cases, and advanced scenarios
 
@@ -103,8 +103,8 @@ RUN npx tsx test-cruncher-full.ts
 
 📊 TEST SUMMARY
 ============================================================
-Total Tests: 201
-Passed: 201
+Total Tests: 221
+Passed: 221
 Failed: 0
 Success Rate: 100.00%
 ============================================================
@@ -200,4 +200,4 @@ For issues or questions:
 
 **Last Updated**: 2026-04-01
 **Test Framework Version**: mcp-tester 1.0.0
-**Server Version Tested**: Cruncher **v1.2.12** (201 tests, 100% pass rate)
+**Server Version Tested**: Cruncher **v1.2.12** (221 tests, 100% pass rate)
