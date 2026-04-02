@@ -3056,6 +3056,133 @@ async function testCruncher() {
             }),
         );
 
+        // --- 35e. Percentage Functions Tests ---
+        console.log("\n📈 35e. Percentage Functions Tests");
+
+        // percentage_of tests
+        results.push(
+            await runTest("percentage_of: 15% of 200 = 30", async () => {
+                const result = await client.callTool({
+                    name: "percentage_of",
+                    arguments: { percent: 15, total: 200 },
+                });
+                if (parseFloat(result.content[0].text) !== 30)
+                    throw new Error(`Expected 30, got ${result.content[0].text}`);
+            }),
+        );
+
+        results.push(
+            await runTest("percentage_of: 0% of 100 = 0", async () => {
+                const result = await client.callTool({
+                    name: "percentage_of",
+                    arguments: { percent: 0, total: 100 },
+                });
+                if (parseFloat(result.content[0].text) !== 0)
+                    throw new Error(`Expected 0, got ${result.content[0].text}`);
+            }),
+        );
+
+        results.push(
+            await runTest("percentage_of: 200% of 50 = 100", async () => {
+                const result = await client.callTool({
+                    name: "percentage_of",
+                    arguments: { percent: 200, total: 50 },
+                });
+                if (parseFloat(result.content[0].text) !== 100)
+                    throw new Error(`Expected 100, got ${result.content[0].text}`);
+            }),
+        );
+
+        results.push(
+            await runTest("percentage_of: negative percent = -25% of 80 = -20", async () => {
+                const result = await client.callTool({
+                    name: "percentage_of",
+                    arguments: { percent: -25, total: 80 },
+                });
+                if (parseFloat(result.content[0].text) !== -20)
+                    throw new Error(`Expected -20, got ${result.content[0].text}`);
+            }),
+        );
+
+        // percentage_change tests
+        results.push(
+            await runTest("percentage_change: 50→80 = 60%", async () => {
+                const result = await client.callTool({
+                    name: "percentage_change",
+                    arguments: { from: 50, to: 80 },
+                });
+                if (parseFloat(result.content[0].text) !== 60)
+                    throw new Error(`Expected 60, got ${result.content[0].text}`);
+            }),
+        );
+
+        results.push(
+            await runTest("percentage_change: 120→90 = -25%", async () => {
+                const result = await client.callTool({
+                    name: "percentage_change",
+                    arguments: { from: 120, to: 90 },
+                });
+                if (parseFloat(result.content[0].text) !== -25)
+                    throw new Error(`Expected -25, got ${result.content[0].text}`);
+            }),
+        );
+
+        results.push(
+            await runTest("percentage_change: from zero throws", async () => {
+                try {
+                    await client.callTool({
+                        name: "percentage_change",
+                        arguments: { from: 0, to: 50 },
+                    });
+                    throw new Error("Expected error");
+                } catch (error) {
+                    const msg = error instanceof Error ? error.message : String(error);
+                    if (!msg.includes("zero"))
+                        throw new Error(`Expected zero error, got: ${msg}`);
+                }
+            }),
+        );
+
+        // percentage_reverse tests
+        results.push(
+            await runTest("percentage_reverse: 30 is 15% of 200", async () => {
+                const result = await client.callTool({
+                    name: "percentage_reverse",
+                    arguments: { value: 30, percent: 15 },
+                });
+                if (parseFloat(result.content[0].text) !== 200)
+                    throw new Error(`Expected 200, got ${result.content[0].text}`);
+            }),
+        );
+
+        results.push(
+            await runTest("percentage_reverse: 270 is 18% of 1500", async () => {
+                const result = await client.callTool({
+                    name: "percentage_reverse",
+                    arguments: { value: 270, percent: 18 },
+                });
+                if (parseFloat(result.content[0].text) !== 1500)
+                    throw new Error(`Expected 1500, got ${result.content[0].text}`);
+            }),
+        );
+
+        results.push(
+            await runTest("percentage_reverse: zero percent throws", async () => {
+                try {
+                    await client.callTool({
+                        name: "percentage_reverse",
+                        arguments: { value: 100, percent: 0 },
+                    });
+                    throw new Error("Expected error");
+                } catch (error) {
+                    const msg = error instanceof Error ? error.message : String(error);
+                    if (!msg.includes("zero"))
+                        throw new Error(`Expected zero error, got: ${msg}`);
+                }
+            }),
+        );
+
+
         // --- 36. Fuzzy Tool Name Matching Tests ---
         console.log("\n🔍 36. Fuzzy Tool Name Matching Tests");
 
@@ -4017,10 +4144,10 @@ async function testCruncher() {
         );
 
         results.push(
-            await runTest("Standard tier: Exactly 36 tools exposed", async () => {
+            await runTest("Standard tier: Exactly 39 tools exposed", async () => {
                 const tools = await standardClient.listTools();
-                if (tools.length !== 36) {
-                    throw new Error(`Expected 36 tools in standard mode, got ${tools.length}`);
+                if (tools.length !== 39) {
+                    throw new Error(`Expected 39 tools in standard mode, got ${tools.length}`);
                 }
             }),
         );
@@ -4048,6 +4175,7 @@ async function testCruncher() {
                     "sine", "cosine", "tangent", "asin", "acos", "atan",
                     "set_angle_mode", "get_angle_mode",
                     "variance", "std_dev",
+                    "percentage_of", "percentage_change", "percentage_reverse",
                 ];
                 const missing = expectedStandardExtras.filter(
                     (name) => !toolNames.includes(name),

@@ -26,7 +26,7 @@
  * - v1.2.11: Context token optimization (~40% reduction in tool descriptions).
  *            De-emphasized individual math tools in favor of evaluate_expression.
  *            Trimmed redundant descriptions and repetitive patterns.
- * - v1.2.18: Tiered tool exposure + constants in evaluate_expression via CRUNCHER_TOOL_SET env var.
+ * - v1.2.19: Tiered tool exposure + constants in evaluate_expression via CRUNCHER_TOOL_SET env var.
  *            minimal (5), standard (26), full (36, default) tool sets.
  *            Reduces context token usage by up to 90% for minimal mode.
  */
@@ -60,7 +60,7 @@ const TOOL_TIERS = {
     minimal: [
         "evaluate_expression", "add", "subtract", "multiply", "divide",
     ],
-    // Standard: minimal + trig, stats, memory, constants, base conversion (33 tools)
+    // Standard: minimal + trig, stats, memory, constants, base conversion (39 tools)
     standard: [
         "evaluate_expression",
         "add", "subtract", "multiply", "divide",
@@ -69,6 +69,7 @@ const TOOL_TIERS = {
         "sine", "cosine", "tangent", "asin", "acos", "atan",
         "set_angle_mode", "get_angle_mode",
         "sum", "avg", "min", "max", "count", "variance", "std_dev",
+        "percentage_of", "percentage_change", "percentage_reverse",
         "median", "range", "percentile",
         "convert_base",
         "memory_add", "memory_subtract", "memory_clear", "memory_recall",
@@ -131,6 +132,8 @@ const MAIN_THREAD_TOOLS = new Set([
     "cache_clear", "cache_info",
     // Simple stats (zero-cost)
     "count", "min", "max", "variance", "std_dev",
+    // Percentage
+    "percentage_of", "percentage_change", "percentage_reverse",
     // Math one-liners
     "power", "sqrt", "logarithm", "natural_log", "absolute",
     // Constant lookup
@@ -572,6 +575,46 @@ const toolsAll = [
                 population: { type: "boolean" },
             },
             required: ["numbers"],
+        },
+    },
+    // --- Percentage Functions ---
+    {
+        name: "percentage_of",
+        description:
+            "What is X% of Y? e.g., 15% of 200 = 30",
+        inputSchema: {
+            type: "object",
+            properties: {
+                percent: { type: "number" },
+                total: { type: "number" },
+            },
+            required: ["percent", "total"],
+        },
+    },
+    {
+        name: "percentage_change",
+        description:
+            "Percentage change from A to B. e.g., 50→80 = +60%",
+        inputSchema: {
+            type: "object",
+            properties: {
+                from: { type: "number" },
+                to: { type: "number" },
+            },
+            required: ["from", "to"],
+        },
+    },
+    {
+        name: "percentage_reverse",
+        description:
+            "X is Y% of what? e.g., 30 is 15% of 200",
+        inputSchema: {
+            type: "object",
+            properties: {
+                value: { type: "number" },
+                percent: { type: "number" },
+            },
+            required: ["value", "percent"],
         },
     },
     // --- Additional Math Functions ---
@@ -1186,7 +1229,27 @@ const toolHandlers = {
         return Math.sqrt(ss / (population ? numbers.length : numbers.length - 1));
     },
 
-    // Additional Math Handlers
+    // Percentage Handlers
+    percentage_of: ({ percent, total }) => {
+        // X% of Y: (percent / 100) * total
+        return (percent / 100) * total;
+    },
+
+    percentage_change: ({ from, to }) => {
+        // % change from A to B: ((to - from) / from) * 100
+        if (from === 0)
+            throw new Error("Cannot calculate percentage change from zero.");
+        return ((to - from) / from) * 100;
+    },
+
+    percentage_reverse: ({ value, percent }) => {
+        // X is Y% of what: (X / Y) * 100
+        if (percent === 0)
+            throw new Error("Cannot reverse percentage with zero percent.");
+        return (value / percent) * 100;
+    },
+
+    /** Additional Math Handlers */
     /**
      * Calculates the remainder (modulo) of dividing two numbers.
      * @param {Object} args - The arguments object.
@@ -1660,7 +1723,7 @@ if (isMainThread) {
         terminal: false,
     });
 
-    console.error(`Cruncher v1.2.18 MCP Server starting...`);
+    console.error(`Cruncher v1.2.19 MCP Server starting...`);
     console.error(`  Tool set: ${TOOL_SET} (${TOOLS.length} tools exposed)`);
 
     rl.on("line", (line) => {
@@ -1681,7 +1744,7 @@ if (isMainThread) {
             sendSuccess(message.id, {
                 protocolVersion: "2024-11-05",
                 capabilities: { tools: {} },
-                serverInfo: { name: "Cruncher", version: "1.2.18" },
+                serverInfo: { name: "Cruncher", version: "1.2.19" },
             });
             return;
         }
