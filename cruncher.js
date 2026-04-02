@@ -291,7 +291,7 @@ const toolsAll = [
     {
         name: "sine",
         description:
-            'Sine. Angle in radians by default, or degrees with unit: "degrees".',
+            'Sine. Angle in degrees by default, or radians with unit: "radians".',
         inputSchema: {
             type: "object",
             properties: {
@@ -304,7 +304,7 @@ const toolsAll = [
     {
         name: "cosine",
         description:
-            'Cosine. Angle in radians by default, or degrees with unit: "degrees".',
+            'Cosine. Angle in degrees by default, or radians with unit: "radians".',
         inputSchema: {
             type: "object",
             properties: {
@@ -317,7 +317,7 @@ const toolsAll = [
     {
         name: "tangent",
         description:
-            'Tangent. Angle in radians by default, or degrees with unit: "degrees".',
+            'Tangent. Angle in degrees by default, or radians with unit: "radians".',
         inputSchema: {
             type: "object",
             properties: {
@@ -331,7 +331,7 @@ const toolsAll = [
     {
         name: "asin",
         description:
-            'Arcsine. Result in radians by default, or degrees with unit param.',
+            'Arcsine. Result in degrees by default, or radians with unit param.',
         inputSchema: {
             type: "object",
             properties: {
@@ -344,7 +344,7 @@ const toolsAll = [
     {
         name: "acos",
         description:
-            'Arccosine. Result in radians by default, or degrees with unit param.',
+            'Arccosine. Result in degrees by default, or radians with unit param.',
         inputSchema: {
             type: "object",
             properties: {
@@ -357,7 +357,7 @@ const toolsAll = [
     {
         name: "atan",
         description:
-            'Arctangent. Result in radians by default, or degrees with unit param.',
+            'Arctangent. Result in degrees by default, or radians with unit param.',
         inputSchema: {
             type: "object",
             properties: {
