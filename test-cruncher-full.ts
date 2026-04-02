@@ -1101,10 +1101,10 @@ async function testCruncher() {
         // ========== 13. Angle Mode Toggle Tests ==========
         console.log("\n🔀 13. Angle Mode Toggle Tests");
         results.push(
-            await runTest("Angle: default mode is radians", async () => {
+            await runTest("Angle: default mode is degrees", async () => {
                 const result = await client.callTool({ name: "get_angle_mode", arguments: {} });
                 const data = JSON.parse(result.content[0].text);
-                if (data.mode !== "radians") throw new Error(`Expected radians, got ${data.mode}`);
+                if (data.mode !== "degrees") throw new Error(`Expected degrees, got ${data.mode}`);
             }),
         );
 
