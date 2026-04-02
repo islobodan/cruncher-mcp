@@ -22,11 +22,11 @@
 | O8 | Improved Domain Error Messages | `[x]` | S | 🔴 High | High |
 | O9 | std_dev & variance | `[x]` | S | 🔴 High | High |
 | O10 | Standard tier refinement | `[x]` | S | 🟡 Medium | Medium |
-| 9 | Unit Conversion Tool | `[]` | M | 🟡 Medium | Medium |
-| 10 | Complex Number Support | `[]` | H | 🟢 Low | Low |
-| 11 | Progress Streaming | `[]` | H | 🟢 Low | Low |
+| 9 | Unit Conversion Tool | `[x]` | M | 🟡 Medium | High |
+| 10 | Complex Number Support | `[ ]` | H | 🟢 Low | Low (skipped) |
+| 11 | Progress Streaming | `[ ]` | H | 🟢 Low | Low (skipped) |
 | 12 | Statistics Mode | `[x]` | M | 🟢 Low | Medium |
-| 13 | Expression History | `[]` | L | 🟢 Low | Low |
+| 13 | Expression History | `[ ]` | L | 🟢 Low | Low (skipped) |
 
 ---
 
@@ -34,7 +34,7 @@
 
 ### Status
 - `[]` - Not started
-- `[/]` - In progress  
+- `[/]` - In progress
 - `[x]` - Implemented
 
 ### Effort
@@ -57,7 +57,7 @@
 
 ## Recently Completed Features
 
-### O1–O2: Performance & Algorithm Optimizations (v1.2.9–v1.2.10)
+### O1-O2: Performance & Algorithm Optimizations (v1.2.9-v1.2.10)
 **Implemented**: 2026-04-02
 
 - Moved 15 instant tools from workers to main thread (power, sqrt, log, absolute, get_constant, memory_recall, count, min, max, etc.)
@@ -197,42 +197,28 @@ Variance and standard deviation with sample/population mode are now fully implem
 
 ---
 
-## Recently Merged into "Done": Unit Conversion (v1.2.22)
+## Intentionally Skipped
 
-The `convert_unit` tool is fully implemented with 8 categories, 80+ units,
-base-unit factor conversion tables, non-linear temp formulas, case-insensitive
-matching, structured JSON output, and 25 dedicated tests. See O11 above.
-
----
-
-## Remaining Tasks
+The following items were considered and intentionally not implemented.
+Each would add complexity disproportionate to the benefit for an MCP calculator server.
 
 ### 10. Complex Number Support
-| Status | Effort | Priority | Impact |
-|--------|--------|----------|--------|
-| `[]`   | H      | 🟢 Low   | Low    |
 
-**Description**: Support complex number operations (add, multiply, conjugate, magnitude, phase, polar conversion).
-
----
+**Decision**: Skipped - `[]`. Niche use case. The MCP model means the LLM has
+conversation context, so multi-step complex math can be done iteratively.
 
 ### 11. Progress Streaming
-| Status | Effort | Priority | Impact |
-|--------|--------|----------|--------|
-| `[]`   | H      | 🟢 Low   | Low    |
 
-**Description**: Send MCP progress notifications for long-running calculations (large factorial, massive arrays).
+**Decision**: Skipped - `[]`. Worker timeout (3s default, configurable) already
+handles long-running tasks by terminating them cleanly. MCP streaming notifications
+add protocol complexity without clear benefit - heavy calculations that exceed the
+timeout should simply fail gracefully with a clear error message.
 
----
+### 13. Expression History
 
-### 12. Expression History
-| Status | Effort | Priority | Impact |
-|--------|--------|----------|--------|
-| `[]`   | L      | 🟢 Low   | Low    |
-
-**Description**: Store and recall previous expressions and results.
-
-**Proposed Tools**: `history_list`, `history_recall`, `history_clear`
+**Decision**: Skipped - `[]`. The LLM already maintains conversation context, so
+it can reference previous expressions and results naturally. Adding redundant
+state storage duplicates functionality already provided by the MCP conversation model.
 
 ---
 
@@ -268,8 +254,8 @@ matching, structured JSON output, and 25 dedicated tests. See O11 above.
 | 2026-04-02 | v1.2.11 | Context token optimization (~40% description reduction) |
 | 2026-04-02 | v1.2.10 | O(1) tool lookup, batch cache, conditional worker clone |
 | 2026-04-02 | v1.2.9 | Moved 15 instant tools from workers to main thread |
-| 2026-04-01 | v1.2.7–v1.2.8 | Result caching, angle mode toggle, batch operations |
-| 2026-03-31 | v1.2.5–v1.2.6 | Enhanced errors, batch processing |
+| 2026-04-01 | v1.2.7-v1.2.8 | Result caching, angle mode toggle, batch operations |
+| 2026-03-31 | v1.2.5-v1.2.6 | Enhanced errors, batch processing |
 | 2026-03-13 | v1.2.1 | Added convert_base, timeout, built-ins, scientific notation |
 | 2026-03-11 | v1.2.0 | Added evaluate_expression, worker threads, strict validation |
 | 2026-03-01 | v1.1.0 | Added statistics functions, memory, inverse trig |
@@ -277,7 +263,9 @@ matching, structured JSON output, and 25 dedicated tests. See O11 above.
 
 ---
 
-**Last Updated**: 2026-04-02  
-**Total Tasks**: 15  
-**Completed**: 13 ✅  
-**Remaining**: 3  
+**Last Updated**: 2026-04-02
+**Total Tasks**: 15
+**Completed**: 13 ✅
+**Skipped**: 3 🚫 (low impact, disproportionate effort)
+
+**Project Status**: Feature-complete 🎉
