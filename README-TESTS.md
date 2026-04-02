@@ -57,8 +57,8 @@ This single command runs all 50 tests covering every feature of the Cruncher ser
 - **Total Tests**: 330
 - **Pass Rate**: **100%** (330/330) on v1.2.23
 - **Execution Time**: ~8-10 seconds
-- **Coverage**: All **42 tools**, edge cases, concurrency, and advanced scenarios
-- **Tier Coverage**: minimal (5 tools), standard (34 tools), full (42 tools)
+- **Coverage**: All **43 tools**, edge cases, concurrency, and advanced scenarios
+- **Tier Coverage**: minimal (5 tools), standard (34 tools), full (43 tools)
 
 ## Test Framework
 

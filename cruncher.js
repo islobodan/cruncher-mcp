@@ -28,7 +28,8 @@
  *            Trimmed redundant descriptions and repetitive patterns.
  * - v1.2.20: Standard tier refinement (memory, convert_base, percentile moved to full).
 * - v1.2.16 to v1.2.19: Percentage tools, std_dev/variance, built-ins, fuzzy matching, error messages.
- *            minimal (5), standard (26), full (36, default) tool sets.
+ * - v1.2.20: Standard tier refinement (memory, convert_base, percentile moved to full).
+ *            minimal (5), standard (34, default), full (43) tool sets.
  *            Reduces context token usage by up to 90% for minimal mode.
  * - v1.2.22: Added convert_unit tool with 8 categories (length, weight, temp, area, volume, time, speed, digital_storage).
  */

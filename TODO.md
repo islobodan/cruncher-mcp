@@ -77,7 +77,7 @@
 ### O4: Tiered Tool Exposure (v1.2.12)
 **Implemented**: 2026-04-02
 
-- `CRUNCHER_TOOL_SET` env var: `minimal` (5), `standard` (34 **default**), `full` (42)
+- `CRUNCHER_TOOL_SET` env var: `minimal` (5), `standard` (34 **default**), `full` (43)
 - Dynamic tool filtering at startup
 - Standard tier: Core math, trig, stats, percentages, constants, unit conversion
 - Full tier: Standard + memory, base conversion, percentile, batch, cache management

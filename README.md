@@ -289,9 +289,74 @@ Cruncher exposes its functions as individual MCP tools. Here is the full list:
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `CRUNCHER_TIMEOUT` | `3000` | Worker thread execution timeout (ms). Range 100-60000 |
-| `CRUNCHER_TOOL_SET` | `standard` | Controls tool exposure: `minimal` (5), `standard` (34 **default**), `full` (42) |
+| `CRUNCHER_TOOL_SET` | `standard` | Controls tool exposure: `minimal` (5), `standard` (34 **default**), `full` (43) |
 
 
+
+### Tool Tiers — Full Reference
+
+Cruncher exposes **3 tiers** via the `CRUNCHER_TOOL_SET` environment variable. Each tier is a strict superset of the one before it.
+
+#### Tier Overview
+
+| Tier | Tools | Use Case |
+|------|-------|----------|
+| **Minimal** (5) | Core arithmetic only | Lightweight calculators, simple math agents |
+| **Standard** (34 — default) | All minimal + trig, stats, constants, unit conversion | General-purpose AI assistant math |
+| **Full** (43) | All standard + memory, batch, cache, base conversion, advanced stats | Power users, multi-step workflows |
+
+#### Minimal Tier (5 Tools)
+
+All tools run in the worker thread with timeout protection.
+
+| # | Tool | Description |
+|---|------|-------------|
+| 1 | `evaluate_expression` | Evaluates a math expression string |
+| 2 | `add` | Addition (a + b) |
+| 3 | `subtract` | Subtraction (a - b) |
+| 4 | `multiply` | Multiplication (a × b) |
+| 5 | `divide` | Division (a ÷ b) |
+
+#### Standard Tier (34 Tools — includes all 5 Minimal)
+
+| # | Tool | Category |
+|---|------|----------|
+| 6 | `sqrt` | Square root |
+| 7 | `power` | Exponentiation (a^b) |
+| 8 | `absolute` | Absolute value |
+| 9 | `modulo` | Remainder (a mod b) |
+| 10 | `factorial` | Factorial (n!) |
+| 11 | `logarithm` | Base-10 logarithm |
+| 12 | `natural_log` | Natural logarithm (ln) |
+| 13 | `get_constant` | Fetch physical/math constants |
+| 14–16 | `sine`, `cosine`, `tangent` | Trigonometry |
+| 17–19 | `asin`, `acos`, `atan` | Inverse trigonometry |
+| 20 | `set_angle_mode` | Toggle degrees/radians (global) |
+| 21 | `get_angle_mode` | Check current angle mode |
+| 22–25 | `sum`, `avg`, `min`, `max` | Basic statistics |
+| 26 | `count` | Count elements |
+| 27 | `variance` | Variance (sample or population) |
+| 28 | `std_dev` | Standard deviation (sample or population) |
+| 29 | `percentage_of` | X% of Y |
+| 30 | `percentage_change` | % change A→B |
+| 31 | `percentage_reverse` | X is Y% of what? |
+| 32 | `median` | Median value |
+| 33 | `range` | Range (max - min) |
+| 34 | `convert_unit` | 80+ unit conversions, 8 categories |
+
+#### Full Tier (43 Tools — includes all 34 Standard)
+
+| # | Tool | Category |
+|---|------|----------|
+| 35 | `percentile` | Value at Nth percentile |
+| 36 | `convert_base` | Base 2/8/10/16 conversion |
+| 37 | `memory_add` | Add to running total |
+| 38 | `memory_subtract` | Subtract from running total |
+| 39 | `memory_recall` | Get current memory value |
+| 40 | `memory_clear` | Reset memory to zero |
+| 41 | `batch` | Execute up to 50 operations in one call |
+| 42 | `cache_clear` | Clear result cache |
+| 43 | `cache_info` | Show cache statistics |
 
 ### Fuzzy Tool Name Matching
 
@@ -396,7 +461,7 @@ The `CRUNCHER_TOOL_SET` environment variable lets you optimize context token usa
 |------|-------|-------------|----------|
 | `minimal` | 5 | ~160 tokens | Basic arithmetic. All complex math via `evaluate_expression` |
 | `standard` | 34 | ~1,150 tokens | Arithmetic, trig, stats, percentages, constants, unit conversion (**default**) |
-| `full` | 42 | ~1,500 tokens | Standard + memory, base conversion, percentile, batch, cache |
+| `full` | 43 | ~1,500 tokens | Standard + memory, base conversion, percentile, batch, cache |
 
 **Note**: Even in `minimal` mode, `evaluate_expression` handles complex math — individual tools (`sin`, `sqrt`, etc.) just aren't registered as separate MCP tool calls. This saves up to **90%** on context tokens.
 

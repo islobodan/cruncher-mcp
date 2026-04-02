@@ -9,7 +9,7 @@ Whenever a user asks you to perform mathematics, statistics, **unit conversions*
 | Attribute | Value |
 |-----------|-------|
 | **Version** | v1.2.23 |
-| **Total Tools** | 42 (full), 34 (standard default), 5 (minimal) |
+| **Total Tools** | 43 (full), 34 (standard default), 5 (minimal) |
 | **Default Tier** | `standard` (34 tools) |
 | **Timeout** | 3 seconds (configurable via `CRUNCHER_TIMEOUT` env var) |
 | **Dependencies** | Zero (pure Node.js) |
@@ -182,7 +182,7 @@ Gibberish like `totally_wrong` gets no suggestion.
 |------|-------|-------|
 | `minimal` | 5 | Core arithmetic + `evaluate_expression` |
 | **`standard`** (Default) | 34 | Minimal + trig, stats, percentages, constants, unit conversion |
-| `full` | 42 | Standard + memory, base conversion, percentiles, batch, cache, angle |
+| `full` | 43 | Standard + memory, base conversion, percentiles, batch, cache, angle |
 
 ## Rules of Thumb
 

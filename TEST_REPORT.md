@@ -98,7 +98,7 @@ This document summarizes the comprehensive test suite for the Cruncher MCP Serve
 ✅ **Scientific Notation**: Expressions like `1e6`, `2.5e-3` work correctly  
 ✅ **Atomic Memory Operations**: Concurrent memory operations are properly serialized  
 ✅ **Tiered Tool Exposure (v1.2.12+)**: `CRUNCHER_TOOL_SET` env var with minimal (5),
-  standard (34), full (42) tiers. Unit conversion in standard. Up to 90% context token reduction.
+  standard (34), full (43) tiers. Unit conversion in standard. Up to 90% context token reduction.
 ✅ **Context Token Optimization (v1.2.11)**: ~40% reduction in tool description tokens (~560 tokens
   saved). evaluate_expression promoted as PRIMARY tool, redundant descriptions eliminated.
 ✅ **Performance Optimizations (v1.2.10)**: O(1) tool lookup Map replaced O(n) TOOLS.find().
