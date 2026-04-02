@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 - **Test suite expansion**: 302 → 330 tests (+28, 100% pass) — 8 new sections covering:
-  - Full-mode exclusive tools (convert_base, batch, cache_clear/info, percentile, range)
+  - Full-mode exclusive tools (convert_base, batch, cache_clear/info, percentile)
   - Missing `evaluate_expression` built-ins (log(x,base), euler_mascheroni, h, NA constants)
   - Expression injection security tests (eval(), require(), process.exit())
   - Variance/std_dev edge cases (single-element sample, negative numbers)

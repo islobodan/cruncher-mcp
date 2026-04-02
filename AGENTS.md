@@ -53,7 +53,7 @@ evaluate_expression("1e6 + 2.5e-3")
 | "50 miles to km" | `convert_unit(...)` |
 | "11010 in decimal" | `convert_base(...)` |
 | "Average of these" | `avg({ numbers: [...] })` |
-| "Standard deviation" | `std_dev({ numbers: [], mode: "sample" })` |
+| "Standard deviation" | `std_dev({ numbers: [1, 2, 3], population: false })` |
 
 ## 3. Argument Strictness
 
@@ -122,7 +122,8 @@ All in **standard tier**.
 |------|------|------|
 | `sum`, `avg`, `count`, `min`, `max` | — | standard |
 | `variance`, `std_dev` | `sample` (n-1) / `population` (n) | standard |
-| `median`, `range`, `percentile` | — | full |
+| `median`, `range` | — | standard |
+| `percentile` | — | full |
 
 ## 10. Angle Mode
 
@@ -135,7 +136,7 @@ Trig functions use a **global** angle mode (default: **degrees**).
 
 In `evaluate_expression`, trig always uses the global mode. Individual tool calls accept an explicit `unit` param that overrides it.
 
-> Full tier only (angle tools).
+> **Standard tier** (available by default).
 
 ## 11. Batch Processing
 
@@ -182,7 +183,7 @@ Gibberish like `totally_wrong` gets no suggestion.
 |------|-------|-------|
 | `minimal` | 5 | Core arithmetic + `evaluate_expression` |
 | **`standard`** (Default) | 34 | Minimal + trig, stats, percentages, constants, unit conversion |
-| `full` | 43 | Standard + memory, base conversion, percentiles, batch, cache, angle |
+| `full` | 43 | Standard + memory, base conversion, percentiles, batch, cache |
 
 ## Rules of Thumb
 

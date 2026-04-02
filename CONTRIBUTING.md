@@ -39,7 +39,7 @@ All tests must pass before submitting a PR.
 2. **Add handler** to the `toolHandlers` object
 3. **Decide the tier**:
    - `standard` — Everyday math (trig, stats, percentages, constants, units)
-   - `full` — Specialized tools (memory, base conversion, percentiles, batch, cache, angle)
+   - `full` — Specialized tools (memory, base conversion, percentiles, batch, cache)
 4. **Cacheability** — Add to `NON_CACHEABLE` if stateful (memory, batch, cache management)
 5. **Main-thread vs worker** — Add to `MAIN_THREAD_TOOLS` if instant (no heavy computation)
 6. **Write tests** in `test-cruncher-full.ts` covering:
@@ -141,7 +141,7 @@ Instant operations that don't need worker isolation:
 - Percentage calculations
 - Trig functions
 - Memory recall
-- Cache/angle management
+- Cache management
 - **Unit conversion**
 
 ### Worker-Thread Tools

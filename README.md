@@ -274,8 +274,8 @@ Cruncher exposes its functions as individual MCP tools. Here is the full list:
 | `memory_recall` | Recalls the value stored in memory (MR). | (no arguments) |
 | `memory_add` | Adds a value to the current memory (M+). | `value` (number) |
 | `memory_subtract` | Subtracts a value from the current memory (M-). | `value` (number) |
-| **Angle Mode (Full Tier)** | | |
-| `set_angle_mode` | Set global angle mode (default: degrees). | `mode` ("degrees" or "radians") |
+| **Angle Mode (Standard Tier)** | | |
+| `set_angle_mode` | Set global angle mode (default: degrees). | `unit` ("degrees" or "radians") |
 | `get_angle_mode` | Get current angle mode. | (no arguments) |
 | **Admin Tools (Full Tier)** | | |
 | `batch` | Execute multiple tool calls sequentially. | `operations` (array of {tool, arguments}) |

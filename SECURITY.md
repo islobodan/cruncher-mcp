@@ -70,7 +70,7 @@ The `CRUNCHER_TOOL_SET` environment variable limits which tools are exposed:
 |------|-------|-------------|
 | `minimal` | 5 | Core arithmetic only |
 | `standard` | 34 | Math, trig, stats, percentages, constants, unit conversion |
-| `full` | 43 | All tools including memory, base conversion, percentiles, batch, cache, angle |
+| `full` | 43 | All tools including memory, base conversion, percentiles, batch, cache |
 
 ### What is Protected Against
 
