@@ -51,7 +51,7 @@ async function testCruncher() {
         await client.start({
             command: "node",
             args: ["cruncher.js"],
-            env: { NODE_ENV: "test" },
+            env: { CRUNCHER_TOOL_SET: "full", NODE_ENV: "test" },
         });
         console.log("✓ Server started successfully\n");
 
@@ -3894,10 +3894,10 @@ async function testCruncher() {
         );
 
         results.push(
-            await runTest("Standard tier: Exactly 26 tools exposed", async () => {
+            await runTest("Standard tier: Exactly 34 tools exposed", async () => {
                 const tools = await standardClient.listTools();
-                if (tools.length !== 26) {
-                    throw new Error(`Expected 26 tools in standard mode, got ${tools.length}`);
+                if (tools.length !== 34) {
+                    throw new Error(`Expected 34 tools in standard mode, got ${tools.length}`);
                 }
             }),
         );
@@ -3916,10 +3916,15 @@ async function testCruncher() {
         );
 
         results.push(
-            await runTest("Standard tier: Includes stats and memory tools", async () => {
+            await runTest("Standard tier: Includes stats, memory, and trig tools", async () => {
                 const tools = await standardClient.listTools();
                 const toolNames = tools.map((t) => t.name);
-                const expectedStandardExtras = ["sqrt", "power", "factorial", "sum", "avg", "min", "max", "count", "median", "memory_add", "memory_clear", "get_constant", "convert_base"];
+                const expectedStandardExtras = [
+                    "sqrt", "power", "factorial", "sum", "avg", "min", "max", "count",
+                    "median", "memory_add", "memory_clear", "get_constant", "convert_base",
+                    "sine", "cosine", "tangent", "asin", "acos", "atan",
+                    "set_angle_mode", "get_angle_mode",
+                ];
                 const missing = expectedStandardExtras.filter(
                     (name) => !toolNames.includes(name),
                 );
@@ -3930,22 +3935,10 @@ async function testCruncher() {
         );
 
         results.push(
-            await runTest("Standard tier: Trigonometry tools excluded", async () => {
+            await runTest("Standard tier: Batch/cache excluded (admin-only)", async () => {
                 const tools = await standardClient.listTools();
                 const toolNames = tools.map((t) => t.name);
-                const banned = ["sine", "cosine", "tangent", "asin", "acos", "atan"];
-                const present = banned.filter((name) => toolNames.includes(name));
-                if (present.length > 0) {
-                    throw new Error(`Unexpected tools in standard: ${present.join(", ")}`);
-                }
-            }),
-        );
-
-        results.push(
-            await runTest("Standard tier: Batch/angle/cache excluded", async () => {
-                const tools = await standardClient.listTools();
-                const toolNames = tools.map((t) => t.name);
-                const banned = ["batch", "cache_clear", "cache_info", "set_angle_mode", "get_angle_mode"];
+                const banned = ["batch", "cache_clear", "cache_info"];
                 const present = banned.filter((name) => toolNames.includes(name));
                 if (present.length > 0) {
                     throw new Error(`Unexpected tools in standard: ${present.join(", ")}`);

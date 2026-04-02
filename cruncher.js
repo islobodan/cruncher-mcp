@@ -26,7 +26,7 @@
  * - v1.2.11: Context token optimization (~40% reduction in tool descriptions).
  *            De-emphasized individual math tools in favor of evaluate_expression.
  *            Trimmed redundant descriptions and repetitive patterns.
- * - v1.2.16: Tiered tool exposure + constants in evaluate_expression via CRUNCHER_TOOL_SET env var.
+ * - v1.2.17: Tiered tool exposure + constants in evaluate_expression via CRUNCHER_TOOL_SET env var.
  *            minimal (5), standard (26), full (36, default) tool sets.
  *            Reduces context token usage by up to 90% for minimal mode.
  */
@@ -45,10 +45,10 @@ const EXECUTION_TIMEOUT = parseInt(process.env.CRUNCHER_TIMEOUT, 10) || 3000;
 
 // --- Tool Set Configuration ---
 // Controls how many tools are exposed to the LLM to optimize context token usage.
-// CRUNCHER_TOOL_SET=full     — All 36 tools available (default).
-// CRUNCHER_TOOL_SET=standard — 26 tools (arithmetic, stats, memory, base conversion).
+// CRUNCHER_TOOL_SET=full     — All tools (core + batch, cache management).
+// CRUNCHER_TOOL_SET=standard — Core + trig, stats, memory, base conversion.
 // CRUNCHER_TOOL_SET=minimal  — 5 tools (math primitives + evaluate_expression).
-const TOOL_SET = (process.env.CRUNCHER_TOOL_SET || "full").toLowerCase();
+const TOOL_SET = (process.env.CRUNCHER_TOOL_SET || "standard").toLowerCase();
 const VALID_TOOL_SETS = ["minimal", "standard", "full"];
 if (!VALID_TOOL_SETS.includes(TOOL_SET)) {
     console.error(`Warning: Unknown CRUNCHER_TOOL_SET='${TOOL_SET}', using 'full'.`);
@@ -60,18 +60,20 @@ const TOOL_TIERS = {
     minimal: [
         "evaluate_expression", "add", "subtract", "multiply", "divide",
     ],
-    // Standard: minimal + stats, memory, base conversion (26 tools)
+    // Standard: minimal + trig, stats, memory, constants, base conversion (33 tools)
     standard: [
         "evaluate_expression",
         "add", "subtract", "multiply", "divide",
         "sqrt", "power", "absolute", "modulo", "factorial",
         "logarithm", "natural_log", "get_constant",
+        "sine", "cosine", "tangent", "asin", "acos", "atan",
+        "set_angle_mode", "get_angle_mode",
         "sum", "avg", "min", "max", "count",
         "median", "range", "percentile",
         "convert_base",
         "memory_add", "memory_subtract", "memory_clear", "memory_recall",
     ],
-    // Full means all tools (no filtering, special case)
+    // Full means all tools (adds batch, cache management)
     full: null,
 };
 
@@ -1598,7 +1600,7 @@ if (isMainThread) {
         terminal: false,
     });
 
-    console.error(`Cruncher v1.2.16 MCP Server starting...`);
+    console.error(`Cruncher v1.2.17 MCP Server starting...`);
     console.error(`  Tool set: ${TOOL_SET} (${TOOLS.length} tools exposed)`);
 
     rl.on("line", (line) => {
@@ -1619,7 +1621,7 @@ if (isMainThread) {
             sendSuccess(message.id, {
                 protocolVersion: "2024-11-05",
                 capabilities: { tools: {} },
-                serverInfo: { name: "Cruncher", version: "1.2.16" },
+                serverInfo: { name: "Cruncher", version: "1.2.17" },
             });
             return;
         }
