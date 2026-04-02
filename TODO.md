@@ -6,6 +6,7 @@
 |---|------|--------|--------|----------|--------|
 | 1 | Scientific Notation Support | `[x]` | L | 🔴 High | High |
 | O1 | Performance Optimizations | `[x]` | M | 🔴 High | High |
+| O2 | Context Token Optimization | `[x]` | L | 🔴 High | High |
 | 2 | Atomic Memory Operations | `[x]` | M | 🔴 High | Medium |
 | 3 | Configurable Timeout | `[x]` | L | 🔴 High | High |
 | 4 | More Built-in Functions | `[x]` | L | 🟡 Medium | High |

@@ -8,7 +8,7 @@ This document summarizes the comprehensive test suite for the Cruncher MCP Serve
 - **Runner**: `tsx` (TypeScript execution without compilation)
 - **Test File**: `test-cruncher-full.ts` (single comprehensive suite)
 - **Total Tests**: 201
-- **Pass Rate**: **100%** (201/201 tests passed) on v1.2.10
+- **Pass Rate**: **100%** (201/201 tests passed) on v1.2.11
 
 ## Test Categories
 
@@ -80,7 +80,7 @@ This document summarizes the comprehensive test suite for the Cruncher MCP Serve
 
 ## Failed Tests Analysis
 
-**No failed tests!** All 201 tests pass on v1.2.10.
+**No failed tests!** All 201 tests pass on v1.2.11.
 
 ## Key Successes
 
@@ -97,7 +97,7 @@ This document summarizes the comprehensive test suite for the Cruncher MCP Serve
 ✅ **Base Conversion**: All 4 bases (binary, octal, decimal, hex) with proper validation  
 ✅ **Scientific Notation**: Expressions like `1e6`, `2.5e-3` work correctly  
 ✅ **Atomic Memory Operations**: Concurrent memory operations are properly serialized  
-✅ **Performance Optimizations (v1.2.10)**: O(1) tool lookup Map replaced O(n) TOOLS.find().
+✅ **Performance Optimizations (v1.2.11)**: O(1) tool lookup Map replaced O(n) TOOLS.find().
 MEMORY_OPS Set. Batch operations now check/store cache. Conditional worker args clone
 (zero allocation for non-timeout tools). Supported-methods Set in validateMessage.
 ✅ **Performance Optimizations (v1.2.9)**: 15 instant tools moved from worker threads to main
@@ -192,7 +192,7 @@ npx tsx test-cruncher-full.ts
 
 ## Conclusion
 
-The Cruncher MCP Server passes **100% of comprehensive tests** on v1.2.10. The test suite successfully:
+The Cruncher MCP Server passes **100% of comprehensive tests** on v1.2.11. The test suite successfully:
 
 - ✅ Exits cleanly without hanging
 - ✅ Tests all major functionality including `evaluate_expression`

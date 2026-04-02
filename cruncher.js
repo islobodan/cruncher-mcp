@@ -23,9 +23,9 @@
  *           absolute, get_constant, memory_recall, count, min, max) from
  *           workers to main thread. Eliminated double-validation. Dead code
  *           removed. Pre-compiled regexes for evaluate_expression.
- * - v1.2.10: O(1) tool lookup Map replaced O(n) TOOLS.find(). MEMORY_OPS Set.
- *            Batch operations now check/store cache. Conditional worker args clone.
- *            Supported-methods Set in validateMessage.
+ * - v1.2.11: Context token optimization (~40% reduction in tool descriptions).
+ *            De-emphasized individual math tools in favor of evaluate_expression.
+ *            Trimmed redundant descriptions and repetitive patterns.
  */
 
 const readline = require("readline");
@@ -130,11 +130,11 @@ const RE_VALID_MATH_CALLS   = /Math\.(pow|abs|round|floor|ceil|min|max)\(/g;
 // --- Tool Definitions ---
 // This array defines all the calculator functions available to the AI model.
 const TOOLS = [
-    // --- Basic Arithmetic ---
+    // --- Basic Arithmetic (use evaluate_expression for complex math) ---
     {
         name: "add",
         description:
-            "Adds two numbers (a + b). NOTE: For multi-step calculations or complex expressions, use 'evaluate_expression' instead (e.g., '5 + 3 + 2' or '(10 + 5) * 2').",
+            "Adds two numbers.",
         inputSchema: {
             type: "object",
             properties: { a: { type: "number" }, b: { type: "number" } },
@@ -144,7 +144,7 @@ const TOOLS = [
     {
         name: "subtract",
         description:
-            "Subtracts the second number from the first (a - b). NOTE: For multi-step calculations, use 'evaluate_expression' instead.",
+            "Subtracts two numbers.",
         inputSchema: {
             type: "object",
             properties: { a: { type: "number" }, b: { type: "number" } },
@@ -154,7 +154,7 @@ const TOOLS = [
     {
         name: "multiply",
         description:
-            "Multiplies two numbers (a * b). NOTE: For multi-step calculations, use 'evaluate_expression' instead.",
+            "Multiplies two numbers.",
         inputSchema: {
             type: "object",
             properties: { a: { type: "number" }, b: { type: "number" } },
@@ -164,7 +164,7 @@ const TOOLS = [
     {
         name: "divide",
         description:
-            "Divides the first number by the second (a / b). Returns an error if b is zero. NOTE: For multi-step calculations, use 'evaluate_expression' instead.",
+            "Divides two numbers. Errors on zero divisor.",
         inputSchema: {
             type: "object",
             properties: { a: { type: "number" }, b: { type: "number" } },
@@ -174,7 +174,7 @@ const TOOLS = [
     // --- Power & Root ---
     {
         name: "power",
-        description: "Calculates a raised to the power of b (a^b).",
+        description: "Raises a to the power of b.",
         inputSchema: {
             type: "object",
             properties: {
@@ -187,7 +187,7 @@ const TOOLS = [
     {
         name: "sqrt",
         description:
-            "Calculates the square root of a value. Returns an error for negative numbers.",
+            "Square root. Errors on negative input.",
         inputSchema: {
             type: "object",
             properties: { value: { type: "number" } },
@@ -198,7 +198,7 @@ const TOOLS = [
     {
         name: "sine",
         description:
-            'Calculates the sine of an angle. Unit can be "degrees" or "radians" (default).',
+            'Sine. Angle in radians by default, or degrees with unit: "degrees".',
         inputSchema: {
             type: "object",
             properties: {
@@ -211,7 +211,7 @@ const TOOLS = [
     {
         name: "cosine",
         description:
-            'Calculates the cosine of an angle. Unit can be "degrees" or "radians" (default).',
+            'Cosine. Angle in radians by default, or degrees with unit: "degrees".',
         inputSchema: {
             type: "object",
             properties: {
@@ -224,7 +224,7 @@ const TOOLS = [
     {
         name: "tangent",
         description:
-            'Calculates the tangent of an angle. Unit can be "degrees" or "radians" (default).',
+            'Tangent. Angle in radians by default, or degrees with unit: "degrees".',
         inputSchema: {
             type: "object",
             properties: {
@@ -238,7 +238,7 @@ const TOOLS = [
     {
         name: "asin",
         description:
-            'Calculates the inverse sine (arcsine) of a value. Returns the angle. Unit can be "degrees" or "radians" (default). Input must be between -1 and 1.',
+            'Arcsine. Input must be [-1, 1]. Result in radians by default, or degrees with unit param.',
         inputSchema: {
             type: "object",
             properties: {
@@ -251,7 +251,7 @@ const TOOLS = [
     {
         name: "acos",
         description:
-            'Calculates the inverse cosine (arccosine) of a value. Returns the angle. Unit can be "degrees" or "radians" (default). Input must be between -1 and 1.',
+            'Arccosine. Input must be [-1, 1]. Result in radians by default, or degrees with unit param.',
         inputSchema: {
             type: "object",
             properties: {
@@ -264,7 +264,7 @@ const TOOLS = [
     {
         name: "atan",
         description:
-            'Calculates the inverse tangent (arctangent) of a value. Returns the angle. Unit can be "degrees" or "radians" (default).',
+            'Arctangent. Result in radians by default, or degrees with unit param.',
         inputSchema: {
             type: "object",
             properties: {
@@ -278,7 +278,7 @@ const TOOLS = [
     {
         name: "logarithm",
         description:
-            "Calculates the base-10 logarithm of a value. Returns an error for non-positive numbers.",
+            "Base-10 logarithm. Errors on non-positive input.",
         inputSchema: {
             type: "object",
             properties: { value: { type: "number" } },
@@ -288,7 +288,7 @@ const TOOLS = [
     {
         name: "natural_log",
         description:
-            "Calculates the natural logarithm (base-e) of a value. Returns an error for non-positive numbers.",
+            "Natural logarithm (ln). Errors on non-positive input.",
         inputSchema: {
             type: "object",
             properties: { value: { type: "number" } },
@@ -298,7 +298,7 @@ const TOOLS = [
     // --- Other ---
     {
         name: "absolute",
-        description: "Calculates the absolute value of a number.",
+        description: "Absolute value.",
         inputSchema: {
             type: "object",
             properties: { value: { type: "number" } },
@@ -309,7 +309,7 @@ const TOOLS = [
     {
         name: "get_constant",
         description:
-            "Returns the value of a mathematical, physical, or chemical constant. Supported constants: Math (pi, e, tau, phi, sqrt2, euler_mascheroni), Physics/Chemistry (c, g, G, h, k, R, NA, e_charge, m_e, m_p).",
+            "Returns a mathematical, physical, or chemical constant. See enum values.",
         inputSchema: {
             type: "object",
             properties: {
@@ -341,7 +341,7 @@ const TOOLS = [
     // --- Statistical Functions (added in v1.1.0) ---
     {
         name: "sum",
-        description: "Calculates the sum of an array of numbers.",
+        description: "Sum of numbers.",
         inputSchema: {
             type: "object",
             properties: {
@@ -352,7 +352,7 @@ const TOOLS = [
     },
     {
         name: "avg",
-        description: "Calculates the average of an array of numbers.",
+        description: "Average (mean) of numbers.",
         inputSchema: {
             type: "object",
             properties: {
@@ -363,7 +363,7 @@ const TOOLS = [
     },
     {
         name: "median",
-        description: "Calculates the median of an array of numbers. Optional timeout parameter for large arrays (default: 3000ms).",
+        description: "Median of numbers.",
         inputSchema: {
             type: "object",
             properties: {
@@ -375,7 +375,7 @@ const TOOLS = [
     },
     {
         name: "min",
-        description: "Finds the minimum value in an array of numbers.",
+        description: "Minimum of numbers.",
         inputSchema: {
             type: "object",
             properties: {
@@ -386,7 +386,7 @@ const TOOLS = [
     },
     {
         name: "max",
-        description: "Finds the maximum value in an array of numbers.",
+        description: "Maximum of numbers.",
         inputSchema: {
             type: "object",
             properties: {
@@ -398,17 +398,17 @@ const TOOLS = [
     // --- Memory Functions ---
     {
         name: "memory_clear",
-        description: "Clears the calculator memory (MC).",
+        description: "Clear memory (MC).",
         inputSchema: { type: "object", properties: {} },
     },
     {
         name: "memory_recall",
-        description: "Recalls the value stored in memory (MR).",
+        description: "Recall memory value (MR).",
         inputSchema: { type: "object", properties: {} },
     },
     {
         name: "memory_add",
-        description: "Adds a value to the current memory (M+).",
+        description: "Add to memory (M+).",
         inputSchema: {
             type: "object",
             properties: { value: { type: "number" } },
@@ -417,7 +417,7 @@ const TOOLS = [
     },
     {
         name: "memory_subtract",
-        description: "Subtracts a value from the current memory (M-).",
+        description: "Subtract from memory (M-).",
         inputSchema: {
             type: "object",
             properties: { value: { type: "number" } },
@@ -427,7 +427,7 @@ const TOOLS = [
     // --- Additional Statistical Functions ---
     {
         name: "count",
-        description: "Counts the number of elements in an array of numbers.",
+        description: "Count elements.",
         inputSchema: {
             type: "object",
             properties: {
@@ -439,7 +439,7 @@ const TOOLS = [
     {
         name: "range",
         description:
-            "Calculates the range (difference between max and min) of an array of numbers.",
+            "Range (max - min) of numbers.",
         inputSchema: {
             type: "object",
             properties: {
@@ -451,7 +451,7 @@ const TOOLS = [
     {
         name: "percentile",
         description:
-            "Calculates the value at a given percentile (0-100) in an array of numbers. For example, percentile 50 is the median. Optional timeout parameter for large arrays (default: 3000ms).",
+            "Percentile (0-100) of numbers.",
         inputSchema: {
             type: "object",
             properties: {
@@ -466,7 +466,7 @@ const TOOLS = [
     {
         name: "modulo",
         description:
-            "Calculates the remainder (modulo) of dividing two numbers (a mod b).",
+            "Remainder of a / b. Errors on zero divisor.",
         inputSchema: {
             type: "object",
             properties: { a: { type: "number" }, b: { type: "number" } },
@@ -476,7 +476,7 @@ const TOOLS = [
     {
         name: "factorial",
         description:
-            "Calculates the factorial of a non-negative integer (n!). For example, 5! = 5 x 4 x 3 x 2 x 1 = 120. Optional timeout parameter for large calculations (default: 3000ms).",
+            "Factorial of non-negative integer (n!). n > 170 overflows.",
         inputSchema: {
             type: "object",
             properties: {
@@ -490,7 +490,7 @@ const TOOLS = [
     {
         name: "evaluate_expression",
         description:
-            "Evaluates a plain text mathematical expression. PREFERRED METHOD for most calculations. Use this for ANY math problem that can be written as a single expression (e.g., '5 + 3 * 2', '(100 - 25) / 3', '2^10 + sqrt(16)'). Supports +, -, *, /, %, ^, parentheses, and decimals. Prefer this over calling add/subtract/multiply/divide separately for better accuracy and efficiency.",
+            "Evaluate a mathematical expression. PRIMARY tool for ALL math: +, -, *, /, %, ^, parentheses, decimals, scientific notation (1e6), functions (abs, round, floor, ceil, min, max).",
         inputSchema: {
             type: "object",
             properties: { expression: { type: "string" } },
@@ -500,7 +500,7 @@ const TOOLS = [
     {
         name: "convert_base",
         description:
-            "Converts a number between different bases (2=binary, 8=octal, 10=decimal, 16=hexadecimal). Input value must be a string in the source base (e.g., 1010 for binary, FF for hex). Returns string representation in target base.",
+            "Convert number string between bases 2, 8, 10, 16.",
         inputSchema: {
             type: "object",
             properties: {
@@ -514,7 +514,7 @@ const TOOLS = [
     {
         name: "batch",
         description:
-            "Executes multiple tool calls in a single request for batch processing. Accepts an array of operations, each with tool name and arguments. Returns an array of results.",
+            "Execute multiple tool calls sequentially. Returns array of results.",
         inputSchema: {
             type: "object",
             properties: {
@@ -535,7 +535,7 @@ const TOOLS = [
     },
     {
         name: "set_angle_mode",
-        description: "Set the global angle mode for trigonometric functions. Accepts 'degrees' or 'radians'. Explicit unit parameter on individual calls overrides this global setting.",
+        description: "Set global trig angle mode. Individual calls with unit param override this.",
         inputSchema: {
             type: "object",
             properties: {
@@ -546,17 +546,17 @@ const TOOLS = [
     },
     {
         name: "get_angle_mode",
-        description: "Get the current global angle mode for trigonometric functions (degrees or radians).",
+        description: "Get current trig angle mode.",
         inputSchema: { type: "object", properties: {}, required: [] }
     },
     {
         name: "cache_clear",
-        description: "Clear all cached computation results from the result cache.",
+        description: "Clear computation cache.",
         inputSchema: { type: "object", properties: {}, required: [] },
     },
     {
         name: "cache_info",
-        description: "Get information about the current result cache (size, entries, TTL).",
+        description: "Show cache stats.",
         inputSchema: { type: "object", properties: {}, required: [] },
     },
 ];
@@ -812,7 +812,7 @@ const toolHandlers = {
     },
 
     /**
-     * Calculates the absolute value of a number.
+     * Absolute value.
      * @param {Object} args - The arguments object.
      * @param {number} args.value - The number.
      * @returns {number} The absolute value of value.
@@ -855,7 +855,7 @@ const toolHandlers = {
 
     // Statistical Handlers
     /**
-     * Calculates the sum of an array of numbers.
+     * Sum of numbers.
      * @param {Object} args - The arguments object.
      * @param {number[]} args.numbers - Array of numbers.
      * @returns {number} The sum of all numbers.
@@ -897,7 +897,7 @@ const toolHandlers = {
     },
 
     /**
-     * Finds the minimum value in an array of numbers.
+     * Minimum of numbers.
      * @param {Object} args - The arguments object.
      * @param {number[]} args.numbers - Array of numbers.
      * @returns {number} The minimum value.
@@ -910,7 +910,7 @@ const toolHandlers = {
     },
 
     /**
-     * Finds the maximum value in an array of numbers.
+     * Maximum of numbers.
      * @param {Object} args - The arguments object.
      * @param {number[]} args.numbers - Array of numbers.
      * @returns {number} The maximum value.
@@ -924,7 +924,7 @@ const toolHandlers = {
 
     // Memory Handlers
     /**
-     * Clears the calculator memory (MC).
+     * Clear memory (MC).
      * @returns {string} Confirmation message.
      */
     memory_clear: () => {
@@ -933,13 +933,13 @@ const toolHandlers = {
     },
 
     /**
-     * Recalls the value stored in memory (MR).
+     * Recall memory value (MR).
      * @returns {number} The current memory value.
      */
     memory_recall: () => memory,
 
     /**
-     * Adds a value to the current memory (M+).
+     * Add to memory (M+).
      * @param {Object} args - The arguments object.
      * @param {number} args.value - The value to add.
      * @returns {string} Confirmation message with new memory value.
@@ -950,7 +950,7 @@ const toolHandlers = {
     },
 
     /**
-     * Subtracts a value from the current memory (M-).
+     * Subtract from memory (M-).
      * @param {Object} args - The arguments object.
      * @param {number} args.value - The value to subtract.
      * @returns {string} Confirmation message with new memory value.
@@ -962,7 +962,7 @@ const toolHandlers = {
 
     // Additional Statistical Handlers
     /**
-     * Counts the number of elements in an array of numbers.
+     * Count elements.
      * @param {Object} args - The arguments object.
      * @param {number[]} args.numbers - Array of numbers.
      * @returns {number} The count of elements.
@@ -970,7 +970,7 @@ const toolHandlers = {
     count: ({ numbers }) => numbers.length,
 
     /**
-     * Calculates the range (difference between max and min) of an array of numbers.
+     * Range (max - min) of numbers.
      * @param {Object} args - The arguments object.
      * @param {number[]} args.numbers - Array of numbers.
      * @returns {number} The range (max - min).
@@ -1449,7 +1449,7 @@ if (isMainThread) {
         terminal: false,
     });
 
-    console.error("Cruncher v1.2.10 MCP Server starting...");
+    console.error("Cruncher v1.2.11 MCP Server starting...");
 
     rl.on("line", (line) => {
         let message;
@@ -1469,7 +1469,7 @@ if (isMainThread) {
             sendSuccess(message.id, {
                 protocolVersion: "2024-11-05",
                 capabilities: { tools: {} },
-                serverInfo: { name: "Cruncher", version: "1.2.10" },
+                serverInfo: { name: "Cruncher", version: "1.2.11" },
             });
             return;
         }
