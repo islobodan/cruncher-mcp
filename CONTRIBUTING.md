@@ -21,7 +21,7 @@ Cruncher is a **zero-dependency** scientific calculator MCP server. It runs on p
 
 ### Setup
 ```bash
-cd /workspaces/mcp-test-cruncher
+cd cruncher-mcp
 node cruncher.js  # Start the server (stdio protocol)
 ```
 
