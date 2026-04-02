@@ -496,4 +496,4 @@ Contributions are welcome! If you'd like to add a new function, fix a bug, or im
 
 ## 📜 License
 
-This project is licensed under the MIT License.
+This project is licensed under the [MIT License](LICENSE).
