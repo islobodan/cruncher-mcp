@@ -1,0 +1,39 @@
+{
+  "name": "cruncher",
+  "version": "1.2.22",
+  "description": "Zero-dependency scientific calculator MCP server with strict validation, worker isolation, and 42 tools across 8 categories",
+  "main": "cruncher.js",
+  "type": "commonjs",
+  "bin": {
+    "cruncher": "./cruncher.js"
+  },
+  "scripts": {
+    "start": "node cruncher.js",
+    "test": "npx tsx test-cruncher-full.ts",
+    "test:quick": "node cruncher.test.js",
+    "check-syntax": "node -c cruncher.js"
+  },
+  "keywords": [
+    "mcp",
+    "calculator",
+    "math",
+    "scientific",
+    "statistics",
+    "unit-conversion",
+    "model-context-protocol",
+    "zero-dependencies"
+  ],
+  "author": "Slobodan Ivkovic",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/islobodan/cruncher-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/islobodan/cruncher-mcp/issues"
+  },
+  "homepage": "https://github.com/islobodan/cruncher-mcp#readme"
+}
