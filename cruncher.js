@@ -26,7 +26,7 @@
  * - v1.2.11: Context token optimization (~40% reduction in tool descriptions).
  *            De-emphasized individual math tools in favor of evaluate_expression.
  *            Trimmed redundant descriptions and repetitive patterns.
- * - v1.2.17: Tiered tool exposure + constants in evaluate_expression via CRUNCHER_TOOL_SET env var.
+ * - v1.2.18: Tiered tool exposure + constants in evaluate_expression via CRUNCHER_TOOL_SET env var.
  *            minimal (5), standard (26), full (36, default) tool sets.
  *            Reduces context token usage by up to 90% for minimal mode.
  */
@@ -68,7 +68,7 @@ const TOOL_TIERS = {
         "logarithm", "natural_log", "get_constant",
         "sine", "cosine", "tangent", "asin", "acos", "atan",
         "set_angle_mode", "get_angle_mode",
-        "sum", "avg", "min", "max", "count",
+        "sum", "avg", "min", "max", "count", "variance", "std_dev",
         "median", "range", "percentile",
         "convert_base",
         "memory_add", "memory_subtract", "memory_clear", "memory_recall",
@@ -130,7 +130,7 @@ const MAIN_THREAD_TOOLS = new Set([
     // Cache management
     "cache_clear", "cache_info",
     // Simple stats (zero-cost)
-    "count", "min", "max",
+    "count", "min", "max", "variance", "std_dev",
     // Math one-liners
     "power", "sqrt", "logarithm", "natural_log", "absolute",
     // Constant lookup
@@ -546,6 +546,32 @@ const toolsAll = [
                 timeout: { type: "number", minimum: 100, maximum: 60000, description: "Custom timeout in ms (100-60000, default: 3000)" },
             },
             required: ["numbers", "percentile"],
+        },
+    },
+    {
+        name: "variance",
+        description:
+            "Sample variance (n-1). Set population: true for population variance (n).",
+        inputSchema: {
+            type: "object",
+            properties: {
+                numbers: { type: "array", items: { type: "number" } },
+                population: { type: "boolean" },
+            },
+            required: ["numbers"],
+        },
+    },
+    {
+        name: "std_dev",
+        description:
+            "Sample standard deviation (n-1). Set population: true for population (n).",
+        inputSchema: {
+            type: "object",
+            properties: {
+                numbers: { type: "array", items: { type: "number" } },
+                population: { type: "boolean" },
+            },
+            required: ["numbers"],
         },
     },
     // --- Additional Math Functions ---
@@ -1126,6 +1152,40 @@ const toolHandlers = {
         }
     },
 
+    /**
+     * Variance of numbers. Sample (n-1) by default.
+     * @param {Object} args - The arguments object.
+     * @param {number[]} args.numbers - Array of numbers.
+     * @param {boolean} [args.population=false] - Use population variance (n).
+     * @returns {number} The variance.
+     */
+    variance: ({ numbers, population }) => {
+        if (numbers.length === 0)
+            throw new Error("Cannot calculate the variance of an empty list.");
+        if (numbers.length === 1 && !population)
+            throw new Error("Sample variance needs ≥2 values. Use population: true.");
+        const mean = numbers.reduce((a, b) => a + b, 0) / numbers.length;
+        const ss = numbers.reduce((a, b) => a + (b - mean) ** 2, 0);
+        return ss / (population ? numbers.length : numbers.length - 1);
+    },
+
+    /**
+     * Standard deviation of numbers. Sample (n-1) by default.
+     * @param {Object} args - The arguments object.
+     * @param {number[]} args.numbers - Array of numbers.
+     * @param {boolean} [args.population=false] - Use population std dev (n).
+     * @returns {number} The standard deviation.
+     */
+    std_dev: ({ numbers, population }) => {
+        if (numbers.length === 0)
+            throw new Error("Cannot calculate the standard deviation of an empty list.");
+        if (numbers.length === 1 && !population)
+            throw new Error("Sample std dev needs ≥2 values. Use population: true.");
+        const mean = numbers.reduce((a, b) => a + b, 0) / numbers.length;
+        const ss = numbers.reduce((a, b) => a + (b - mean) ** 2, 0);
+        return Math.sqrt(ss / (population ? numbers.length : numbers.length - 1));
+    },
+
     // Additional Math Handlers
     /**
      * Calculates the remainder (modulo) of dividing two numbers.
@@ -1600,7 +1660,7 @@ if (isMainThread) {
         terminal: false,
     });
 
-    console.error(`Cruncher v1.2.17 MCP Server starting...`);
+    console.error(`Cruncher v1.2.18 MCP Server starting...`);
     console.error(`  Tool set: ${TOOL_SET} (${TOOLS.length} tools exposed)`);
 
     rl.on("line", (line) => {
@@ -1621,7 +1681,7 @@ if (isMainThread) {
             sendSuccess(message.id, {
                 protocolVersion: "2024-11-05",
                 capabilities: { tools: {} },
-                serverInfo: { name: "Cruncher", version: "1.2.17" },
+                serverInfo: { name: "Cruncher", version: "1.2.18" },
             });
             return;
         }

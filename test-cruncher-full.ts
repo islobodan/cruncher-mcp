@@ -2933,6 +2933,129 @@ async function testCruncher() {
         );
 
 
+        // --- 35d. Standard Deviation & Variance Tests ---
+        console.log("\n📊 35d. Standard Deviation & Variance Tests");
+
+        // Variance tests
+        results.push(
+            await runTest("Variance: sample variance [1,2,3,4,5] = 2.5", async () => {
+                const result = await client.callTool({
+                    name: "variance",
+                    arguments: { numbers: [1, 2, 3, 4, 5] },
+                });
+                const got = parseFloat(result.content[0].text);
+                if (Math.abs(got - 2.5) > 1e-10)
+                    throw new Error(`Expected 2.5, got ${got}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Variance: population variance [1,2,3,4,5] = 2", async () => {
+                const result = await client.callTool({
+                    name: "variance",
+                    arguments: { numbers: [1, 2, 3, 4, 5], population: true },
+                });
+                const got = parseFloat(result.content[0].text);
+                if (Math.abs(got - 2) > 1e-10)
+                    throw new Error(`Expected 2, got ${got}`);
+            }),
+        );
+
+        results.push(
+            await runTest("Variance: empty array throws error", async () => {
+                try {
+                    await client.callTool({
+                        name: "variance",
+                        arguments: { numbers: [] },
+                    });
+                    throw new Error("Expected error");
+                } catch (error) {
+                    const msg = error instanceof Error ? error.message : String(error);
+                    if (!msg.includes("empty"))
+                        throw new Error(`Expected empty list error, got: ${msg}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Variance: single element sample throws", async () => {
+                try {
+                    await client.callTool({
+                        name: "variance",
+                        arguments: { numbers: [5] },
+                    });
+                    throw new Error("Expected error");
+                } catch (error) {
+                    const msg = error instanceof Error ? error.message : String(error);
+                    if (!msg.includes("variance") || !msg.includes("≥2"))
+                        throw new Error(`Expected sample error, got: ${msg}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Variance: single element population returns 0", async () => {
+                const result = await client.callTool({
+                    name: "variance",
+                    arguments: { numbers: [5], population: true },
+                });
+                if (parseFloat(result.content[0].text) !== 0)
+                    throw new Error(`Expected 0, got ${result.content[0].text}`);
+            }),
+        );
+
+        // std_dev tests
+        results.push(
+            await runTest("StdDev: sample std_dev [1,2,3,4,5] ≈ 1.5811", async () => {
+                const result = await client.callTool({
+                    name: "std_dev",
+                    arguments: { numbers: [1, 2, 3, 4, 5] },
+                });
+                const got = parseFloat(result.content[0].text);
+                if (Math.abs(got - 1.5811388300841898) > 1e-10)
+                    throw new Error(`Expected 1.5811..., got ${got}`);
+            }),
+        );
+
+        results.push(
+            await runTest("StdDev: population std_dev [1,2,3,4,5] ≈ 1.4142", async () => {
+                const result = await client.callTool({
+                    name: "std_dev",
+                    arguments: { numbers: [1, 2, 3, 4, 5], population: true },
+                });
+                const got = parseFloat(result.content[0].text);
+                if (Math.abs(got - 1.4142135623730951) > 1e-10)
+                    throw new Error(`Expected 1.4142..., got ${got}`);
+            }),
+        );
+
+        results.push(
+            await runTest("StdDev: all-same values [10,10,10,10,10] = 0", async () => {
+                const result = await client.callTool({
+                    name: "std_dev",
+                    arguments: { numbers: [10, 10, 10, 10, 10] },
+                });
+                if (parseFloat(result.content[0].text) !== 0)
+                    throw new Error(`Expected 0, got ${result.content[0].text}`);
+            }),
+        );
+
+        results.push(
+            await runTest("StdDev: single element sample throws error", async () => {
+                try {
+                    await client.callTool({
+                        name: "std_dev",
+                        arguments: { numbers: [5] },
+                    });
+                    throw new Error("Expected error");
+                } catch (error) {
+                    const msg = error instanceof Error ? error.message : String(error);
+                    if (!msg.includes("≥2"))
+                        throw new Error(`Expected sample error, got: ${msg}`);
+                }
+            }),
+        );
+
         // --- 36. Fuzzy Tool Name Matching Tests ---
         console.log("\n🔍 36. Fuzzy Tool Name Matching Tests");
 
@@ -3894,10 +4017,10 @@ async function testCruncher() {
         );
 
         results.push(
-            await runTest("Standard tier: Exactly 34 tools exposed", async () => {
+            await runTest("Standard tier: Exactly 36 tools exposed", async () => {
                 const tools = await standardClient.listTools();
-                if (tools.length !== 34) {
-                    throw new Error(`Expected 34 tools in standard mode, got ${tools.length}`);
+                if (tools.length !== 36) {
+                    throw new Error(`Expected 36 tools in standard mode, got ${tools.length}`);
                 }
             }),
         );
@@ -3924,6 +4047,7 @@ async function testCruncher() {
                     "median", "memory_add", "memory_clear", "get_constant", "convert_base",
                     "sine", "cosine", "tangent", "asin", "acos", "atan",
                     "set_angle_mode", "get_angle_mode",
+                    "variance", "std_dev",
                 ];
                 const missing = expectedStandardExtras.filter(
                     (name) => !toolNames.includes(name),
