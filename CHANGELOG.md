@@ -9,6 +9,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [1.2.23] — 2026-04-02
 
 ### Added
+- **Test suite expansion**: 302 → 330 tests (+28, 100% pass) — 8 new sections covering:
+  - Full-mode exclusive tools (convert_base, batch, cache_clear/info, percentile, range)
+  - Missing `evaluate_expression` built-ins (log(x,base), euler_mascheroni, h, NA constants)
+  - Expression injection security tests (eval(), require(), process.exit())
+  - Variance/std_dev edge cases (single-element sample, negative numbers)
+  - Unit conversion edge cases (reverse m→km, -40°C/F intersection, absolute zero)
+  - Batch boundary tests (49 ops, 50 ops exact limit, mixed operations)
+  - Fuzzy tool name edge cases (fctorial, multply, sub prefix)
+  - Remaining physical constants in expressions (e_charge, m_e)
 - **`CHANGELOG.md`** — Complete version history from v1.0.0 to v1.2.22
 - **`CONTRIBUTING.md`** — Developer guide with tool-adding workflow, test examples, PR checklist
 - **`SECURITY.md`** — 5-layer expression security model, threat matrix, deployment best practices

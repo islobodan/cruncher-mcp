@@ -15,7 +15,7 @@ This single command runs all 50 tests covering every feature of the Cruncher ser
 
 | File | Description | Tests | Use Case |
 |------|-------------|-------|----------|
-| `test-cruncher-full.ts` | Comprehensive test suite | 302 | Full regression testing, CI/CD |
+| `test-cruncher-full.ts` | Comprehensive test suite | 330 | Full regression testing, CI/CD |
 | `TEST_REPORT.md` | Test results and analysis | - | Documentation |
 
 ## Test Coverage
@@ -54,7 +54,7 @@ This single command runs all 50 tests covering every feature of the Cruncher ser
 - **Percentile calculations** (full tier)
 
 ### 📊 Test Statistics
-- **Total Tests**: 302
+- **Total Tests**: 330
 - **Pass Rate**: **100%** (330/330) on v1.2.23
 - **Execution Time**: ~8-10 seconds
 - **Coverage**: All **42 tools**, edge cases, concurrency, and advanced scenarios

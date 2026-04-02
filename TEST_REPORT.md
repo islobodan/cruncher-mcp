@@ -7,7 +7,7 @@ This document summarizes the comprehensive test suite for the Cruncher MCP Serve
 - **Framework**: `mcp-tester` (custom MCP client testing framework)
 - **Runner**: `tsx` (TypeScript execution without compilation)
 - **Test File**: `test-cruncher-full.ts` (single comprehensive suite)
-- **Total Tests**: 302
+- **Total Tests**: 330
 - **Pass Rate**: **100%** (330/330 tests passed) on v1.2.23
 
 ## Test Categories
@@ -193,7 +193,7 @@ npx tsx test-cruncher-full.ts
 | Stress Tests | 2 | 2 | 0 | 100% |
 | Boundary Tests | 2 | 2 | 0 | 100% |
 | Timeout Protection | 2 | 2 | 0 | 100% |
-| **Total** | **302** | **302** | **0** | **100%** |
+| **Total** | **330** | **330** | **0** | **100%** |
 
 
 ## Conclusion
@@ -217,7 +217,7 @@ The Cruncher MCP Server passes **100% of comprehensive tests** on v1.2.23. The t
 
 | Version | Tests | Pass Rate | Key Additions |
 |---------|-------|-----------|---------------|
-| v1.2.23 | 302 | 100% | Project meta-files (CHANGELOG, CONTRIBUTING, SECURITY, package.json, .editorconfig), finalized TODO, README badges |
+| v1.2.23 | 330 | 100% | Test suite expanded 302→330; meta-files (CHANGELOG, CONTRIBUTING, SECURITY, package.json, .editorconfig) |
 | v1.2.22 | 302 | 100% | Unit conversion (8 categories, 25 tests) |
 | v1.2.21 | 278 | 100% | Documentation audit (tier counts, tool table) |
 | v1.2.20 | 278 | 100% | Tier refinement (stats/percentile/memory → full) |
