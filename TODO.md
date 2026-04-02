@@ -9,6 +9,7 @@
 | O2 | Context Token Optimization | `[x]` | L | 🔴 High | High |
 | O3 | Tiered Tool Exposure | `[x]` | L | 🔴 High | High |
 | O4 | Constants in evaluate_expression | `[x]` | M | 🔴 High | High |
+| O5 | Fuzzy Tool Name Matching | `[x]` | S | 🔴 High | High |
 | 2 | Atomic Memory Operations | `[x]` | M | 🔴 High | Medium |
 | 3 | Configurable Timeout | `[x]` | L | 🔴 High | High |
 | 4 | More Built-in Functions | `[x]` | L | 🟡 Medium | High |
@@ -580,7 +581,7 @@ Based on priority, impact, and dependencies:
 
 | Date | Version | Changes |
 |------|---------|---------|
-| 2026-04-02 | v1.2.13 | Tiered tool exposure (CRUNCHER_TOOL_SET: minimal/standard/full) |
+| 2026-04-02 | v1.2.14 | Tiered tool exposure (CRUNCHER_TOOL_SET: minimal/standard/full) |
 | 2026-04-02 | v1.2.11 | Context token optimization (~40% description reduction) |
 | 2026-04-02 | v1.2.10 | O(1) tool lookup, batch cache, conditional worker clone |
 | 2026-04-02 | v1.2.9 | Moved 15 instant tools from workers to main thread |

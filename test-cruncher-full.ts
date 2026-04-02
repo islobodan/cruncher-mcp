@@ -2693,6 +2693,141 @@ async function testCruncher() {
             }),
         );
 
+        // --- 36. Fuzzy Tool Name Matching Tests ---
+        console.log("\n🔍 36. Fuzzy Tool Name Matching Tests");
+
+        results.push(
+            await runTest("Fuzzy: fact -> factorial (prefix match)", async () => {
+                try {
+                    const result = await client.callTool({
+                        name: "fact",
+                        arguments: { n: 5 },
+                    });
+                    // If it somehow succeeded, that's unexpected
+                    throw new Error("Expected fuzzy suggestion error but got result: " + JSON.stringify(result));
+                } catch (error) {
+                    const msg = error instanceof Error ? error.message : String(error);
+                    if (!msg.includes("Did you mean 'factorial'?")) {
+                        throw new Error(`Expected factorial suggestion, got: ${msg}`);
+                    }
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Fuzzy: fac -> factorial (short prefix match)", async () => {
+                try {
+                    await client.callTool({
+                        name: "fac",
+                        arguments: { n: 5 },
+                    });
+                    throw new Error("Expected fuzzy suggestion error");
+                } catch (error) {
+                    const msg = error instanceof Error ? error.message : String(error);
+                    if (!msg.includes("Did you mean 'factorial'?")) {
+                        throw new Error(`Expected factorial suggestion, got: ${msg}`);
+                    }
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Fuzzy: sinn -> sine (Levenshtein typo)", async () => {
+                try {
+                    await client.callTool({
+                        name: "sinn",
+                        arguments: { angle: 0 },
+                    });
+                    throw new Error("Expected fuzzy suggestion error");
+                } catch (error) {
+                    const msg = error instanceof Error ? error.message : String(error);
+                    if (!msg.includes("Did you mean 'sine'?")) {
+                        throw new Error(`Expected sine suggestion, got: ${msg}`);
+                    }
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Fuzzy: squrt -> sqrt (Levenshtein typo)", async () => {
+                try {
+                    await client.callTool({
+                        name: "squrt",
+                        arguments: { x: 16 },
+                    });
+                    throw new Error("Expected fuzzy suggestion error");
+                } catch (error) {
+                    const msg = error instanceof Error ? error.message : String(error);
+                    if (!msg.includes("Did you mean 'sqrt'?")) {
+                        throw new Error(`Expected sqrt suggestion, got: ${msg}`);
+                    }
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Fuzzy: adddd -> add (extra letters)", async () => {
+                try {
+                    await client.callTool({
+                        name: "adddd",
+                        arguments: { a: 1, b: 2 },
+                    });
+                    throw new Error("Expected fuzzy suggestion error");
+                } catch (error) {
+                    const msg = error instanceof Error ? error.message : String(error);
+                    if (!msg.includes("Did you mean 'add'?")) {
+                        throw new Error(`Expected add suggestion, got: ${msg}`);
+                    }
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Fuzzy: divid -> divide (missing suffix)", async () => {
+                try {
+                    await client.callTool({
+                        name: "divid",
+                        arguments: { a: 10, b: 2 },
+                    });
+                    throw new Error("Expected fuzzy suggestion error");
+                } catch (error) {
+                    const msg = error instanceof Error ? error.message : String(error);
+                    if (!msg.includes("Did you mean 'divide'?")) {
+                        throw new Error(`Expected divide suggestion, got: ${msg}`);
+                    }
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Fuzzy: totally_gibberish -> no suggestion", async () => {
+                try {
+                    await client.callTool({
+                        name: "totally_gibberish",
+                        arguments: {},
+                    });
+                    throw new Error("Expected tool not found error");
+                } catch (error) {
+                    const msg = error instanceof Error ? error.message : String(error);
+                    if (msg.includes("Did you mean")) {
+                        throw new Error(`Should NOT suggest a match for gibberish, got: ${msg}`);
+                    }
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Fuzzy: exact valid tool still works", async () => {
+                const result = await client.callTool({
+                    name: "factorial",
+                    arguments: { n: 5 },
+                });
+                if (parseFloat(result.content[0].text) !== 120) {
+                    throw new Error(`Expected 120, got ${result.content[0].text}`);
+                }
+            }),
+        );
+
         // --- 35. Memory Persistence ---
         // --- 34. Memory Persistence ---
         results.push(

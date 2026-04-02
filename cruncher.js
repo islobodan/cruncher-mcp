@@ -26,7 +26,7 @@
  * - v1.2.11: Context token optimization (~40% reduction in tool descriptions).
  *            De-emphasized individual math tools in favor of evaluate_expression.
  *            Trimmed redundant descriptions and repetitive patterns.
- * - v1.2.13: Tiered tool exposure + constants in evaluate_expression via CRUNCHER_TOOL_SET env var.
+ * - v1.2.14: Tiered tool exposure + constants in evaluate_expression via CRUNCHER_TOOL_SET env var.
  *            minimal (5), standard (26), full (36, default) tool sets.
  *            Reduces context token usage by up to 90% for minimal mode.
  */
@@ -638,6 +638,54 @@ const TOOLS = filterToolsByTier(toolsAll, TOOL_SET);
 
 /** Pre-built O(1) Tool lookup Map (replaces O(n) TOOLS.find() per call). */
 const TOOL_LOOKUP_MAP = new Map(TOOLS.map(t => [t.name, t]));
+
+/**
+ * Calculate Levenshtein distance between two strings.
+ * Used for fuzzy tool name matching to help LLMs recover from typos.
+ */
+const levenshtein = (a, b) => {
+    const m = [];
+    for (let i = 0; i <= b.length; i++) m[i] = [i];
+    for (let j = 0; j <= a.length; j++) m[0][j] = j;
+    for (let i = 1; i <= b.length; i++) {
+        for (let j = 1; j <= a.length; j++) {
+            m[i][j] = b.charAt(i - 1) === a.charAt(j - 1)
+                ? m[i - 1][j - 1]
+                : Math.min(m[i - 1][j - 1] + 1, Math.min(m[i][j - 1] + 1, m[i - 1][j] + 1));
+        }
+    }
+    return m[b.length][a.length];
+};
+
+/**
+ * Find the closest tool name match via Levenshtein distance.
+ * Returns null if no match within allowed tolerance:
+ *   - Exact prefix match (typedName is a known tool's prefix) → always matches
+ *   - Distance ≤ 3 AND ≤ 40% of the longer name
+ */
+const findClosestToolName = (typedName) => {
+    if (!typedName || typedName.length === 0) return null;
+    const lowerTyped = typedName.toLowerCase();
+
+    // 1. Prefix shortcut: if typedName starts a known tool name, return it
+    for (const [toolName] of TOOL_LOOKUP_MAP) {
+        if (toolName.toLowerCase().startsWith(lowerTyped)) return toolName;
+    }
+
+    // 2. Levenshtein fallback for non-prefix typos
+    let bestName = null;
+    let bestDist = Infinity;
+    const maxLen = Math.max(lowerTyped.length, 5); // floor so short names aren't too strict
+    const maxDist = Math.min(3, Math.floor(maxLen * 0.4));
+    for (const [toolName] of TOOL_LOOKUP_MAP) {
+        const dist = levenshtein(lowerTyped, toolName.toLowerCase());
+        if (dist <= maxDist && dist < bestDist) {
+            bestDist = dist;
+            bestName = toolName;
+        }
+    }
+    return bestName;
+};
 
 // --- Safe Floating Point Math Helpers ---
 
@@ -1509,7 +1557,7 @@ if (isMainThread) {
         terminal: false,
     });
 
-    console.error(`Cruncher v1.2.13 MCP Server starting...`);
+    console.error(`Cruncher v1.2.14 MCP Server starting...`);
     console.error(`  Tool set: ${TOOL_SET} (${TOOLS.length} tools exposed)`);
 
     rl.on("line", (line) => {
@@ -1530,7 +1578,7 @@ if (isMainThread) {
             sendSuccess(message.id, {
                 protocolVersion: "2024-11-05",
                 capabilities: { tools: {} },
-                serverInfo: { name: "Cruncher", version: "1.2.13" },
+                serverInfo: { name: "Cruncher", version: "1.2.14" },
             });
             return;
         }
@@ -1548,7 +1596,11 @@ if (isMainThread) {
             const handler = toolHandlers[name];
 
             if (!toolDef || !handler) {
-                sendError(message.id, -32601, { message: `Tool '${name}' not found.` });
+                const didYouMean = findClosestToolName(name);
+                const msg = didYouMean
+                    ? `Tool '${name}' not found. Did you mean '${didYouMean}'?`
+                    : `Tool '${name}' not found.`;
+                sendError(message.id, -32601, { message: msg });
                 return;
             }
 

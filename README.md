@@ -1,6 +1,6 @@
 # Cruncher: The Scientific Calculator MCP Server
 
-[![Version](https://img.shields.io/badge/version-1.2.13-blue.svg)](https://github.com/)
+[![Version](https://img.shields.io/badge/version-1.2.14-blue.svg)](https://github.com/)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen.svg)](https://nodejs.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -255,6 +255,31 @@ Cruncher exposes its functions as individual MCP tools. Here is the full list:
 | `CRUNCHER_TOOL_SET` | `full` | Controls how many tools are exposed: `minimal` (5), `standard` (26), or `full` (36) |
 
 
+
+### Fuzzy Tool Name Matching
+
+If the LLM calls a tool that doesn't exist, Cruncher uses **Levenshtein distance** to find the closest match and suggests it:
+
+| Typo | Suggestion | Match Type |
+|------|-----------|------------|
+| `fact` | `factorial` | Prefix match |
+| `fac` | `factorial` | Prefix match |
+| `sinn` | `sine` | 1-char typo |
+| `squrt` | `sqrt` | Transposition |
+| `adddd` | `add` | Extra letters |
+| `divid` | `divide` | Missing suffix |
+| `totally_wrong` | *(none)* | Too different — no suggestion |
+
+Response format:
+```json
+{
+  "error": {
+    "code": -32601,
+    "message": "Tool 'fact' not found. Did you mean 'factorial'?"
+  }
+}
+```
+
 ### Constants in Expressions
 
 You can now use mathematical and physical constant names directly inside `evaluate_expression`:
@@ -323,7 +348,7 @@ Example MCP config (`claude_desktop_config.json`):
 
 Cruncher is a plain Node.js JavaScript application that communicates over **standard input/output (stdio)**. This makes it a lightweight, portable, and secure MCP server. The entire flow for a single tool call looks like this:
 
-1.  **Initialization**: On startup, the server listens for an `initialize` request from the MCP client and responds with its capabilities and version info (`v1.2.13`).
+1.  **Initialization**: On startup, the server listens for an `initialize` request from the MCP client and responds with its capabilities and version info (`v1.2.14`).
 2.  **Tool Discovery**: The client sends a `tools/list` request, and the server responds with the full list of available calculator tools and their `inputSchema`, which defines the required arguments and their types.
 3.  **Input Validation**: Before any tool is executed, the server runs a custom recursive `validateArguments` function against the tool's `inputSchema`. This ensures required fields are present, types are correct (number, string, array), enum values are valid, and min/max constraints are respected — all without any external library.
 4.  **Worker Thread Execution**: Once validated, the tool call is handed off to an isolated Node.js `worker_thread`. This completely protects the main thread (and its `stdio` communication) from being blocked by a long-running or infinite calculation.
