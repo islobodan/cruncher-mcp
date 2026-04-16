@@ -1,4 +1,4 @@
-import { MCPClient } from "../mcp-tester/src/index.js";
+import { MCPClient } from "./node_modules/@slbdn/mcp-tester/dist/client/MCPClient.js";
 
 // Test configuration
 const TEST_TIMEOUT = 30000;
