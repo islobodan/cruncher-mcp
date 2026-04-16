@@ -40,7 +40,7 @@ evaluate_expression("1e6 + 2.5e-3")
 
 ### Constraints
 - Letters are **only** allowed for the constants and function names listed above — no algebraic variables like `x + 2`
-- Trig functions in `evaluate_expression` use the **global angle mode** (default: degrees)
+- Individual trig tool calls (`sine`, `cosine`, etc.) use the **global angle mode** (default: degrees). `evaluate_expression` **always uses radians** (JavaScript standard).
 - Scientific notation: `1e6`, `2.5e-3` both work
 - Explicit operators required: `2 * pi` works, `2pi` does not
 
@@ -132,9 +132,9 @@ Trig functions use a **global** angle mode (default: **degrees**).
 | Tool | Purpose |
 |------|---------|
 | `get_angle_mode()` | Returns current mode |
-| `set_angle_mode({ unit: "radians" })` | Switch to radians |
+| `set_angle_mode({ mode: "radians" })` | Switch to radians |
 
-In `evaluate_expression`, trig always uses the global mode. Individual tool calls accept an explicit `unit` param that overrides it.
+In `evaluate_expression`, trig **always uses radians** (JavaScript standard). The global angle mode only affects individual tool calls (`sine`, `cosine`, etc.), which accept an explicit `unit` param that overrides it.
 
 > **Standard tier** (available by default).
 
@@ -145,8 +145,8 @@ For 2+ sequential calls that can't be one string:
 ```
 batch({
   operations: [
-    { tool: "sqrt", arguments: { number: 144 } },
-    { tool: "add", arguments: { a: 12, b: 10 } }
+    { tool: "sqrt", args: { number: 144 } },
+    { tool: "add", args: { a: 12, b: 10 } }
   ]
 })
 ```
