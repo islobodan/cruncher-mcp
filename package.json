@@ -1,10 +1,11 @@
 {
   "name": "@slbdn/cruncher-mcp",
-  "version": "1.2.23",
+  "version": "1.2.24",
   "description": "Zero-dependency scientific calculator MCP server with strict validation, worker isolation, and 43 tools across 8 categories",
   "main": "cruncher.js",
   "type": "commonjs",
   "bin": {
+    "cruncher-mcp": "./cruncher.js",
     "cruncher": "./cruncher.js"
   },
   "scripts": {

@@ -1943,7 +1943,7 @@ if (isMainThread) {
             sendSuccess(message.id, {
                 protocolVersion: "2024-11-05",
                 capabilities: { tools: {} },
-                serverInfo: { name: "Cruncher", version: "1.2.23" },
+                serverInfo: { name: "Cruncher", version: "1.2.24" },
             });
             return;
         }

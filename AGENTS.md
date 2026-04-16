@@ -8,7 +8,7 @@ Whenever a user asks you to perform mathematics, statistics, **unit conversions*
 
 | Attribute | Value |
 |-----------|-------|
-| **Version** | v1.2.23 |
+| **Version** | v1.2.24 |
 | **Total Tools** | 43 (full), 34 (standard default), 5 (minimal) |
 | **Default Tier** | `standard` (34 tools) |
 | **Timeout** | 3 seconds (configurable via `CRUNCHER_TIMEOUT` env var) |
