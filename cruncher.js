@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 /*
  * MCP Server: Cruncher - The Scientific Calculator
  * Author: Slobodan Ivkovic
@@ -1922,7 +1924,7 @@ if (isMainThread) {
         terminal: false,
     });
 
-    console.error(`Cruncher v1.2.20 MCP Server starting...`);
+    console.error(`Cruncher v1.2.25 MCP Server starting...`);
     console.error(`  Tool set: ${TOOL_SET} (${TOOLS.length} tools exposed)`);
 
     rl.on("line", (line) => {
@@ -1943,7 +1945,7 @@ if (isMainThread) {
             sendSuccess(message.id, {
                 protocolVersion: "2024-11-05",
                 capabilities: { tools: {} },
-                serverInfo: { name: "Cruncher", version: "1.2.24" },
+                serverInfo: { name: "Cruncher", version: "1.2.25" },
             });
             return;
         }

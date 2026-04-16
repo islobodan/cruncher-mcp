@@ -1,6 +1,6 @@
 # Cruncher: The Scientific Calculator MCP Server
 
-[![Version](https://img.shields.io/badge/version-1.2.24-blue.svg)](https://github.com/islobodan/cruncher-mcp)
+[![Version](https://img.shields.io/badge/version-1.2.25-blue.svg)](https://github.com/islobodan/cruncher-mcp)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Tests](https://img.shields.io/badge/tests-330%20%7C%20100%25-brightgreen.svg)](TEST_REPORT.md)
@@ -67,42 +67,9 @@ npx @slbdn/cruncher-mcp
 
 This downloads and runs the latest version automatically.
 
-### Step 2: Installation via npm (Global)
+### Step 2: Configure Claude Desktop
 
-For persistent installation:
-
-```bash
-npm install -g @slbdn/cruncher-mcp
-```
-
-Then reference in your MCP client config as:
-
-```json
-{
-  "command": "node",
-  "args": ["/path/to/cruncher.js"]
-}
-```
-
-Or with npx in config (if supported by your client):
-
-```json
-{
-  "command": "npx",
-  "args": ["@slbdn/cruncher-mcp"]
-}
-```
-
-### Step 3: Manual Download (Alternative)
-
-1.  Download the [`cruncher.js`](cruncher.js) file directly from GitHub.
-2.  Place it in a permanent location (e.g., `C:\mcp-servers\cruncher.js` or `/home/user/mcp-servers/cruncher.js`).
-
-### Step 4: Configure Claude Desktop
-
-You can configure Claude Desktop using either the npm package or the downloaded file:
-
-#### Option A: Using npm package (Recommended)
+**Recommended**: Use the npm package for automatic updates:
 
 ```json
 {
@@ -115,15 +82,16 @@ You can configure Claude Desktop using either the npm package or the downloaded 
 }
 ```
 
-#### Option B: Using downloaded file (Manual)
+### Step 3: Manual File (Alternative)
 
-1.  Locate the Claude Desktop configuration file:
+If you prefer to download the file manually instead:
+
+1.  Download the [`cruncher.js`](cruncher.js) file directly from GitHub.
+2.  Place it in a permanent location (e.g., `C:\mcp-servers\cruncher.js` or `/home/user/mcp-servers/cruncher.js`).
+3.  Locate the Claude Desktop configuration file:
     *   **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
     *   **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-
-2.  If the file doesn't exist, create it.
-
-3.  Add the following server configuration. **Important:** Replace the `args` path with the actual path to your `cruncher.js` file. You can also configure the execution timeout (in milliseconds) via the `CRUNCHER_TIMEOUT` environment variable (defaults to 3000ms).
+4.  Add the server configuration pointing to your downloaded file:
 
     ```json
     {
@@ -140,7 +108,7 @@ You can configure Claude Desktop using either the npm package or the downloaded 
     ```
     > **Note for macOS/Linux Users:** Use a POSIX-style path, e.g., `"/home/YOUR_USERNAME/mcp-servers/cruncher.js"`. Make sure your `node` executable is in your system's PATH.
 
-### Step 5: Start Calculating!
+### Step 4: Start Calculating!
 
 1.  **Save** the configuration file and **completely quit** the Claude Desktop app.
 2.  Restart Claude Desktop. It will automatically connect to the Cruncher server.
@@ -604,7 +572,7 @@ Example MCP config (`claude_desktop_config.json`):
 
 Cruncher is a plain Node.js JavaScript application that communicates over **standard input/output (stdio)**. This makes it a lightweight, portable, and secure MCP server. The entire flow for a single tool call looks like this:
 
-1.  **Initialization**: On startup, the server listens for an `initialize` request from the MCP client and responds with its capabilities and version info (`v1.2.24`).
+1.  **Initialization**: On startup, the server listens for an `initialize` request from the MCP client and responds with its capabilities and version info (`v1.2.25`).
 2.  **Tool Discovery**: The client sends a `tools/list` request, and the server responds with the full list of available calculator tools and their `inputSchema`, which defines the required arguments and their types.
 3.  **Input Validation**: Before any tool is executed, the server runs a custom recursive `validateArguments` function against the tool's `inputSchema`. This ensures required fields are present, types are correct (number, string, array), enum values are valid, and min/max constraints are respected - all without any external library.
 4.  **Worker Thread Execution**: Once validated, the tool call is handed off to an isolated Node.js `worker_thread`. This completely protects the main thread (and its `stdio` communication) from being blocked by a long-running or infinite calculation.

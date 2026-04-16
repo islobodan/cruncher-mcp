@@ -234,7 +234,7 @@ state storage duplicates functionality already provided by the MCP conversation 
 | v1.2.20 | 278 | 100% | Tier refinement |
 | v1.2.21 | 278 | 100% | Documentation audit |
 | **v1.2.22** | **302** | **100%** | **Unit conversion (8 cat, 80+ units, 25 tests)** |
-| **v1.2.24** | **330** | **100%** | **Expanded test suite (28 new tests, 100% pass)** |
+| **v1.2.25** | **330** | **100%** | **Expanded test suite (28 new tests, 100% pass)** |
 
 ---
 
@@ -242,7 +242,7 @@ state storage duplicates functionality already provided by the MCP conversation 
 
 | Date | Version | Changes |
 |------|---------|---------|
-| 2026-04-02 | v1.2.24 | Test suite expansion: 302→330 tests, 8 new sections (full-mode exclusives, eval built-ins, injection security, variance edges, unit conversion edges, batch boundaries, fuzzy matching, remaining constants)
+| 2026-04-02 | v1.2.25 | Test suite expansion: 302→330 tests, 8 new sections (full-mode exclusives, eval built-ins, injection security, variance edges, unit conversion edges, batch boundaries, fuzzy matching, remaining constants)
 | 2026-04-02 | v1.2.22 | Unit conversion: 8 categories (length, weight, temp, area, volume, time, speed, digital_storage), 80+ units, JSON structured output |
 | 2026-04-02 | v1.2.21 | Comprehensive README.md audit: fixed tier counts (34/42), default=standard, added missing tools, updated examples |
 | 2026-04-02 | v1.2.20 | Standard tier refinement: moved memory, convert_base, percentile to full tier |
@@ -265,7 +265,7 @@ state storage duplicates functionality already provided by the MCP conversation 
 
 ---
 
-**Version**: v1.2.24
+**Version**: v1.2.25
 **Last Updated**: 2026-04-02
 **Total Tasks**: 15
 **Completed**: 13 ✅
