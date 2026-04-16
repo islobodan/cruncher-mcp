@@ -18,9 +18,9 @@ Cruncher is built as a highly educational, extremely lightweight tool. It accomp
 
 ## 📚 An Educational Approach to MCP
 
-This project serves as an excellent learning resource for developers looking to understand the Model Context Protocol (MCP) deeply. Because it deliberately avoids using the official `@modelcontextprotocol/sdk`, the entire implementation of the MCP protocol, JSON-RPC message handling, input validations, and error formatting is exposed in plain JavaScript. 
+This project serves as an excellent learning resource for developers looking to understand the Model Context Protocol (MCP) deeply. Because it deliberately avoids using the official `@modelcontextprotocol/sdk`, the entire implementation of the MCP protocol, JSON-RPC message handling, input validations, and error formatting is exposed in plain JavaScript.
 
-Reading through `cruncher.js` provides unparalleled, transparent insight into exactly how an MCP server communicates over `stdio`, parses incoming requests (`initialize`, `tools/list`, `tools/call`), and responds back to the AI client—demystifying the "magic" that SDKs usually hide away.
+Reading through `cruncher.js` provides unparalleled, transparent insight into exactly how an MCP server communicates over `stdio`, parses incoming requests (`initialize`, `tools/list`, `tools/call`), and responds back to the AI client-demystifying the "magic" that SDKs usually hide away.
 
 ## What is the Model Context Protocol?
 
@@ -30,7 +30,7 @@ The Model Context Protocol (MCP) is an open standard that allows AI applications
 
 Cruncher provides a comprehensive set of calculator functions built completely from scratch without heavy dependencies:
 
-*   **Robust Architecture**: 
+*   **Robust Architecture**:
     *   **Zero Dependencies**: Relies purely on Node.js standard libraries.
     *   **Strict Input Validation**: Custom schema validator prevents AI hallucinations and invalid data.
     *   **Infinite Loop Protection**: Utilizes Node.js `worker_threads` with a 3-second strict timeout to prevent complex calculations from freezing the server.
@@ -47,7 +47,7 @@ Cruncher provides a comprehensive set of calculator functions built completely f
 *   **Unit Conversion**: 80+ conversions across 8 categories (length, weight, temperature, area, volume, time, speed, digital_storage).
 *   **Convenience Functions**: Absolute Value.
 *   **Constants**: Easy access to Math (`pi`, `e`, `tau`, `phi`, `sqrt2`, `euler_mascheroni`), Physics (`c`, `g`, `G`, `h`, `k`, `R`), and Chemistry constants (`NA`, `e_charge`, `m_e`, `m_p`).
-*   **Memory Functions**: `M+`, `M-`, `MR` (Memory Recall), and `MC` (Memory Clear) — full tier only.
+*   **Memory Functions**: `M+`, `M-`, `MR` (Memory Recall), and `MC` (Memory Clear) - full tier only.
 
 ## 🚀 Installation & Usage
 
@@ -57,14 +57,65 @@ Get Cruncher up and running with Claude Desktop in just a few minutes.
 
 Ensure you have **Node.js** (version 18.0.0 or newer) installed on your system. You can download it from [nodejs.org](https://nodejs.org/).
 
-### Step 2: Download the Server
+### Step 1: Quick Start with npm
 
-1.  Clone this repository or download the [`cruncher.js`](cruncher.js) file directly.
-2.  Place the file in a permanent, memorable location on your computer (e.g., `C:\mcp-servers\cruncher.js` on Windows or `/home/user/mcp-servers/cruncher.js` on macOS/Linux).
+**Recommended**: Install via npm and use directly:
 
-### Step 3: Configure Claude Desktop
+```bash
+npx @slbdn/cruncher-mcp
+```
 
-You need to tell Claude Desktop where to find the Cruncher server.
+This downloads and runs the latest version automatically.
+
+### Step 2: Installation via npm (Global)
+
+For persistent installation:
+
+```bash
+npm install -g @slbdn/cruncher-mcp
+```
+
+Then reference in your MCP client config as:
+
+```json
+{
+  "command": "node",
+  "args": ["/path/to/cruncher.js"]
+}
+```
+
+Or with npx in config (if supported by your client):
+
+```json
+{
+  "command": "npx",
+  "args": ["@slbdn/cruncher-mcp"]
+}
+```
+
+### Step 3: Manual Download (Alternative)
+
+1.  Download the [`cruncher.js`](cruncher.js) file directly from GitHub.
+2.  Place it in a permanent location (e.g., `C:\mcp-servers\cruncher.js` or `/home/user/mcp-servers/cruncher.js`).
+
+### Step 4: Configure Claude Desktop
+
+You can configure Claude Desktop using either the npm package or the downloaded file:
+
+#### Option A: Using npm package (Recommended)
+
+```json
+{
+  "mcpServers": {
+    "cruncher": {
+      "command": "npx",
+      "args": ["@slbdn/cruncher-mcp"]
+    }
+  }
+}
+```
+
+#### Option B: Using downloaded file (Manual)
 
 1.  Locate the Claude Desktop configuration file:
     *   **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
@@ -87,9 +138,9 @@ You need to tell Claude Desktop where to find the Cruncher server.
       }
     }
     ```
-    > **Note for macOS/Linux Users:** Use a POSIX-style path, e.g., `["/home/YOUR_USERNAME/mcp-servers/cruncher.js"]`. Make sure your `node` executable is in your system's PATH.
+    > **Note for macOS/Linux Users:** Use a POSIX-style path, e.g., `"/home/YOUR_USERNAME/mcp-servers/cruncher.js"`. Make sure your `node` executable is in your system's PATH.
 
-### Step 4: Start Calculating!
+### Step 5: Start Calculating!
 
 1.  **Save** the configuration file and **completely quit** the Claude Desktop app.
 2.  Restart Claude Desktop. It will automatically connect to the Cruncher server.
@@ -97,12 +148,26 @@ You need to tell Claude Desktop where to find the Cruncher server.
 
 ### OpenWebUI (Formerly Ollama WebUI)
 OpenWebUI natively supports connecting to `stdio` MCP servers.
+
+**Option A: Using npm package**
+1. Go to **Admin Panel** > **Settings** > **Tools** > **MCP Servers**.
+2. Click **Add Server**.
+3. Name it "Cruncher", select **Command** and enter `npx`, set Args to `@slbdn/cruncher-mcp`.
+
+**Option B: Using downloaded file**
 1. Go to **Admin Panel** > **Settings** > **Tools** > **MCP Servers**.
 2. Click **Add Server**.
 3. Name it "Cruncher", select **stdio**, use `node` as the command, and `/path/to/cruncher.js` as the argument.
 
 ### Cursor IDE
 You can give Cursor's built-in AI the ability to run math and calculate hashes.
+
+**Option A: Using npm package**
+1. Open Cursor Settings (gear icon) > **Features** > **MCP Servers**.
+2. Click **+ Add New MCP Server**.
+3. Set Type to `command`, Name to `cruncher`, and Command to `npx @slbdn/cruncher-mcp`.
+
+**Option B: Using downloaded file**
 1. Open Cursor Settings (gear icon) > **Features** > **MCP Servers**.
 2. Click **+ Add New MCP Server**.
 3. Set Type to `command`, Name to `cruncher`, and Command to `node /path/to/cruncher.js`.
@@ -110,6 +175,19 @@ You can give Cursor's built-in AI the ability to run math and calculate hashes.
 ### Cline (VS Code Extension)
 If you use Cline for agentic coding in VS Code, open the MCP configuration file (`cline_mcp_settings.json`) and add:
 
+**Option A: Using npm package**
+```json
+{
+  "mcpServers": {
+    "cruncher": {
+      "command": "npx",
+      "args": ["@slbdn/cruncher-mcp"]
+    }
+  }
+}
+```
+
+**Option B: Using downloaded file**
 ```json
 {
   "mcpServers": {
@@ -126,6 +204,20 @@ If you use Cline for agentic coding in VS Code, open the MCP configuration file 
 
 ### Goose (Terminal Agent)
 Goose is a lightweight, terminal‑based AI assistant that fully supports MCP.
+
+**Option A: Using npm package**
+1. Edit `~/.goose/config.yaml` (or the local project config).
+2. Add a new server entry:
+
+```yaml
+mcpServers:
+  cruncher:
+    command: npx
+    args:
+      - "@slbdn/cruncher-mcp"
+```
+
+**Option B: Using downloaded file**
 1. Edit `~/.goose/config.yaml` (or the local project config).
 2. Add a new server entry:
 
@@ -141,7 +233,17 @@ mcpServers:
 3. Restart Goose. You can now ask Goose to run calculations like `evaluate_expression` or `median` directly.
 
 ### Zed Editor (AI Pane)
-Zed’s built‑in AI pane supports MCP connections.
+Zed's built‑in AI pane supports MCP connections.
+
+**Option A: Using npm package**
+1. Open **Settings → AI → MCP Servers**.
+2. Click **Add Server** and fill in:
+   - **Name**: `cruncher`
+   - **Command**: `npx`
+   - **Args**: `@slbdn/cruncher-mcp`
+3. Save. The Zed AI can now call Cruncher for precise arithmetic and statistics.
+
+**Option B: Using downloaded file**
 1. Open **Settings → AI → MCP Servers**.
 2. Click **Add Server** and fill in:
    - **Name**: `cruncher`
@@ -151,18 +253,37 @@ Zed’s built‑in AI pane supports MCP connections.
 3. Save. The Zed AI can now call Cruncher for precise arithmetic and statistics.
 
 ### LM Studio (Local LLM + MCP)
-LM Studio runs LLMs entirely offline and now includes an MCP client.
-1. Open **Settings → MCP** in LM Studio.
+LM Studio runs LLMs entirely offline and now includes an MCP client.
+
+**Option A: Using npm package**
+1. Open **Settings → MCP** in LM Studio.
+2. Click **Add Server** and provide:
+   - **Executable**: `npx`
+   - **Arguments**: `@slbdn/cruncher-mcp`
+3. Confirm. Your private model can now offload math to Cruncher without any network traffic.
+
+**Option B: Using downloaded file**
+1. Open **Settings → MCP** in LM Studio.
 2. Click **Add Server** and provide:
    - **Executable**: `node`
    - **Arguments**: `/absolute/path/to/cruncher.js`
    - **Environment** (optional): `CRUNCHER_TOOL_SET=standard`
-3. Confirm. Your private model (e.g., Llama 3, DeepSeek‑V2) can now offload math to Cruncher without any network traffic.
+3. Confirm. Your private model (e.g., Llama 3, DeepSeek-V2) can now offload math to Cruncher without any network traffic.
 
 ### LibreChat Configuration
 
 If you're using LibreChat, you can add the following configuration to your librechat.yaml file:
 
+**Option A: Using npm package**
+```yaml
+  cruncher:
+    type: stdio
+    command: npx
+    args:
+      - "@slbdn/cruncher-mcp"
+```
+
+**Option B: Using downloaded file**
 ```yaml
   cruncher:
     type: stdio
@@ -293,7 +414,7 @@ Cruncher exposes its functions as individual MCP tools. Here is the full list:
 
 
 
-### Tool Tiers — Full Reference
+### Tool Tiers - Full Reference
 
 Cruncher exposes **3 tiers** via the `CRUNCHER_TOOL_SET` environment variable. Each tier is a strict superset of the one before it.
 
@@ -302,7 +423,7 @@ Cruncher exposes **3 tiers** via the `CRUNCHER_TOOL_SET` environment variable. E
 | Tier | Tools | Use Case |
 |------|-------|----------|
 | **Minimal** (5) | Core arithmetic only | Lightweight calculators, simple math agents |
-| **Standard** (34 — default) | All minimal + trig, stats, constants, unit conversion | General-purpose AI assistant math |
+| **Standard** (34 - default) | All minimal + trig, stats, constants, unit conversion | General-purpose AI assistant math |
 | **Full** (43) | All standard + memory, batch, cache, base conversion, advanced stats | Power users, multi-step workflows |
 
 #### Minimal Tier (5 Tools)
@@ -317,7 +438,7 @@ All tools run in the worker thread with timeout protection.
 | 4 | `multiply` | Multiplication (a × b) |
 | 5 | `divide` | Division (a ÷ b) |
 
-#### Standard Tier (34 Tools — includes all 5 Minimal)
+#### Standard Tier (34 Tools - includes all 5 Minimal)
 
 | # | Tool | Category |
 |---|------|----------|
@@ -329,11 +450,11 @@ All tools run in the worker thread with timeout protection.
 | 11 | `logarithm` | Base-10 logarithm |
 | 12 | `natural_log` | Natural logarithm (ln) |
 | 13 | `get_constant` | Fetch physical/math constants |
-| 14–16 | `sine`, `cosine`, `tangent` | Trigonometry |
-| 17–19 | `asin`, `acos`, `atan` | Inverse trigonometry |
+| 14-16 | `sine`, `cosine`, `tangent` | Trigonometry |
+| 17-19 | `asin`, `acos`, `atan` | Inverse trigonometry |
 | 20 | `set_angle_mode` | Toggle degrees/radians (global) |
 | 21 | `get_angle_mode` | Check current angle mode |
-| 22–25 | `sum`, `avg`, `min`, `max` | Basic statistics |
+| 22-25 | `sum`, `avg`, `min`, `max` | Basic statistics |
 | 26 | `count` | Count elements |
 | 27 | `variance` | Variance (sample or population) |
 | 28 | `std_dev` | Standard deviation (sample or population) |
@@ -344,7 +465,7 @@ All tools run in the worker thread with timeout protection.
 | 33 | `range` | Range (max - min) |
 | 34 | `convert_unit` | 80+ unit conversions, 8 categories |
 
-#### Full Tier (43 Tools — includes all 34 Standard)
+#### Full Tier (43 Tools - includes all 34 Standard)
 
 | # | Tool | Category |
 |---|------|----------|
@@ -370,7 +491,7 @@ If the LLM calls a tool that doesn't exist, Cruncher uses **Levenshtein distance
 | `squrt` | `sqrt` | Transposition |
 | `adddd` | `add` | Extra letters |
 | `divid` | `divide` | Missing suffix |
-| `totally_wrong` | *(none)* | Too different — no suggestion |
+| `totally_wrong` | *(none)* | Too different - no suggestion |
 
 Response format:
 ```json
@@ -428,7 +549,7 @@ You can now use mathematical and physical constant names directly inside `evalua
 | `sqrt2` | √2 | 1.41421... |
 | `euler_mascheroni` | Euler-Mascheroni (γ) | 0.57721... |
 | `c` | Speed of light (m/s) | 299792458 |
-| `g` | Gravity (m/s²) | 9.80665 |
+| `g` | Gravity (m/s2) | 9.80665 |
 | `G` | Gravitational constant | 6.6743e-11 |
 | `h` | Planck constant (J·s) | 6.62607015e-34 |
 | `k` | Boltzmann constant (J/K) | 1.380649e-23 |
@@ -463,7 +584,7 @@ The `CRUNCHER_TOOL_SET` environment variable lets you optimize context token usa
 | `standard` | 34 | ~1,150 tokens | Arithmetic, trig, stats, percentages, constants, unit conversion (**default**) |
 | `full` | 43 | ~1,500 tokens | Standard + memory, base conversion, percentile, batch, cache |
 
-**Note**: Even in `minimal` mode, `evaluate_expression` handles complex math — individual tools (`sin`, `sqrt`, etc.) just aren't registered as separate MCP tool calls. This saves up to **90%** on context tokens.
+**Note**: Even in `minimal` mode, `evaluate_expression` handles complex math - individual tools (`sin`, `sqrt`, etc.) just aren't registered as separate MCP tool calls. This saves up to **90%** on context tokens.
 
 Example MCP config (`claude_desktop_config.json`):
 
@@ -485,7 +606,7 @@ Cruncher is a plain Node.js JavaScript application that communicates over **stan
 
 1.  **Initialization**: On startup, the server listens for an `initialize` request from the MCP client and responds with its capabilities and version info (`v1.2.23`).
 2.  **Tool Discovery**: The client sends a `tools/list` request, and the server responds with the full list of available calculator tools and their `inputSchema`, which defines the required arguments and their types.
-3.  **Input Validation**: Before any tool is executed, the server runs a custom recursive `validateArguments` function against the tool's `inputSchema`. This ensures required fields are present, types are correct (number, string, array), enum values are valid, and min/max constraints are respected — all without any external library.
+3.  **Input Validation**: Before any tool is executed, the server runs a custom recursive `validateArguments` function against the tool's `inputSchema`. This ensures required fields are present, types are correct (number, string, array), enum values are valid, and min/max constraints are respected - all without any external library.
 4.  **Worker Thread Execution**: Once validated, the tool call is handed off to an isolated Node.js `worker_thread`. This completely protects the main thread (and its `stdio` communication) from being blocked by a long-running or infinite calculation.
 5.  **Timeout Protection**: A configurable timer (`CRUNCHER_TIMEOUT`, default 3000ms) watches the worker. If the worker takes too long, the main thread forcefully terminates it via `worker.terminate()` and returns a `-32000` error to the AI client.
 6.  **Safe Math & Result**: The worker executes the handler function using `safeMath` (integer-scaling) for decimal-safe arithmetic, then posts the result back to the main thread, which formats and writes the final JSON-RPC 2.0 response to `stdout`.

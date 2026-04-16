@@ -1,5 +1,5 @@
 {
-  "name": "cruncher",
+  "name": "@slbdn/cruncher-mcp",
   "version": "1.2.23",
   "description": "Zero-dependency scientific calculator MCP server with strict validation, worker isolation, and 43 tools across 8 categories",
   "main": "cruncher.js",
@@ -11,16 +11,20 @@
     "start": "node cruncher.js",
     "test": "npx tsx test-cruncher-full.ts",
     "test:quick": "node cruncher.test.js",
-    "check-syntax": "node -c cruncher.js"
+    "check-syntax": "node -c cruncher.js",
+    "prepublishOnly": "npm run check-syntax && npm test"
   },
   "keywords": [
     "mcp",
+    "ai",
+    "llm",
     "calculator",
     "math",
     "scientific",
     "statistics",
     "unit-conversion",
     "model-context-protocol",
+    "model-context-protocol-server",
     "zero-dependencies"
   ],
   "author": "Slobodan Ivkovic",
@@ -36,6 +40,19 @@
     "url": "https://github.com/islobodan/cruncher-mcp/issues"
   },
   "homepage": "https://github.com/islobodan/cruncher-mcp#readme",
+  "files": [
+    "cruncher.js",
+    "cruncher.test.js",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "mcp": {
+    "schema": "1.0"
+  },
   "devDependencies": {
     "@slbdn/mcp-tester": "^1.0.2"
   }
