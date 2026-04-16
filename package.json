@@ -35,5 +35,8 @@
   "bugs": {
     "url": "https://github.com/islobodan/cruncher-mcp/issues"
   },
-  "homepage": "https://github.com/islobodan/cruncher-mcp#readme"
+  "homepage": "https://github.com/islobodan/cruncher-mcp#readme",
+  "devDependencies": {
+    "@slbdn/mcp-tester": "^1.0.2"
+  }
 }
