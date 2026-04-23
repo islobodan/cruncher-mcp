@@ -1,15 +1,15 @@
 # Cruncher MCP Server - Test Suite
 
-This directory contains comprehensive test suites for the Cruncher MCP Server using the `mcp-tester` framework.
+This directory contains comprehensive test suites for the Cruncher MCP Server using the `@slbdn/mcp-tester` package.
 
 ## Quick Start
 
 ### Run Comprehensive Test Suite
 ```bash
-npx tsx test-cruncher-full.ts
+npx tsx tests/test-cruncher-full.ts
 ```
 
-This single command runs all 50 tests covering every feature of the Cruncher server. The suite completes in approximately 2-3 seconds.
+This single command runs all 330 tests covering every feature of the Cruncher server. The suite completes in approximately 2-3 seconds.
 
 ## Test Files
 
@@ -62,7 +62,7 @@ This single command runs all 50 tests covering every feature of the Cruncher ser
 
 ## Test Framework
 
-We use the custom `mcp-tester` framework which provides:
+We use `@slbdn/mcp-tester` (published npm package) which provides:
 
 - ✅ **Clean Process Management**: No hanging processes or memory leaks
 - ✅ **MCP Protocol Handling**: Automatic JSON-RPC 2.0 management
@@ -77,7 +77,7 @@ We use the custom `mcp-tester` framework which provides:
 - name: Run Cruncher Tests
   run: |
     cd /workspaces/mcp-test-cruncher
-    npx tsx test-cruncher-full.ts
+    npx tsx tests/test-cruncher-full.ts
 ```
 
 ### Docker Example
@@ -86,7 +86,7 @@ FROM node:20
 WORKDIR /app
 COPY . .
 RUN npm install
-RUN npx tsx test-cruncher-full.ts
+RUN npx tsx tests/test-cruncher-full.ts
 ```
 
 ## Test Output Format
@@ -130,10 +130,10 @@ results.push(await runTest('My new test', async () => {
     arguments: { param1: 'value' }
   });
 
-  // Assert the result
-  if (parseFloat(result.content[0].text) !== expected) {
-    throw new Error(`Expected ${expected}, got ${result.content[0].text}`);
-  }
+  // Assert the result using @slbdn/mcp-tester assert API
+  import { assert } from '@slbdn/mcp-tester';
+  const { toolNumEquals } = assert;
+  toolNumEquals(result, expected);
 }));
 ```
 
@@ -151,7 +151,7 @@ Organize tests by category for better readability:
 ## Troubleshooting
 
 ### Tests Hang
-**Solution**: The `mcp-tester` framework handles this automatically. If tests still hang:
+**Solution**: The `@slbdn/mcp-tester` package handles this automatically. If tests still hang:
 - Check that `client.stop()` is called in the `finally` block
 - Ensure the server process exits cleanly
 - Verify no open file descriptors or network connections
@@ -204,6 +204,6 @@ For issues or questions:
 
 ---
 
-**Last Updated**: 2026-04-02
+**Last Updated**: 2026-04-23
 **Test Framework Version**: mcp-tester 1.0.0
 **Server Version Tested**: Cruncher **v1.2.25** (330 tests, 100% pass rate)

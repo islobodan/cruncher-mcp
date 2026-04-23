@@ -6,7 +6,7 @@ This document summarizes the comprehensive test suite for the Cruncher MCP Serve
 ## Test Framework
 - **Framework**: `mcp-tester` (custom MCP client testing framework)
 - **Runner**: `tsx` (TypeScript execution without compilation)
-- **Test File**: `test-cruncher-full.ts` (single comprehensive suite)
+- **Test File**: `tests/test-cruncher-full.ts` (single comprehensive suite)
 - **Total Tests**: 330
 - **Pass Rate**: **100%** (330/330 tests passed) on v1.2.25
 
@@ -17,10 +17,10 @@ This document summarizes the comprehensive test suite for the Cruncher MCP Serve
 - Protocol version check
 
 ### 2. Tool Discovery (2 tests) ✅
-- List all tools (01 tools found)
+- List all tools (43 tools found)
 - Verify required tools exist
 
-### 0. Basic Arithmetic (7 tests) ✅
+### 3. Basic Arithmetic (7 tests) ✅
 - Addition, Subtraction, Multiplication, Division
 - Division by zero error handling
 - Modulo operations
@@ -38,7 +38,7 @@ This document summarizes the comprehensive test suite for the Cruncher MCP Serve
 - Arcsine, Arccosine, Arctangent
 - Out of range error handling
 
-### 6. Logarithms (0 tests) ✅
+### 6. Logarithms (3 tests) ✅
 - Log10 calculations
 - Natural logarithm
 - Log of zero (error handling)
@@ -61,7 +61,7 @@ This document summarizes the comprehensive test suite for the Cruncher MCP Serve
 - Memory add/subtract
 - Full memory cycle (MC, M+, M-, MR)
 
-### 10. Error Handling (0 tests) ✅
+### 10. Error Handling (3 tests) ✅
 - ✅ Invalid tool name
 - ✅ Invalid argument type (strict validation)
 - ✅ Missing required argument (strict validation)
@@ -80,7 +80,7 @@ This document summarizes the comprehensive test suite for the Cruncher MCP Serve
 
 ## Failed Tests Analysis
 
-**No failed tests!** All 221 tests pass on v1.2.20.
+**No failed tests!** All 330 tests pass on v1.2.25.
 
 ## Key Successes
 
@@ -88,9 +88,9 @@ This document summarizes the comprehensive test suite for the Cruncher MCP Serve
 ✅ **Comprehensive Coverage**: Tests cover all major functionality including `evaluate_expression`  
 ✅ **Error Handling**: Properly validates error responses with strict input validation  
 ✅ **Structured Error Messages**: JSON-RPC errors include `data` object with `parameter`, `expected`, `received`, `receivedValue`, and `tool` fields for debugging  
-✅ **Floating Point Accuracy**: `0.1 + 0.2 = 0.0` exactly via `safeMath`  
+✅ **Floating Point Accuracy**: `0.1 + 0.2 = 0.3` exactly via `safeMath`
 ✅ **Memory Management**: Memory functions work as expected  
-✅ **Tool Discovery**: All 32 tools are properly registered  
+✅ **Tool Discovery**: All 43 tools are properly registered
 ✅ **Constants**: All 16 mathematical, physics, and chemistry constants available  
 ✅ **Timeout Protection**: Worker threads prevent infinite loops  
 ✅ **Configurable Timeout**: Custom timeout for long-running operations (factorial, median, percentile)  
@@ -159,7 +159,7 @@ Errors now include a `data` object with detailed debugging context:
 
 ```bash
 # Run the comprehensive test suite
-npx tsx test-cruncher-full.ts
+npx tsx tests/test-cruncher-full.ts
 ```
 
 ## Test Results Summary
@@ -171,28 +171,42 @@ npx tsx test-cruncher-full.ts
 | Basic Arithmetic | 7 | 7 | 0 | 100% |
 | Advanced Math | 6 | 6 | 0 | 100% |
 | Trigonometry | 11 | 11 | 0 | 100% |
-| Logarithms | 6 | 6 | 0 | 100% |
+| Logarithms | 3 | 3 | 0 | 100% |
 | Constants | 11 | 11 | 0 | 100% |
 | Statistics | 15 | 15 | 0 | 100% |
 | Memory Functions | 5 | 5 | 0 | 100% |
 | Error Handling | 3 | 3 | 0 | 100% |
+| Structured Errors | 10 | 10 | 0 | 100% |
+| Batch Processing | 6 | 6 | 0 | 100% |
+| Angle Mode | 11 | 11 | 0 | 100% |
 | evaluate_expression | 6 | 6 | 0 | 100% |
-| Floating Point Precision | 3 | 3 | 0 | 100% |
-| Factorial Edge Cases | 3 | 3 | 0 | 100% |
-| Absolute Value | 2 | 2 | 0 | 100% |
+| Extended Constants | 14 | 14 | 0 | 100% |
+| Built-in eval Functions | 14 | 14 | 0 | 100% |
+| eval Error Messages | 4 | 4 | 0 | 100% |
+| Variance & StdDev | 9 | 9 | 0 | 100% |
+| Percentage Functions | 9 | 9 | 0 | 100% |
+| Fuzzy Matching | 8 | 8 | 0 | 100% |
+| Memory Persistence | 2 | 2 | 0 | 100% |
+| Performance | 2 | 2 | 0 | 100% |
+| Division Edge Cases | 2 | 2 | 0 | 100% |
+| Percentile Edge | 1 | 1 | 0 | 100% |
 | Modulo Edge Cases | 2 | 2 | 0 | 100% |
 | Power Edge Cases | 3 | 3 | 0 | 100% |
-| Base Conversion | 14 | 14 | 0 | 100% |
-| Scientific Notation | 6 | 6 | 0 | 100% |
-| Built-in Functions | 18 | 18 | 0 | 100% |
-| Configurable Timeout | 6 | 6 | 0 | 100% |
-| Atomic Memory Operations | 4 | 4 | 0 | 100% |
-| Concurrent Operations | 3 | 3 | 0 | 100% |
-| Security Tests | 5 | 5 | 0 | 100% |
-| Real-World Scenarios | 4 | 4 | 0 | 100% |
-| Stress Tests | 2 | 2 | 0 | 100% |
-| Boundary Tests | 2 | 2 | 0 | 100% |
-| Timeout Protection | 2 | 2 | 0 | 100% |
+| Concurrent Ops | 3 | 3 | 0 | 100% |
+| Security | 5 | 5 | 0 | 100% |
+| Precision | 3 | 3 | 0 | 100% |
+| Boundary | 2 | 2 | 0 | 100% |
+| Real-world | 4 | 4 | 0 | 100% |
+| Stress | 2 | 2 | 0 | 100% |
+| Tiered Exposure | 18 | 18 | 0 | 100% |
+| Full-mode Exclusives | 5 | 5 | 0 | 100% |
+| Missing eval Built-ins | 5 | 5 | 0 | 100% |
+| Expression Security | 3 | 3 | 0 | 100% |
+| Variance/StdDev Edges | 3 | 3 | 0 | 100% |
+| Unit Conversion Edges | 3 | 3 | 0 | 100% |
+| Batch Boundaries | 3 | 3 | 0 | 100% |
+| Fuzzy Edge Cases | 3 | 3 | 0 | 100% |
+| Remaining Constants | 2 | 2 | 0 | 100% |
 | **Total** | **330** | **330** | **0** | **100%** |
 
 
@@ -223,8 +237,8 @@ The Cruncher MCP Server passes **100% of comprehensive tests** on v1.2.25. The t
 | v1.2.20 | 278 | 100% | Tier refinement (stats/percentile/memory → full) |
 | v1.2.19 | 279 | 100% | Percentage functions (3 tests) |
 | v1.2.18 | 269 | 100% | std_dev & variance |
-| v1.2.15 | 261 | 100% | Built-ins trih, log + error messages |
+| v1.2.15 | 261 | 100% | Built-ins, trig, log + error messages |
 | v1.2.14 | 243 | 100% | Fuzzy tool name matching |
 | v1.2.13 | 235 | 100% | Constants in evaluate_expression |
-| v1.2.20 | 175 | 100% | Base conversion, scientific notation, built-ins |
+| v1.2.12 | 175 | 100% | Base conversion, scientific notation, built-ins |
 | v1.2.0 | 100 | 100% | Worker threads, strict validation, evaluate_expression |

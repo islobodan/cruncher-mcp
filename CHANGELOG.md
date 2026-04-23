@@ -6,6 +6,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [1.2.25] — 2026-04-23
+
+### Added
+- **npm publication**: Package published as `@slbdn/cruncher-mcp` on npm registry
+- All MCP client configurations now prioritize `npx @slbdn/cruncher-mcp` over manual file download
+- `@slbdn/mcp-tester` assert API used in test suite (`toolNumEquals`, `toolNumCloseTo`, etc.)
+
+### Changed
+- `package.json` renamed to `@slbdn/cruncher-mcp` with bin entry
+- Version bumped to 1.2.25 across all docs
+
+### Fixed
+- All 6 trig tool descriptions corrected to say "degrees by default" (was incorrectly "radians")
+- AGENTS.md: `evaluate_expression` always uses radians (JavaScript standard), global angle mode only affects individual tool calls
+- AGENTS.md: `batch` schema param is `args` not `arguments`
+- AGENTS.md: `set_angle_mode` schema param is `mode` not `unit`
+- `package.json` description: stale "42 tools" → "43 tools"
+- Double comma syntax error in `evaluate_expression` description
+- Test suite angle default: radians → degrees (to match code + docs)
+
+### Refactor
+- Test files moved to `tests/` directory (`test-cruncher-full.ts`, `TEST_REPORT.md`, `README-TESTS.md`)
+- Replaced 16+ manual `parseFloat + throw` patterns with `@slbdn/mcp-tester` assert API
+
+## [1.2.24] — 2026-04-16
+
+### Changed
+- Migrated test dependency from local `../mcp-tester` to `@slbdn/mcp-tester` npm package
+- Version bumped to 1.2.24 across all docs
+
 ## [1.2.23] — 2026-04-02
 
 ### Added
