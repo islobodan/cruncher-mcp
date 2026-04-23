@@ -5,8 +5,8 @@
   "main": "cruncher.js",
   "type": "commonjs",
   "bin": {
-    "cruncher-mcp": "./cruncher.js",
-    "cruncher": "./cruncher.js"
+    "cruncher-mcp": "cruncher.js",
+    "cruncher": "cruncher.js"
   },
   "scripts": {
     "start": "node cruncher.js",
@@ -35,7 +35,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/islobodan/cruncher-mcp.git"
+    "url": "git+https://github.com/islobodan/cruncher-mcp.git"
   },
   "bugs": {
     "url": "https://github.com/islobodan/cruncher-mcp/issues"
