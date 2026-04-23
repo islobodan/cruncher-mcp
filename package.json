@@ -10,7 +10,7 @@
   },
   "scripts": {
     "start": "node cruncher.js",
-    "test": "npx tsx test-cruncher-full.ts",
+    "test": "npx tsx tests/test-cruncher-full.ts",
     "test:quick": "node cruncher.test.js",
     "check-syntax": "node -c cruncher.js",
     "prepublishOnly": "npm run check-syntax && npm test"

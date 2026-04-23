@@ -28,7 +28,7 @@ node cruncher.js  # Start the server (stdio protocol)
 
 ### Running Tests
 ```bash
-npx tsx test-cruncher-full.ts
+npx tsx tests/test-cruncher-full.ts
 ```
 All tests must pass before submitting a PR.
 
@@ -43,7 +43,7 @@ All tests must pass before submitting a PR.
    - `full` — Specialized tools (memory, base conversion, percentiles, batch, cache)
 4. **Cacheability** — Add to `NON_CACHEABLE` if stateful (memory, batch, cache management)
 5. **Main-thread vs worker** — Add to `MAIN_THREAD_TOOLS` if instant (no heavy computation)
-6. **Write tests** in `test-cruncher-full.ts` covering:
+6. **Write tests** in `tests/test-cruncher-full.ts` covering:
    - Success cases (normal input, edge cases)
    - Error cases (invalid input, boundary conditions)
    - Schema validation errors
@@ -83,7 +83,7 @@ const MAIN_THREAD_TOOLS = new Set([
 ### 3. Adding Tests
 
 ```typescript
-// Add your test in the appropriate section of test-cruncher-full.ts
+// Add your test in the appropriate section of tests/test-cruncher-full.ts
 results.push(
     await runTest("category: test description", async () => {
         const result = await client.callTool({
@@ -122,7 +122,7 @@ type:license: License file changes
 
 ## Pull Request Checklist
 
-- [ ] All tests pass (`npx tsx test-cruncher-full.ts`)
+- [ ] All tests pass (`npx tsx tests/test-cruncher-full.ts`)
 - [ ] New tools have JSON Schema validation
 - [ ] Security considerations reviewed (no eval, proper sanitization)
 - [ ] Tier assignment decided (standard vs full)
