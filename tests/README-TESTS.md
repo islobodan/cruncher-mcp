@@ -9,7 +9,7 @@ This directory contains comprehensive test suites for the Cruncher MCP Server us
 npx tsx tests/test-cruncher-full.ts
 ```
 
-This single command runs all 330 tests covering every feature of the Cruncher server. The suite completes in approximately 2-3 seconds.
+This single command runs all 330 tests covering every feature of the Cruncher server (~10 seconds). The suite completes in approximately 2-3 seconds.
 
 ## Test Files
 
@@ -54,21 +54,49 @@ This single command runs all 330 tests covering every feature of the Cruncher se
 - **Percentile calculations** (full tier)
 
 ### 📊 Test Statistics
-- **Total Tests**: 330
 - **Pass Rate**: **100%** (330/330) on v1.2.25
-- **Execution Time**: ~8-10 seconds
+- **Execution Time**: ~10 seconds
 - **Coverage**: All **43 tools**, edge cases, concurrency, and advanced scenarios
 - **Tier Coverage**: minimal (5 tools), standard (34 tools), full (43 tools)
 
 ## Test Framework
 
-We use `@slbdn/mcp-tester` (published npm package) which provides:
+We use [`@slbdn/mcp-tester`](https://github.com/islobodan/mcp-tester) v1.1.0 (npm package) which provides:
 
 - ✅ **Clean Process Management**: No hanging processes or memory leaks
 - ✅ **MCP Protocol Handling**: Automatic JSON-RPC 2.0 management
-- ✅ **Structured Errors**: Clear error messages with context
+- ✅ **Structured Errors**: Clear error messages with context (`MCPClientError`, `MCPTimeoutError`, `MCPConnectionError`, etc.)
 - ✅ **Lifecycle Management**: Proper start/stop of MCP servers
+- ✅ **Assert API**: Built-in assertion functions (`toolNumEquals`, `toolTextContains`, `toolIsError`, etc.)
 - ✅ **Reusability**: Same framework works for any MCP server
+
+### Assert API (v1.1.0+)
+
+The test suite uses the `assert` namespace from `@slbdn/mcp-tester`:
+
+```typescript
+import { MCPClient, assert } from "@slbdn/mcp-tester";
+const { toolNumEquals, toolNumCloseTo, toolTextEquals, toolIsError } = assert;
+```
+
+| Function | Purpose |
+|----------|---------|
+| `toolNumEquals(result, expected)` | Tool text parsed as number equals expected |
+| `toolNumCloseTo(result, expected, epsilon?)` | Tool text parsed as number within epsilon |
+| `toolTextEquals(result, expected)` | Tool text equals string exactly |
+| `toolTextContains(result, substring)` | Tool text contains substring |
+| `toolJsonEquals(result, expected)` | Tool text parsed as JSON deeply equals expected |
+| `toolIsError(result)` | Tool returned an error |
+| `toolIsOk(result)` | Tool did NOT return an error |
+| `toolHasContent(result, minItems?)` | Tool result has content items |
+| `equal(actual, expected)` | Strict equality |
+| `equalNum(actual, expected)` | Numeric strict equality |
+| `closeTo(actual, expected, epsilon?)` | Number within epsilon |
+| `contains(str, substring)` | String contains substring |
+| `ok(value)` / `notOk(value)` | Truthy / falsy assertion |
+| `throws(fn)` / `doesNotThrow(fn)` | Error / no-error assertion |
+| `greaterThan(a, b)` / `lessThan(a, b)` | Numeric comparison |
+| `matches(str, regex)` | String matches regex |
 
 ## Running Tests in CI/CD
 
@@ -110,7 +138,7 @@ RUN npx tsx tests/test-cruncher-full.ts
 📊 TEST SUMMARY
 ============================================================
 Total Tests: 330
-Passed: 221
+Passed: 330
 Failed: 0
 Success Rate: 100.00%
 ============================================================
@@ -123,17 +151,18 @@ Success Rate: 100.00%
 ### Example: Add a New Test Case
 
 ```typescript
+import { MCPClient, assert } from "@slbdn/mcp-tester";
+const { toolNumEquals, toolTextContains, toolIsError } = assert;
+
+// ... inside testCruncher():
 results.push(await runTest('My new test', async () => {
-  // Call the tool
   const result = await client.callTool({
     name: 'my_tool',
     arguments: { param1: 'value' }
   });
-
-  // Assert the result using @slbdn/mcp-tester assert API
-  import { assert } from '@slbdn/mcp-tester';
-  const { toolNumEquals } = assert;
-  toolNumEquals(result, expected);
+  toolNumEquals(result, 42);           // number check
+  toolTextContains(result, 'ok');      // substring check
+  toolIsError(result);                 // error check
 }));
 ```
 
@@ -188,8 +217,8 @@ Organize tests by category for better readability:
 ## Dependencies
 
 - **Node.js**: >= 18
-- **tsx**: For TypeScript execution
-- **mcp-tester**: Custom MCP testing framework (parent directory)
+- **tsx**: For TypeScript execution (`npx tsx`)
+- **@slbdn/mcp-tester**: MCP testing framework ([npm](https://www.npmjs.com/package/@slbdn/mcp-tester), [GitHub](https://github.com/islobodan/mcp-tester))
 
 ## License
 
@@ -205,5 +234,5 @@ For issues or questions:
 ---
 
 **Last Updated**: 2026-04-23
-**Test Framework Version**: mcp-tester 1.0.0
+**Test Framework Version**: @slbdn/mcp-tester v1.1.0
 **Server Version Tested**: Cruncher **v1.2.25** (330 tests, 100% pass rate)
