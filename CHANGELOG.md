@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [1.2.26] — 2026-04-23
+
+### Added
+- **Assert API in tests**: 16+ manual `parseFloat + throw` assertions replaced with `@slbdn/mcp-tester` assert functions (`toolNumEquals`, `toolNumCloseTo`, etc.)
+- **CHANGELOG.md**: Added v1.2.24 and v1.2.25 entries (npm publication, assert API, test refactor)
+
+### Changed
+- **Test restructure**: `test-cruncher-full.ts`, `TEST_REPORT.md`, `README-TESTS.md` moved to `tests/` directory
+- **README-TESTS.md**: Full refresh — `@slbdn/mcp-tester` v1.1.0, assert API reference table, updated examples
+- **TEST_REPORT.md**: Fixed stale counts ("01 tools" → 43, "221 tests" → 330, "0.1+0.2=0.0" → 0.3), full 36-section results table
+- **TODO.md**: Fixed "36 tools" → "43 tools", updated version tables with v1.2.26
+- **CONTRIBUTING.md**: Updated all file paths to `tests/` directory
+- **package.json**: Test script updated to `npx tsx tests/test-cruncher-full.ts`
+
+### Fixed
+- All markdown docs refreshed with accurate, consistent information
+
 ## [1.2.25] — 2026-04-23
 
 ### Added
