@@ -1,4 +1,5 @@
-import { MCPClient } from "@slbdn/mcp-tester";
+import { MCPClient, assert } from "@slbdn/mcp-tester";
+const { toolTextEquals, toolTextContains, toolNumEquals, toolNumCloseTo, toolJsonEquals, toolIsError, toolIsOk, toolHasContent, equal, equalNum, closeTo, contains, ok, notOk } = assert;
 
 // Test configuration
 const TEST_TIMEOUT = 30000;
@@ -3116,8 +3117,7 @@ async function testCruncher() {
                     name: "evaluate_expression",
                     arguments: { expression: "sqrt(144)" },
                 });
-                if (parseFloat(result.content[0].text) !== 12)
-                    throw new Error(`Expected 12, got ${result.content[0].text}`);
+                toolNumEquals(result, 12);
             }),
         );
 
@@ -3138,8 +3138,7 @@ async function testCruncher() {
                     name: "evaluate_expression",
                     arguments: { expression: "log10(1000)" },
                 });
-                if (parseFloat(result.content[0].text) !== 3)
-                    throw new Error(`Expected 3, got ${result.content[0].text}`);
+                toolNumEquals(result, 3);
             }),
         );
 
@@ -3160,8 +3159,7 @@ async function testCruncher() {
                     name: "evaluate_expression",
                     arguments: { expression: "log(8, 2)" },
                 });
-                if (parseFloat(result.content[0].text) !== 3)
-                    throw new Error(`Expected 3, got ${result.content[0].text}`);
+                toolNumEquals(result, 3);
             }),
         );
 
@@ -3171,8 +3169,7 @@ async function testCruncher() {
                     name: "evaluate_expression",
                     arguments: { expression: "log(100, 10)" },
                 });
-                if (parseFloat(result.content[0].text) !== 2)
-                    throw new Error(`Expected 2, got ${result.content[0].text}`);
+                toolNumEquals(result, 2);
             }),
         );
 
@@ -3331,8 +3328,7 @@ async function testCruncher() {
                     name: "variance",
                     arguments: { numbers: [5], population: true },
                 });
-                if (parseFloat(result.content[0].text) !== 0)
-                    throw new Error(`Expected 0, got ${result.content[0].text}`);
+                toolNumEquals(result, 0);
             }),
         );
 
@@ -3367,8 +3363,7 @@ async function testCruncher() {
                     name: "std_dev",
                     arguments: { numbers: [10, 10, 10, 10, 10] },
                 });
-                if (parseFloat(result.content[0].text) !== 0)
-                    throw new Error(`Expected 0, got ${result.content[0].text}`);
+                toolNumEquals(result, 0);
             }),
         );
 
@@ -3398,8 +3393,7 @@ async function testCruncher() {
                     name: "percentage_of",
                     arguments: { percent: 15, total: 200 },
                 });
-                if (parseFloat(result.content[0].text) !== 30)
-                    throw new Error(`Expected 30, got ${result.content[0].text}`);
+                toolNumEquals(result, 30);
             }),
         );
 
@@ -3409,8 +3403,7 @@ async function testCruncher() {
                     name: "percentage_of",
                     arguments: { percent: 0, total: 100 },
                 });
-                if (parseFloat(result.content[0].text) !== 0)
-                    throw new Error(`Expected 0, got ${result.content[0].text}`);
+                toolNumEquals(result, 0);
             }),
         );
 
@@ -3420,8 +3413,7 @@ async function testCruncher() {
                     name: "percentage_of",
                     arguments: { percent: 200, total: 50 },
                 });
-                if (parseFloat(result.content[0].text) !== 100)
-                    throw new Error(`Expected 100, got ${result.content[0].text}`);
+                toolNumEquals(result, 100);
             }),
         );
 
@@ -3443,8 +3435,7 @@ async function testCruncher() {
                     name: "percentage_change",
                     arguments: { from: 50, to: 80 },
                 });
-                if (parseFloat(result.content[0].text) !== 60)
-                    throw new Error(`Expected 60, got ${result.content[0].text}`);
+                toolNumEquals(result, 60);
             }),
         );
 
@@ -3482,8 +3473,7 @@ async function testCruncher() {
                     name: "percentage_reverse",
                     arguments: { value: 30, percent: 15 },
                 });
-                if (parseFloat(result.content[0].text) !== 200)
-                    throw new Error(`Expected 200, got ${result.content[0].text}`);
+                toolNumEquals(result, 200);
             }),
         );
 
@@ -3493,8 +3483,7 @@ async function testCruncher() {
                     name: "percentage_reverse",
                     arguments: { value: 270, percent: 18 },
                 });
-                if (parseFloat(result.content[0].text) !== 1500)
-                    throw new Error(`Expected 1500, got ${result.content[0].text}`);
+                toolNumEquals(result, 1500);
             }),
         );
 
