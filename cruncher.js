@@ -1872,12 +1872,27 @@ const validateArguments = (schema, args, path = "root", toolName = "unknown") =>
  * @param {Object} message - The parsed JSON-RPC message object to validate.
  * @returns {boolean} True if the message is valid, false otherwise.
  */
+const NOTIFICATION_METHODS = new Set([
+    "notifications/initialized",
+    "notifications/cancelled",
+    "notifications/progress",
+    "notifications/message",
+    "notifications/resources/updated",
+    "notifications/resources/list_changed",
+    "notifications/tools/list_changed",
+]);
+
+const REQUEST_METHODS = new Set([
+    "initialize",
+    "ping",
+    "tools/list",
+    "tools/call",
+]);
+
 const validateMessage = (message) => {
-    // Check for message.id first - required for MCP compliance
+    // Notifications: no 'id' field — silently accept and ignore (MCP SDK behavior)
     if (!("id" in message)) {
-        console.error(
-            "Invalid Request: Message missing required 'id' property (MCP requires non-null id)",
-        );
+        // Silently drop unknown notifications too — matches SDK behavior
         return false;
     }
 
@@ -1901,9 +1916,8 @@ const validateMessage = (message) => {
         return false;
     }
 
-    // Validate supported methods
-    const supportedMethods = new Set(["initialize", "tools/list", "tools/call"]);
-    if (!supportedMethods.has(message.method)) {
+    // Validate supported request methods
+    if (!REQUEST_METHODS.has(message.method)) {
         sendError(
             message.id,
             -32601,
@@ -1947,6 +1961,12 @@ if (isMainThread) {
                 capabilities: { tools: {} },
                 serverInfo: { name: "Cruncher", version: "1.2.26" },
             });
+            return;
+        }
+
+        // MCP spec: ping must return an empty result (liveness check)
+        if (message.method === "ping") {
+            sendSuccess(message.id, {});
             return;
         }
 
