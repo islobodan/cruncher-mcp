@@ -236,6 +236,7 @@ state storage duplicates functionality already provided by the MCP conversation 
 | **v1.2.22** | **302** | **100%** | **Unit conversion (8 cat, 80+ units, 25 tests)** |
 | **v1.2.25** | **330** | **100%** | **Expanded test suite (28 new tests, 100% pass)** |
 | **v1.2.26** | **330** | **100%** | **Docs refresh, test restructure, assert API, CHANGELOG** |
+| **v1.2.27** | **335** | **100%** | **MCP protocol compliance (ping, notifications, garbage stdin)** |
 
 ---
 
@@ -243,6 +244,7 @@ state storage duplicates functionality already provided by the MCP conversation 
 
 | Date | Version | Changes |
 |------|---------|---------|
+| 2026-04-28 | v1.2.27 | MCP protocol compliance: ping, notifications, garbage stdin, 335 tests |
 | 2026-04-23 | v1.2.26 | Docs refresh, test restructure (tests/ dir), assert API, CHANGELOG v1.2.24+v1.2.25 entries |
 | 2026-04-02 | v1.2.25 | Test suite expansion: 302→330 tests, 8 new sections (full-mode exclusives, eval built-ins, injection security, variance edges, unit conversion edges, batch boundaries, fuzzy matching, remaining constants)
 | 2026-04-02 | v1.2.22 | Unit conversion: 8 categories (length, weight, temp, area, volume, time, speed, digital_storage), 80+ units, JSON structured output |
@@ -267,7 +269,7 @@ state storage duplicates functionality already provided by the MCP conversation 
 
 ---
 
-**Version**: v1.2.26
+**Version**: v1.2.27
 **Last Updated**: 2026-04-23
 **Total Tasks**: 15
 **Completed**: 13 ✅

@@ -9,13 +9,13 @@ This directory contains comprehensive test suites for the Cruncher MCP Server us
 npx tsx tests/test-cruncher-full.ts
 ```
 
-This single command runs all 330 tests covering every feature of the Cruncher server (~10 seconds). The suite completes in approximately 2-3 seconds.
+This single command runs all 335 tests covering every feature of the Cruncher server (~10 seconds). The suite completes in approximately 2-3 seconds.
 
 ## Test Files
 
 | File | Description | Tests | Use Case |
 |------|-------------|-------|----------|
-| `test-cruncher-full.ts` | Comprehensive test suite | 330 | Full regression testing, CI/CD |
+| `test-cruncher-full.ts` | Comprehensive test suite | 335 | Full regression testing, CI/CD |
 | `TEST_REPORT.md` | Test results and analysis | - | Documentation |
 
 ## Test Coverage
@@ -54,7 +54,10 @@ This single command runs all 330 tests covering every feature of the Cruncher se
 - **Percentile calculations** (full tier)
 
 ### 📊 Test Statistics
-- **Pass Rate**: **100%** (330/330) on v1.2.26
+- **Pass Rate**: **100%** (335/335) on v1.2.27
+- **Execution Time**: ~10 seconds
+- **Total Tests**: 335
+- **Pass Rate**: **100%** (335/335) on v1.2.27
 - **Execution Time**: ~10 seconds
 - **Coverage**: All **43 tools**, edge cases, concurrency, and advanced scenarios
 - **Tier Coverage**: minimal (5 tools), standard (34 tools), full (43 tools)
@@ -235,4 +238,4 @@ For issues or questions:
 
 **Last Updated**: 2026-04-23
 **Test Framework Version**: @slbdn/mcp-tester v1.1.0
-**Server Version Tested**: Cruncher **v1.2.26** (330 tests, 100% pass rate)
+**Server Version Tested**: Cruncher **v1.2.27** (335 tests, 100% pass rate)
