@@ -1932,7 +1932,7 @@ if (isMainThread) {
         try {
             message = JSON.parse(line);
         } catch (e) {
-            console.error("Failed to parse message:", e);
+            // Silently ignore malformed JSON lines (matches MCP SDK behavior)
             return;
         }
 
