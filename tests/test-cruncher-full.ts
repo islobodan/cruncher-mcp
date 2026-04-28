@@ -4964,6 +4964,168 @@ async function testCruncher() {
             }),
         );
 
+        // ========== 54. MCP Protocol Compliance Tests ==========
+        console.log("\n📡 54. MCP Protocol Compliance Tests");
+
+        results.push(
+            await runTest("Protocol: ping returns empty result", async () => {
+                // SDK Client.ping() sends { method: "ping" } and expects { result: {} }
+                const sdkClient = client.client;
+                if (!sdkClient) throw new Error("SDK client not available");
+                const result = await sdkClient.ping();
+                // ping should return an object (empty result)
+                if (typeof result !== "object" || result === null) {
+                    throw new Error(`Expected object, got ${typeof result}: ${JSON.stringify(result)}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Protocol: notifications/initialized is silently accepted", async () => {
+                // Send a notification (no id field) — server must not error
+                const sdkClient = client.client;
+                if (!sdkClient) throw new Error("SDK client not available");
+                // The SDK notification() method sends messages without an 'id' field
+                // This should not throw — server silently accepts and ignores
+                await sdkClient.notification({ method: "notifications/initialized" });
+                // If we get here without error, the test passes
+            }),
+        );
+
+        results.push(
+            await runTest("Protocol: unknown notification silently accepted", async () => {
+                // Send an unrecognized notification — server must not error
+                const sdkClient = client.client;
+                if (!sdkClient) throw new Error("SDK client not available");
+                // This should silently succeed — no error for unknown notifications
+                await sdkClient.notification({ method: "notifications/cancelled", params: { requestId: 999, reason: "test" } });
+            }),
+        );
+
+        results.push(
+            await runTest("Protocol: garbage stdin does not crash server", async () => {
+                // Spawn a raw server process and pipe garbage to stdin
+                const { spawn } = require("child_process");
+                const server = spawn("node", ["cruncher.js"], {
+                    env: { ...process.env, CRUNCHER_TOOL_SET: "full", NODE_ENV: "test" },
+                    stdio: ["pipe", "pipe", "pipe"],
+                });
+
+                let stderr = "";
+                let stdout = "";
+                server.stderr.on("data", (d) => { stderr += d.toString(); });
+                server.stdout.on("data", (d) => { stdout += d.toString(); });
+
+                // Wait for server to start
+                await new Promise((r) => setTimeout(r, 500));
+
+                // Send garbage lines
+                server.stdin.write("this is not JSON!!!\n");
+                server.stdin.write("{ broken json \n");
+                server.stdin.write("\n");
+
+                // Wait for processing
+                await new Promise((r) => setTimeout(r, 300));
+
+                // Now send a valid initialize request to confirm server still works
+                server.stdin.write(JSON.stringify({
+                    jsonrpc: "2.0",
+                    id: 1,
+                    method: "initialize",
+                    params: {
+                        protocolVersion: "2024-11-05",
+                        capabilities: {},
+                        clientInfo: { name: "garbage-test", version: "1.0.0" },
+                    },
+                }) + "\n");
+
+                // Wait for response
+                await new Promise((r) => setTimeout(r, 500));
+
+                // Clean up
+                server.stdin.end();
+                server.kill();
+                await new Promise((r) => setTimeout(r, 200));
+
+                // Server should not have exited with error
+                if (server.exitCode === 1) {
+                    throw new Error(`Server crashed after garbage stdin. stderr: ${stderr}`);
+                }
+
+                // Server should still respond to valid JSON-RPC after garbage
+                if (!stdout.includes("\"Cruncher\"")) {
+                    throw new Error(`Server did not respond to valid request after garbage. stdout: ${stdout}`);
+                }
+
+                // Stderr should NOT contain parse error stack traces
+                if (stderr.includes("SyntaxError")) {
+                    throw new Error(`Server logged SyntaxError to stderr after garbage: ${stderr}`);
+                }
+            }),
+        );
+
+        results.push(
+            await runTest("Protocol: garbage followed by ping works", async () => {
+                // Spawn a raw server, send garbage then ping
+                const { spawn } = require("child_process");
+                const server = spawn("node", ["cruncher.js"], {
+                    env: { ...process.env, CRUNCHER_TOOL_SET: "full", NODE_ENV: "test" },
+                    stdio: ["pipe", "pipe", "pipe"],
+                });
+
+                let stdout = "";
+                let stderr = "";
+                server.stdout.on("data", (d) => { stdout += d.toString(); });
+                server.stderr.on("data", (d) => { stderr += d.toString(); });
+
+                // Wait for startup
+                await new Promise((r) => setTimeout(r, 500));
+
+                // Initialize first
+                server.stdin.write(JSON.stringify({
+                    jsonrpc: "2.0",
+                    id: 1,
+                    method: "initialize",
+                    params: {
+                        protocolVersion: "2024-11-05",
+                        capabilities: {},
+                        clientInfo: { name: "ping-test", version: "1.0.0" },
+                    },
+                }) + "\n");
+                await new Promise((r) => setTimeout(r, 300));
+
+                // Send garbage
+                server.stdin.write("blah blah not json\n");
+                await new Promise((r) => setTimeout(r, 100));
+
+                // Send ping — should still work
+                server.stdin.write(JSON.stringify({
+                    jsonrpc: "2.0",
+                    id: 2,
+                    method: "ping",
+                }) + "\n");
+                await new Promise((r) => setTimeout(r, 300));
+
+                // Clean up
+                server.stdin.end();
+                server.kill();
+                await new Promise((r) => setTimeout(r, 200));
+
+                // Should have ping response with empty result
+                const pingResponse = stdout.split("\n").find((line: string) => line.includes('"id":2'));
+                if (!pingResponse) {
+                    throw new Error(`No ping response found. stdout: ${stdout}`);
+                }
+                const parsed = JSON.parse(pingResponse);
+                if (parsed.error) {
+                    throw new Error(`Ping returned error: ${JSON.stringify(parsed.error)}`);
+                }
+                if (JSON.stringify(parsed.result) !== "{}") {
+                    throw new Error(`Expected empty result {}, got: ${JSON.stringify(parsed.result)}`);
+                }
+            }),
+        );
+
 
         // ========== Summary ==========
         console.log("\n" + "=".repeat(60));
