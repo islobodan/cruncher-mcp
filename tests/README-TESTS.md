@@ -140,8 +140,8 @@ RUN npx tsx tests/test-cruncher-full.ts
 
 📊 TEST SUMMARY
 ============================================================
-Total Tests: 330
-Passed: 330
+Total Tests: 335
+Passed: 335
 Failed: 0
 Success Rate: 100.00%
 ============================================================

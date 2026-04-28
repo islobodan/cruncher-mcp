@@ -207,7 +207,7 @@ npx tsx tests/test-cruncher-full.ts
 | Batch Boundaries | 3 | 3 | 0 | 100% |
 | Fuzzy Edge Cases | 3 | 3 | 0 | 100% |
 | Remaining Constants | 2 | 2 | 0 | 100% |
-| **Total** | **330** | **330** | **0** | **100%** |
+| **Total** | **335** | **335** | **0** | **100%** |
 
 
 ## Conclusion

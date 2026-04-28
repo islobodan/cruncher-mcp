@@ -3,7 +3,7 @@
 [![Version](https://img.shields.io/badge/version-1.2.27-blue.svg)](https://github.com/islobodan/cruncher-mcp)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Tests](https://img.shields.io/badge/tests-330%20%7C%20100%25-brightgreen.svg)](tests/TEST_REPORT.md)
+[![Tests](https://img.shields.io/badge/tests-335%20%7C%20100%25-brightgreen.svg)](tests/TEST_REPORT.md)
 [![Status](https://img.shields.io/badge/status-feature--complete-brightgreen.svg)](TODO.md)
 
 A powerful scientific calculator for your AI assistant, built as a **Model Context Protocol (MCP)** server. Cruncher allows compatible AI clients (like Claude Desktop) to perform complex mathematical calculations, handle memory, perform statistical analysis, and access scientific constants with a simple, secure, and standardized interface.
