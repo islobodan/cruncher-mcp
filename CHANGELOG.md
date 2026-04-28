@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [1.2.27] — 2026-04-28
+
+### Fixed
+- Silence malformed JSON stdin lines instead of logging full `SyntaxError` stack traces (matches official MCP SDK `StdioServerTransport` behavior)
+
 ## [1.2.26] — 2026-04-23
 
 ### Added
