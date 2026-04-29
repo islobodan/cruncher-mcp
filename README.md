@@ -76,7 +76,7 @@ This downloads and runs the latest version automatically.
   "mcpServers": {
     "cruncher": {
       "command": "npx",
-      "args": ["@slbdn/cruncher-mcp"]
+      "args": ["-y", "@slbdn/cruncher-mcp"]
     }
   }
 }
@@ -149,7 +149,7 @@ If you use Cline for agentic coding in VS Code, open the MCP configuration file 
   "mcpServers": {
     "cruncher": {
       "command": "npx",
-      "args": ["@slbdn/cruncher-mcp"]
+      "args": ["-y", "@slbdn/cruncher-mcp"]
     }
   }
 }
@@ -182,6 +182,7 @@ mcpServers:
   cruncher:
     command: npx
     args:
+      - -y
       - "@slbdn/cruncher-mcp"
 ```
 
@@ -248,6 +249,7 @@ If you're using LibreChat, you can add the following configuration to your libre
     type: stdio
     command: npx
     args:
+      - -y
       - "@slbdn/cruncher-mcp"
 ```
 
