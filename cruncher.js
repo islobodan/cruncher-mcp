@@ -228,6 +228,13 @@ const toolsAll = [
     // --- Basic Arithmetic (use evaluate_expression for complex math) ---
     {
         name: "add",
+        annotations: {
+            title: "Add",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description:
             "Adds two numbers.",
         inputSchema: {
@@ -238,6 +245,13 @@ const toolsAll = [
     },
     {
         name: "subtract",
+        annotations: {
+            title: "Subtract",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description:
             "Subtracts two numbers.",
         inputSchema: {
@@ -248,6 +262,13 @@ const toolsAll = [
     },
     {
         name: "multiply",
+        annotations: {
+            title: "Multiply",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description:
             "Multiplies two numbers.",
         inputSchema: {
@@ -258,6 +279,13 @@ const toolsAll = [
     },
     {
         name: "divide",
+        annotations: {
+            title: "Divide",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description:
             "Divides two numbers. Errors on zero divisor.",
         inputSchema: {
@@ -269,6 +297,13 @@ const toolsAll = [
     // --- Power & Root ---
     {
         name: "power",
+        annotations: {
+            title: "Power",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description: "Raises a to the power of b.",
         inputSchema: {
             type: "object",
@@ -281,6 +316,13 @@ const toolsAll = [
     },
     {
         name: "sqrt",
+        annotations: {
+            title: "Square Root",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description:
             "Square root. Errors on negative input.",
         inputSchema: {
@@ -292,6 +334,13 @@ const toolsAll = [
     // --- Trigonometry ---
     {
         name: "sine",
+        annotations: {
+            title: "Sine",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description:
             'Sine. Angle in degrees by default, or radians with unit: "radians".',
         inputSchema: {
@@ -305,6 +354,13 @@ const toolsAll = [
     },
     {
         name: "cosine",
+        annotations: {
+            title: "Cosine",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description:
             'Cosine. Angle in degrees by default, or radians with unit: "radians".',
         inputSchema: {
@@ -318,6 +374,13 @@ const toolsAll = [
     },
     {
         name: "tangent",
+        annotations: {
+            title: "Tangent",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description:
             'Tangent. Angle in degrees by default, or radians with unit: "radians".',
         inputSchema: {
@@ -332,6 +395,13 @@ const toolsAll = [
     // --- Inverse Trigonometry (added in v1.1.0) ---
     {
         name: "asin",
+        annotations: {
+            title: "Arcsine",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description:
             'Arcsine. Result in degrees by default, or radians with unit param.',
         inputSchema: {
@@ -345,6 +415,13 @@ const toolsAll = [
     },
     {
         name: "acos",
+        annotations: {
+            title: "Arccosine",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description:
             'Arccosine. Result in degrees by default, or radians with unit param.',
         inputSchema: {
@@ -358,6 +435,13 @@ const toolsAll = [
     },
     {
         name: "atan",
+        annotations: {
+            title: "Arctangent",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description:
             'Arctangent. Result in degrees by default, or radians with unit param.',
         inputSchema: {
@@ -372,6 +456,13 @@ const toolsAll = [
     // --- Logarithms ---
     {
         name: "logarithm",
+        annotations: {
+            title: "Logarithm",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description:
             "Base-10 logarithm. Errors on non-positive input.",
         inputSchema: {
@@ -382,6 +473,13 @@ const toolsAll = [
     },
     {
         name: "natural_log",
+        annotations: {
+            title: "Natural Logarithm",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description:
             "Natural logarithm (ln). Errors on non-positive input.",
         inputSchema: {
@@ -393,6 +491,13 @@ const toolsAll = [
     // --- Other ---
     {
         name: "absolute",
+        annotations: {
+            title: "Absolute Value",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description: "Absolute value.",
         inputSchema: {
             type: "object",
@@ -403,6 +508,13 @@ const toolsAll = [
     // --- Constants ---
     {
         name: "get_constant",
+        annotations: {
+            title: "Get Constant",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description:
             "Returns a mathematical, physical, or chemical constant. See enum values.",
         inputSchema: {
@@ -436,6 +548,13 @@ const toolsAll = [
     // --- Statistical Functions (added in v1.1.0) ---
     {
         name: "sum",
+        annotations: {
+            title: "Sum",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description: "Sum of numbers.",
         inputSchema: {
             type: "object",
@@ -447,6 +566,13 @@ const toolsAll = [
     },
     {
         name: "avg",
+        annotations: {
+            title: "Average",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description: "Average (mean) of numbers.",
         inputSchema: {
             type: "object",
@@ -458,6 +584,13 @@ const toolsAll = [
     },
     {
         name: "median",
+        annotations: {
+            title: "Median",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description: "Median of numbers.",
         inputSchema: {
             type: "object",
@@ -470,6 +603,13 @@ const toolsAll = [
     },
     {
         name: "min",
+        annotations: {
+            title: "Minimum",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description: "Minimum of numbers.",
         inputSchema: {
             type: "object",
@@ -481,6 +621,13 @@ const toolsAll = [
     },
     {
         name: "max",
+        annotations: {
+            title: "Maximum",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description: "Maximum of numbers.",
         inputSchema: {
             type: "object",
@@ -493,16 +640,37 @@ const toolsAll = [
     // --- Memory Functions ---
     {
         name: "memory_clear",
+        annotations: {
+            title: "Memory Clear",
+            readOnlyHint: false,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description: "Clear memory (MC).",
         inputSchema: { type: "object", properties: {} },
     },
     {
         name: "memory_recall",
+        annotations: {
+            title: "Memory Recall",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: false,
+            openWorldHint: false,
+        },
         description: "Recall memory value (MR).",
         inputSchema: { type: "object", properties: {} },
     },
     {
         name: "memory_add",
+        annotations: {
+            title: "Memory Add",
+            readOnlyHint: false,
+            destructiveHint: false,
+            idempotentHint: false,
+            openWorldHint: false,
+        },
         description: "Add to memory (M+).",
         inputSchema: {
             type: "object",
@@ -512,6 +680,13 @@ const toolsAll = [
     },
     {
         name: "memory_subtract",
+        annotations: {
+            title: "Memory Subtract",
+            readOnlyHint: false,
+            destructiveHint: false,
+            idempotentHint: false,
+            openWorldHint: false,
+        },
         description: "Subtract from memory (M-).",
         inputSchema: {
             type: "object",
@@ -522,6 +697,13 @@ const toolsAll = [
     // --- Additional Statistical Functions ---
     {
         name: "count",
+        annotations: {
+            title: "Count",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description: "Count elements.",
         inputSchema: {
             type: "object",
@@ -533,6 +715,13 @@ const toolsAll = [
     },
     {
         name: "range",
+        annotations: {
+            title: "Range",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description:
             "Range (max - min) of numbers.",
         inputSchema: {
@@ -545,6 +734,13 @@ const toolsAll = [
     },
     {
         name: "percentile",
+        annotations: {
+            title: "Percentile",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description:
             "Percentile (0-100) of numbers.",
         inputSchema: {
@@ -559,6 +755,13 @@ const toolsAll = [
     },
     {
         name: "variance",
+        annotations: {
+            title: "Variance",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description:
             "Sample variance (n-1). Set population: true for population variance (n).",
         inputSchema: {
@@ -572,6 +775,13 @@ const toolsAll = [
     },
     {
         name: "std_dev",
+        annotations: {
+            title: "Standard Deviation",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description:
             "Sample standard deviation (n-1). Set population: true for population (n).",
         inputSchema: {
@@ -586,6 +796,13 @@ const toolsAll = [
     // --- Percentage Functions ---
     {
         name: "percentage_of",
+        annotations: {
+            title: "Percentage Of",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description:
             "What is X% of Y? e.g., 15% of 200 = 30",
         inputSchema: {
@@ -599,6 +816,13 @@ const toolsAll = [
     },
     {
         name: "percentage_change",
+        annotations: {
+            title: "Percentage Change",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description:
             "Percentage change from A to B. e.g., 50→80 = +60%",
         inputSchema: {
@@ -612,6 +836,13 @@ const toolsAll = [
     },
     {
         name: "percentage_reverse",
+        annotations: {
+            title: "Percentage Reverse",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description:
             "X is Y% of what? e.g., 30 is 15% of 200",
         inputSchema: {
@@ -626,6 +857,13 @@ const toolsAll = [
     // --- Additional Math Functions ---
     {
         name: "modulo",
+        annotations: {
+            title: "Modulo",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description:
             "Remainder of a / b. Errors on zero divisor.",
         inputSchema: {
@@ -636,6 +874,13 @@ const toolsAll = [
     },
     {
         name: "factorial",
+        annotations: {
+            title: "Factorial",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description:
             "Factorial of non-negative integer (n!). n > 170 overflows.",
         inputSchema: {
@@ -650,6 +895,13 @@ const toolsAll = [
     // --- NEW in v1.2.0: Expression Evaluator ---
     {
         name: "evaluate_expression",
+        annotations: {
+            title: "Evaluate Expression",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description:
             "Evaluate a mathematical expression. PRIMARY tool for ALL math: +, -, *, /, %, ^. Functions: sqrt, sin, cos, tan, asin, acos, atan, log10, ln, log(x,base), abs, round, floor, ceil, min, max. Constants: pi, e, tau, phi, sqrt2, euler_mascheroni, c, g, G, h, k, R, NA, e_charge, m_e, m_p. Parentheses and scientific notation (1e6) supported. Use explicit operators: 2 * pi, not 2pi.",
         inputSchema: {
@@ -660,6 +912,13 @@ const toolsAll = [
     },
     {
         name: "convert_base",
+        annotations: {
+            title: "Convert Base",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description:
             "Convert number string between bases 2, 8, 10, 16.",
         inputSchema: {
@@ -674,6 +933,13 @@ const toolsAll = [
     },
     {
         name: "convert_unit",
+        annotations: {
+            title: "Convert Unit",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description:
             "Convert between common units. Categories: length, weight, temperature, area, volume, time, speed, digital_storage.",
         inputSchema: {
@@ -692,6 +958,13 @@ const toolsAll = [
     },
     {
         name: "batch",
+        annotations: {
+            title: "Batch",
+            readOnlyHint: false,
+            destructiveHint: false,
+            idempotentHint: false,
+            openWorldHint: false,
+        },
         description:
             "Execute multiple tool calls sequentially. Returns array of results.",
         inputSchema: {
@@ -714,6 +987,13 @@ const toolsAll = [
     },
     {
         name: "set_angle_mode",
+        annotations: {
+            title: "Set Angle Mode",
+            readOnlyHint: false,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description: "Set global trig angle mode. Individual calls with unit param override this.",
         inputSchema: {
             type: "object",
@@ -725,16 +1005,37 @@ const toolsAll = [
     },
     {
         name: "get_angle_mode",
+        annotations: {
+            title: "Get Angle Mode",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description: "Get current trig angle mode.",
         inputSchema: { type: "object", properties: {}, required: [] }
     },
     {
         name: "cache_clear",
+        annotations: {
+            title: "Cache Clear",
+            readOnlyHint: false,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description: "Clear computation cache.",
         inputSchema: { type: "object", properties: {}, required: [] },
     },
     {
         name: "cache_info",
+        annotations: {
+            title: "Cache Info",
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         description: "Show cache stats.",
         inputSchema: { type: "object", properties: {}, required: [] },
     },
@@ -1957,7 +2258,7 @@ if (isMainThread) {
 
         if (message.method === "initialize") {
             sendSuccess(message.id, {
-                protocolVersion: "2024-11-05",
+                protocolVersion: "2025-11-25",
                 capabilities: { tools: {} },
                 serverInfo: { name: "Cruncher", version: "1.2.27" },
             });

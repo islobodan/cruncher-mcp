@@ -11,6 +11,7 @@ Whenever a user asks you to perform mathematics, statistics, **unit conversions*
 | **Version** | v1.2.27 |
 | **Total Tools** | 43 (full), 34 (standard default), 5 (minimal) |
 | **Default Tier** | `standard` (34 tools) |
+| **Protocol Version** | `2025-11-25` (latest MCP spec) |
 | **Timeout** | 3 seconds (configurable via `CRUNCHER_TIMEOUT` env var) |
 | **Dependencies** | Zero (pure Node.js) |
 

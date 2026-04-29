@@ -15,10 +15,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **`ping` method**: Returns empty result `{}` for MCP liveness checks — required by spec and sent by most MCP clients
 - **Notification handling**: Silently accepts and ignores notifications (messages without `id`) like `notifications/initialized`, `notifications/cancelled`, etc. — matches MCP SDK behavior
 - **Protocol compliance tests** (section 54, 5 tests): ping, notifications/initialized, unknown notifications, garbage stdin resilience, garbage+ping combo
+- **Tool annotations** (MCP spec 2025-11-25): All 43 tools now include `annotations` with `title`, `readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint`
 
 ### Changed
+- **Protocol version bumped**: `2024-11-05` → `2025-11-25` (latest MCP spec, backward compatible)
 - Test suite: 330 → 335 tests, 100% pass rate
 - `package.json` normalized via `npm pkg fix` (bin paths, repository URL prefix)
+- README.md: Added `-y` flag to all npx client configs
 
 ## [1.2.26] — 2026-04-23
 
