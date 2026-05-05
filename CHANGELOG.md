@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [1.2.28] — 2026-04-29
+
+### Added
+- **MCP spec 2025-11-25 compliance**: Protocol version bumped from `2024-11-05` to `2025-11-25` (latest, backward compatible)
+- **Tool annotations** on all 43 tools (`title`, `readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint`) — signals safety metadata to MCP clients
+- **`-y` flag** added to all npx client configs in README.md
+
 ## [1.2.27] — 2026-04-28
 
 ### Fixed

@@ -8,7 +8,7 @@ This document summarizes the comprehensive test suite for the Cruncher MCP Serve
 - **Runner**: `tsx` (TypeScript execution without compilation)
 - **Test File**: `tests/test-cruncher-full.ts` (single comprehensive suite)
 - **Total Tests**: 335
-- **Pass Rate**: **100%** (335/335 tests passed) on v1.2.27
+- **Pass Rate**: **100%** (335/335 tests passed) on v1.2.28
 
 ## Test Categories
 
@@ -80,7 +80,7 @@ This document summarizes the comprehensive test suite for the Cruncher MCP Serve
 
 ## Failed Tests Analysis
 
-**No failed tests!** All 335 tests pass on v1.2.27.
+**No failed tests!** All 335 tests pass on v1.2.28.
 
 ## Key Successes
 
@@ -212,7 +212,7 @@ npx tsx tests/test-cruncher-full.ts
 
 ## Conclusion
 
-The Cruncher MCP Server passes **100% of comprehensive tests** on v1.2.27. The test suite successfully:
+The Cruncher MCP Server passes **100% of comprehensive tests** on v1.2.28. The test suite successfully:
 
 - ✅ Exits cleanly without hanging
 - ✅ Tests all major functionality including `evaluate_expression`
@@ -231,6 +231,7 @@ The Cruncher MCP Server passes **100% of comprehensive tests** on v1.2.27. The t
 
 | Version | Tests | Pass Rate | Key Additions |
 |---------|-------|-----------|---------------|
+| v1.2.28 | 335 | 100% | MCP spec 2025-11-25: tool annotations, protocol version bump |
 | v1.2.27 | 335 | 100% | MCP protocol compliance (ping, notifications, garbage stdin) |
 | v1.2.26 | 330 | 100% | Docs refresh, test restructure, assert API, CHANGELOG |
 | v1.2.25 | 330 | 100% | Test suite expanded 302→330; meta-files (CHANGELOG, CONTRIBUTING, SECURITY, package.json, .editorconfig) |

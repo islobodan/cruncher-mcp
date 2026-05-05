@@ -54,10 +54,10 @@ This single command runs all 335 tests covering every feature of the Cruncher se
 - **Percentile calculations** (full tier)
 
 ### 📊 Test Statistics
-- **Pass Rate**: **100%** (335/335) on v1.2.27
+- **Pass Rate**: **100%** (335/335) on v1.2.28
 - **Execution Time**: ~10 seconds
 - **Total Tests**: 335
-- **Pass Rate**: **100%** (335/335) on v1.2.27
+- **Pass Rate**: **100%** (335/335) on v1.2.28
 - **Execution Time**: ~10 seconds
 - **Coverage**: All **43 tools**, edge cases, concurrency, and advanced scenarios
 - **Tier Coverage**: minimal (5 tools), standard (34 tools), full (43 tools)
@@ -238,4 +238,4 @@ For issues or questions:
 
 **Last Updated**: 2026-04-23
 **Test Framework Version**: @slbdn/mcp-tester v1.1.0
-**Server Version Tested**: Cruncher **v1.2.27** (335 tests, 100% pass rate)
+**Server Version Tested**: Cruncher **v1.2.28** (335 tests, 100% pass rate)
