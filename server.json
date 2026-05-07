@@ -1,0 +1,59 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.islobodan/cruncher-mcp",
+  "description": "Zero-dependency scientific calculator MCP server with strict validation, worker isolation, and 43 tools across 8 categories. Supports arithmetic, trigonometry, statistics, unit conversion, percentage calculations, and more.",
+  "title": "Cruncher",
+  "websiteUrl": "https://github.com/islobodan/cruncher-mcp#readme",
+  "repository": {
+    "url": "https://github.com/islobodan/cruncher-mcp",
+    "source": "github"
+  },
+  "version": "1.2.28",
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "@slbdn/cruncher-mcp",
+      "version": "1.2.28",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "CRUNCHER_TOOL_SET",
+          "description": "Tool exposure tier: 'minimal' (5 tools), 'standard' (34 tools, default), or 'full' (43 tools)",
+          "isRequired": false,
+          "isSecret": false
+        },
+        {
+          "name": "CRUNCHER_TIMEOUT",
+          "description": "Worker thread timeout in milliseconds for heavy calculations (default: 3000, range: 100-60000)",
+          "isRequired": false,
+          "isSecret": false
+        }
+      ]
+    }
+  ],
+  "_meta": {
+    "io.modelcontextprotocol.registry/publisher-provided": {
+      "tool": "manual",
+      "category": "calculator",
+      "features": [
+        "43 tools across 8 categories",
+        "zero-dependency pure Node.js",
+        "worker thread isolation with timeout protection",
+        "strict JSON-Schema validation",
+        "MCP spec 2025-11-25 compliant",
+        "tool annotations for safety metadata",
+        "fuzzy tool name matching",
+        "LRU result caching"
+      ],
+      "toolCount": 43,
+      "tiers": {
+        "minimal": 5,
+        "standard": 34,
+        "full": 43
+      }
+    }
+  }
+}

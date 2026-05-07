@@ -44,6 +44,7 @@
   "files": [
     "cruncher.js",
     "cruncher.test.js",
+    "server.json",
     "README.md",
     "LICENSE"
   ],
