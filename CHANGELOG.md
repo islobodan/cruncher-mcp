@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [1.2.29] — 2026-05-08
+
+### Added
+- `server.json` for MCP Registry discovery (validated against live registry API)
+- `mcpName` field in `package.json` for registry discovery
+- Truncated description to fit registry 100-char limit
+
 ## [1.2.28] — 2026-04-29
 
 ### Added

@@ -237,6 +237,7 @@ state storage duplicates functionality already provided by the MCP conversation 
 | **v1.2.25** | **330** | **100%** | **Expanded test suite (28 new tests, 100% pass)** |
 | **v1.2.26** | **330** | **100%** | **Docs refresh, test restructure, assert API, CHANGELOG** |
 | **v1.2.27** | **335** | **100%** | **MCP protocol compliance (ping, notifications, garbage stdin)** |
+| **v1.2.29** | **335** | **100%** | **MCP Registry: server.json, mcpName, registry-ready** |
 | **v1.2.28** | **335** | **100%** | **MCP spec 2025-11-25: tool annotations, protocol version bump** |
 
 ---
@@ -245,6 +246,7 @@ state storage duplicates functionality already provided by the MCP conversation 
 
 | Date | Version | Changes |
 |------|---------|---------|
+| 2026-05-08 | v1.2.29 | MCP Registry: server.json, mcpName, registry-ready |
 | 2026-04-29 | v1.2.28 | MCP spec 2025-11-25: tool annotations on all 43 tools, protocol version bump |
 | 2026-04-28 | v1.2.27 | MCP protocol compliance: ping, notifications, garbage stdin, 335 tests |
 | 2026-04-23 | v1.2.26 | Docs refresh, test restructure (tests/ dir), assert API, CHANGELOG v1.2.24+v1.2.25 entries |
@@ -271,7 +273,7 @@ state storage duplicates functionality already provided by the MCP conversation 
 
 ---
 
-**Version**: v1.2.28
+**Version**: v1.2.29
 **Last Updated**: 2026-04-23
 **Total Tasks**: 15
 **Completed**: 13 ✅

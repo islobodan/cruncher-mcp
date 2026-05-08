@@ -8,7 +8,7 @@ This document summarizes the comprehensive test suite for the Cruncher MCP Serve
 - **Runner**: `tsx` (TypeScript execution without compilation)
 - **Test File**: `tests/test-cruncher-full.ts` (single comprehensive suite)
 - **Total Tests**: 335
-- **Pass Rate**: **100%** (335/335 tests passed) on v1.2.28
+- **Pass Rate**: **100%** (335/335 tests passed) on v1.2.29
 
 ## Test Categories
 
@@ -80,7 +80,7 @@ This document summarizes the comprehensive test suite for the Cruncher MCP Serve
 
 ## Failed Tests Analysis
 
-**No failed tests!** All 335 tests pass on v1.2.28.
+**No failed tests!** All 335 tests pass on v1.2.29.
 
 ## Key Successes
 
@@ -231,6 +231,7 @@ The Cruncher MCP Server passes **100% of comprehensive tests** on v1.2.28. The t
 
 | Version | Tests | Pass Rate | Key Additions |
 |---------|-------|-----------|---------------|
+| v1.2.29 | 335 | 100% | MCP Registry: server.json, mcpName, registry-ready |
 | v1.2.28 | 335 | 100% | MCP spec 2025-11-25: tool annotations, protocol version bump |
 | v1.2.27 | 335 | 100% | MCP protocol compliance (ping, notifications, garbage stdin) |
 | v1.2.26 | 330 | 100% | Docs refresh, test restructure, assert API, CHANGELOG |
