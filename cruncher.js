@@ -48,6 +48,9 @@ const {
 // Allow the user to configure the timeout via an environment variable, defaulting to 3000ms.
 const EXECUTION_TIMEOUT = parseInt(process.env.CRUNCHER_TIMEOUT, 10) || 3000;
 
+// Maximum allowed length for evaluate_expression input (prevents DoS via giant strings)
+const MAX_EXPR_LENGTH = 4096;
+
 // --- Tool Set Configuration ---
 // Controls how many tools are exposed to the LLM to optimize context token usage.
 // CRUNCHER_TOOL_SET=full     — All tools (core + batch, cache management).
@@ -1742,6 +1745,18 @@ const toolHandlers = {
      * @returns {number} The calculated result.
      */
     evaluate_expression: ({ expression }) => {
+        // Reject oversized expressions BEFORE any regex processing (DoS prevention)
+        if (typeof expression !== "string") {
+            throw new Error(
+                "Type Error: expression must be a string, got " + typeof expression
+            );
+        }
+        if (expression.length > MAX_EXPR_LENGTH) {
+            throw new Error(
+                `Expression too long (${expression.length} chars). Maximum is ${MAX_EXPR_LENGTH}.`
+            );
+        }
+
         // Pre-compiled regexes for expression preprocessing
         // 1. Convert mathematical ^ to JavaScript's ** operator
         let parsedExpr = expression.replace(RE_NOTATION_CARAT, "**");
@@ -2470,5 +2485,6 @@ if (typeof module !== "undefined") {
         sendError,
         structuredValidationError,
         EXECUTION_TIMEOUT,
+        MAX_EXPR_LENGTH,
     };
 }

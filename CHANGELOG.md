@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Fixed
 - **Worker timeout double-send race (CR-1)**: Added `responded` guard across all 3 worker completion paths (timeout, message, error) to prevent two JSON-RPC responses being emitted for the same request ID when a worker finishes just as the timeout fires
+- **Expression DoS prevention (CR-2)**: Added `MAX_EXPR_LENGTH=4096` cap on `evaluate_expression` input — rejects oversized expressions BEFORE any regex processing or `new Function` compilation, preventing OOM crashes from gigabyte-sized expression strings
 
 ## [1.2.28] — 2026-04-29
 
