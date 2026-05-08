@@ -51,6 +51,9 @@ const EXECUTION_TIMEOUT = parseInt(process.env.CRUNCHER_TIMEOUT, 10) || 3000;
 // Maximum allowed length for evaluate_expression input (prevents DoS via giant strings)
 const MAX_EXPR_LENGTH = 4096;
 
+// Maximum allowed array length for statistical tools (prevents DoS via giant arrays)
+const MAX_ARRAY_LENGTH = 10000;
+
 // --- Tool Set Configuration ---
 // Controls how many tools are exposed to the LLM to optimize context token usage.
 // CRUNCHER_TOOL_SET=full     — All tools (core + batch, cache management).
@@ -1543,7 +1546,11 @@ const toolHandlers = {
     min: ({ numbers }) => {
         if (numbers.length === 0)
             throw new Error("Cannot find the minimum of an empty list.");
-        return Math.min(...numbers);
+        let minVal = Infinity;
+        for (let i = 0; i < numbers.length; i++) {
+            if (numbers[i] < minVal) minVal = numbers[i];
+        }
+        return minVal;
     },
 
     /**
@@ -1556,7 +1563,11 @@ const toolHandlers = {
     max: ({ numbers }) => {
         if (numbers.length === 0)
             throw new Error("Cannot find the maximum of an empty list.");
-        return Math.max(...numbers);
+        let maxVal = -Infinity;
+        for (let i = 0; i < numbers.length; i++) {
+            if (numbers[i] > maxVal) maxVal = numbers[i];
+        }
+        return maxVal;
     },
 
     // Memory Handlers
@@ -1616,9 +1627,13 @@ const toolHandlers = {
     range: ({ numbers }) => {
         if (numbers.length === 0)
             throw new Error("Cannot calculate the range of an empty list.");
-        const min = Math.min(...numbers);
-        const max = Math.max(...numbers);
-        return max - min;
+        let minVal = Infinity, maxVal = -Infinity;
+        for (let i = 0; i < numbers.length; i++) {
+            const v = numbers[i];
+            if (v < minVal) minVal = v;
+            if (v > maxVal) maxVal = v;
+        }
+        return maxVal - minVal;
     },
 
     /**
@@ -2133,6 +2148,13 @@ const validateArguments = (schema, args, path = "root", toolName = "unknown") =>
                 { parameter: path.replace("root.", ""), expected: "array", received: typeof args, receivedValue: args, tool: toolName },
             );
         }
+        // Prevent DoS via giant arrays (10M elements would freeze main thread)
+        if (args.length > MAX_ARRAY_LENGTH) {
+            throw structuredValidationError(-32602,
+                `Validation Error: Array at ${path} exceeds maximum length ${MAX_ARRAY_LENGTH} (got ${args.length})`,
+                { parameter: path.replace("root.", ""), expected: `<= ${MAX_ARRAY_LENGTH} elements`, received: `${args.length} elements`, tool: toolName },
+            );
+        }
         if (schema.items) {
             for (let i = 0; i < args.length; i++) {
                 validateArguments(schema.items, args[i], `${path}[${i}]`, toolName);
@@ -2486,5 +2508,6 @@ if (typeof module !== "undefined") {
         structuredValidationError,
         EXECUTION_TIMEOUT,
         MAX_EXPR_LENGTH,
+        MAX_ARRAY_LENGTH,
     };
 }
