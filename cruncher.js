@@ -2343,6 +2343,7 @@ if (isMainThread) {
             // For memory operations, chain onto the queue to ensure serial execution
             const executeTool = async () => {
                 let releaseQueue = null;
+                let responded = false;  // Guard against double-send from timeout + worker race
                 
                 if (isMemoryOp) {
                     // Chain onto the queue - this creates a new promise that future calls will wait for
@@ -2380,6 +2381,8 @@ if (isMainThread) {
 
                 // Set the execution timeout (custom or default)
                 const timeoutId = setTimeout(() => {
+                    if (responded) return;  // Guard: already responded via worker message/error
+                    responded = true;
                     worker.terminate(); // Forcefully kill the thread!
                     sendError(
                         message.id,
@@ -2392,6 +2395,8 @@ if (isMainThread) {
 
                 worker.on("message", (result) => {
                     clearTimeout(timeoutId);
+                    if (responded) return;  // Guard: already responded via timeout
+                    responded = true;
                     if (result.success) {
                         // Sync the main thread's memory with the worker's potentially modified memory
                         memory = result.newMemory;
@@ -2413,6 +2418,8 @@ if (isMainThread) {
 
                 worker.on("error", (error) => {
                     clearTimeout(timeoutId);
+                    if (responded) return;  // Guard: already responded via timeout
+                    responded = true;
                     sendError(message.id, -32603, { message: `Worker Error: ${error.message}` });
                     // Release queue on error
                     if (releaseQueue) releaseQueue();
