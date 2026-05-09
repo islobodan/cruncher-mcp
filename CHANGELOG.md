@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **Expression DoS prevention (CR-2)**: Added `MAX_EXPR_LENGTH=4096` cap on `evaluate_expression` input — rejects oversized expressions BEFORE any regex processing or `new Function` compilation, preventing OOM crashes from gigabyte-sized expression strings
 - **Array DoS prevention (CR-3)**: Added `MAX_ARRAY_LENGTH=10000` cap in `validateArguments` for all array-typed parameters — prevents 10M-element arrays from freezing the event loop. Replaced `Math.min/max(...arr)` spread operator (which crashes V8 beyond ~125K elements) with safe loop-based implementations in `min`, `max`, and `range` handlers
 - **Stale memory recall fix (CR-4)**: `memory_recall` now awaits `memoryQueue` before reading the main-thread memory variable — prevents returning stale values when a `memory_add`/`memory_subtract` worker is still in-flight
+- **DRY: variance/std_dev deduplication (CR-5)**: Extracted shared `computeVariance()` helper — `variance` returns it directly, `std_dev` calls `Math.sqrt(computeVariance(...))`. Eliminated 22 duplicated lines (guards, mean, sum-of-squares) across the two handlers
 
 ## [1.2.28] — 2026-04-29
 

@@ -1319,6 +1319,22 @@ const fromRadians = (radians, unit) => {
 
 // --- Tool Implementations ---
 
+/**
+ * Shared variance computation used by both variance and std_dev.
+ * @param {number[]} numbers - Array of numbers.
+ * @param {boolean} population - Use population (n) or sample (n-1).
+ * @returns {number} The variance.
+ */
+function computeVariance(numbers, population) {
+    if (numbers.length === 0)
+        throw new Error("Cannot calculate the variance of an empty list.");
+    if (numbers.length === 1 && !population)
+        throw new Error("Sample variance needs ≥2 values. Use population: true.");
+    const mean = numbers.reduce((a, b) => a + b, 0) / numbers.length;
+    const ss = numbers.reduce((a, b) => a + (b - mean) ** 2, 0);
+    return ss / (population ? numbers.length : numbers.length - 1);
+}
+
 const toolHandlers = {
     /**
      * Adds two numbers together.
@@ -1670,15 +1686,7 @@ const toolHandlers = {
      * @param {boolean} [args.population=false] - Use population variance (n).
      * @returns {number} The variance.
      */
-    variance: ({ numbers, population }) => {
-        if (numbers.length === 0)
-            throw new Error("Cannot calculate the variance of an empty list.");
-        if (numbers.length === 1 && !population)
-            throw new Error("Sample variance needs ≥2 values. Use population: true.");
-        const mean = numbers.reduce((a, b) => a + b, 0) / numbers.length;
-        const ss = numbers.reduce((a, b) => a + (b - mean) ** 2, 0);
-        return ss / (population ? numbers.length : numbers.length - 1);
-    },
+    variance: ({ numbers, population }) => computeVariance(numbers, !!population),
 
     /**
      * Standard deviation of numbers. Sample (n-1) by default.
@@ -1687,15 +1695,7 @@ const toolHandlers = {
      * @param {boolean} [args.population=false] - Use population std dev (n).
      * @returns {number} The standard deviation.
      */
-    std_dev: ({ numbers, population }) => {
-        if (numbers.length === 0)
-            throw new Error("Cannot calculate the standard deviation of an empty list.");
-        if (numbers.length === 1 && !population)
-            throw new Error("Sample std dev needs ≥2 values. Use population: true.");
-        const mean = numbers.reduce((a, b) => a + b, 0) / numbers.length;
-        const ss = numbers.reduce((a, b) => a + (b - mean) ** 2, 0);
-        return Math.sqrt(ss / (population ? numbers.length : numbers.length - 1));
-    },
+    std_dev: ({ numbers, population }) => Math.sqrt(computeVariance(numbers, !!population)),
 
     // Percentage Handlers
     percentage_of: ({ percent, total }) => {

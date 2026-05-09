@@ -31,7 +31,7 @@
 | CR-2 | evaluate_expression no size limit (DoS) | `[x]` | S | 🔴 Critical | High |
 | CR-3 | Array no size limit on stat tools (DoS) | `[x]` | M | 🔴 Critical | High |
 | CR-4 | memory_recall stale read during add | `[x]` | M | 🟠 High | Medium |
-| CR-5 | variance/std_dev duplicate logic | `[ ]` | S | 🟠 High | Medium |
+| CR-5 | variance/std_dev duplicate logic | `[x]` | S | 🟠 High | Medium |
 | CR-6 | Standard tier hardcodes minimal names | `[ ]` | S | 🟡 Medium | Low |
 | CR-7 | Cache labeled LRU but is FIFO | `[ ]` | S | 🟡 Medium | Low |
 | CR-8 | Disallowed-chars regex has dead chars | `[ ]` | M | 🟡 Medium | Medium |
@@ -291,7 +291,7 @@ state storage duplicates functionality already provided by the MCP conversation 
 **Version**: v1.2.29
 **Last Updated**: 2026-05-08
 **Total Tasks**: 28 (13 original + 15 code review findings)
-**Completed**: 17 ✅  |  **Code Review Open**: 11 📋
+**Completed**: 18 ✅  |  **Code Review Open**: 10 📋
 **Skipped**: 3 🚫 (low impact, disproportionate effort)
 
 **Project Status**: Active maintenance — 15 issues identified, see Code Review Findings below.
