@@ -252,7 +252,7 @@ state storage duplicates functionality already provided by the MCP conversation 
 | **v1.2.25** | **330** | **100%** | **Expanded test suite (28 new tests, 100% pass)** |
 | **v1.2.26** | **330** | **100%** | **Docs refresh, test restructure, assert API, CHANGELOG** |
 | **v1.2.27** | **335** | **100%** | **MCP protocol compliance (ping, notifications, garbage stdin)** |
-| **v1.2.29** | **335** | **100%** | **MCP Registry: server.json, mcpName, registry-ready** |
+| **v1.2.30** | **335** | **100%** | **MCP Registry: server.json, mcpName, registry-ready** |
 | **v1.2.28** | **335** | **100%** | **MCP spec 2025-11-25: tool annotations, protocol version bump** |
 
 ---
@@ -261,7 +261,7 @@ state storage duplicates functionality already provided by the MCP conversation 
 
 | Date | Version | Changes |
 |------|---------|---------|
-| 2026-05-08 | v1.2.29 | MCP Registry: server.json, mcpName, registry-ready |
+| 2026-05-08 | v1.2.30 | MCP Registry: server.json, mcpName, registry-ready |
 | 2026-04-29 | v1.2.28 | MCP spec 2025-11-25: tool annotations on all 43 tools, protocol version bump |
 | 2026-04-28 | v1.2.27 | MCP protocol compliance: ping, notifications, garbage stdin, 335 tests |
 | 2026-04-23 | v1.2.26 | Docs refresh, test restructure (tests/ dir), assert API, CHANGELOG v1.2.24+v1.2.25 entries |
@@ -288,8 +288,8 @@ state storage duplicates functionality already provided by the MCP conversation 
 
 ---
 
-**Version**: v1.2.29
-**Last Updated**: 2026-05-08
+**Version**: v1.2.30
+**Last Updated**: 2026-05-09
 **Total Tasks**: 28 (13 original + 15 code review findings)
 **Completed**: 18 ✅  |  **Code Review Open**: 10 📋
 **Skipped**: 3 🚫 (low impact, disproportionate effort)
@@ -300,7 +300,7 @@ state storage duplicates functionality already provided by the MCP conversation 
 
 ## 🔍 Code Review Findings (2026-05-08)
 
-Thorough senior-developer audit of `cruncher.js` (2468 lines, v1.2.29).
+Thorough senior-developer audit of `cruncher.js` (2468 lines, v1.2.30).
 Each finding includes root cause analysis, impacted code locations, reproduction
 steps, and concrete fix proposals with code.
 
