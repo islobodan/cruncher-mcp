@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **Worker timeout double-send race (CR-1)**: Added `responded` guard across all 3 worker completion paths (timeout, message, error) to prevent two JSON-RPC responses being emitted for the same request ID when a worker finishes just as the timeout fires
 - **Expression DoS prevention (CR-2)**: Added `MAX_EXPR_LENGTH=4096` cap on `evaluate_expression` input — rejects oversized expressions BEFORE any regex processing or `new Function` compilation, preventing OOM crashes from gigabyte-sized expression strings
 - **Array DoS prevention (CR-3)**: Added `MAX_ARRAY_LENGTH=10000` cap in `validateArguments` for all array-typed parameters — prevents 10M-element arrays from freezing the event loop. Replaced `Math.min/max(...arr)` spread operator (which crashes V8 beyond ~125K elements) with safe loop-based implementations in `min`, `max`, and `range` handlers
+- **Stale memory recall fix (CR-4)**: `memory_recall` now awaits `memoryQueue` before reading the main-thread memory variable — prevents returning stale values when a `memory_add`/`memory_subtract` worker is still in-flight
 
 ## [1.2.28] — 2026-04-29
 

@@ -2348,6 +2348,24 @@ if (isMainThread) {
             // 2. Main-thread fast path (instant calls, no worker overhead)
             //    Validation already happened above — just execute and return.
             if (MAIN_THREAD_TOOLS.has(name)) {
+                // memory_recall must await pending memory mutations to avoid stale reads
+                if (name === "memory_recall") {
+                    const executeRecall = async () => {
+                        await memoryQueue;
+                        try {
+                            sendSuccess(message.id, {
+                                content: [{ type: "text", text: String(handler(args)) }],
+                            });
+                        } catch (error) {
+                            sendError(message.id, -32602, { message: error.message });
+                        }
+                    };
+                    executeRecall().catch((error) => {
+                        sendError(message.id, -32603, { message: `Unexpected error: ${error.message}` });
+                    });
+                    return;
+                }
+
                 try {
                     const result = handler(args);
                     if (TRIG_TOOLS.includes(name)) {
