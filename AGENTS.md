@@ -8,7 +8,7 @@ Whenever a user asks you to perform mathematics, statistics, **unit conversions*
 
 | Attribute | Value |
 |-----------|-------|
-| **Version** | v1.2.30 |
+| **Version** | v1.2.31 |
 | **Total Tools** | 43 (full), 34 (standard default), 5 (minimal) |
 | **Default Tier** | `standard` (34 tools) |
 | **Protocol Version** | `2025-11-25` (latest MCP spec) |

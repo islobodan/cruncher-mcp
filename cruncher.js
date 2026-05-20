@@ -2292,7 +2292,7 @@ if (isMainThread) {
         terminal: false,
     });
 
-    console.error(`Cruncher v1.2.30 MCP Server starting...`);
+    console.error(`Cruncher v1.2.31 MCP Server starting...`);
     console.error(`  Tool set: ${TOOL_SET} (${TOOLS.length} tools exposed)`);
 
     rl.on("line", (line) => {
@@ -2313,7 +2313,7 @@ if (isMainThread) {
             sendSuccess(message.id, {
                 protocolVersion: "2025-11-25",
                 capabilities: { tools: {} },
-                serverInfo: { name: "Cruncher", version: "1.2.30" },
+                serverInfo: { name: "Cruncher", version: "1.2.31" },
             });
             return;
         }

@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [1.2.31] — 2026-05-09
+
+### Changed
+- **DRY tier definitions (CR-6)**: Extracted `MINIMAL_TOOLS` constant — `standard` tier now uses `...MINIMAL_TOOLS` spread, eliminating duplication and preventing future drift
+- **Cleaned disallowed-chars regex (CR-8)**: Removed dead `v` character, duplicate `*`, and redundant standalone `1` (covered by `0-9` range) from `RE_DISALLOWED_CHARS` — sorted letter set is now deterministic and minimal
+- **Temperature error UX (CR-9)**: Temperature unit validation errors now include available units: `"Available: C, F, K"`
+- **Worker cleanup on signals (CR-11)**: Added `SIGTERM`/`SIGINT` handlers that terminate all active workers before exit — prevents delayed shutdown from orphaned worker threads
+- **Compiled expression cache (CR-12)**: `evaluate_expression` now caches compiled `Function` objects (same `CACHE_MAX_SIZE=1000`, clear-all eviction) — avoids V8 JIT recompilation when evaluating the same expression repeatedly
+
 ## [1.2.30] — 2026-05-09
 
 ### Fixed
@@ -21,11 +30,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **Removed duplicate comment (CR-13)**: Eliminated duplicate "3.5. Substitute constant names" comment block in `evaluate_expression`
 - **Added "pow" to error message (CR-14)**: First security error message in `evaluate_expression` now includes "pow" in the allowed functions list, matching the second message
 - **Removed dead `typeof module` guard (CR-15)**: Cruncher always runs in Node.js (CommonJS/Worker threads) — the `if (typeof module !== "undefined")` check was always true and has been removed
-- **DRY tier definitions (CR-6)**: Extracted `MINIMAL_TOOLS` constant — `standard` tier now uses `...MINIMAL_TOOLS` spread, eliminating duplication and preventing future drift
-- **Cleaned disallowed-chars regex (CR-8)**: Removed dead `v` character, duplicate `*`, and redundant standalone `1` (covered by `0-9` range) from `RE_DISALLOWED_CHARS` — sorted letter set is now deterministic and minimal
-- **Temperature error UX (CR-9)**: Temperature unit validation errors now include available units: `"Available: C, F, K"`
-- **Worker cleanup on signals (CR-11)**: Added `SIGTERM`/`SIGINT` handlers that terminate all active workers before exit — prevents delayed shutdown from orphaned worker threads
-- **Compiled expression cache (CR-12)**: `evaluate_expression` now caches compiled `Function` objects (same `CACHE_MAX_SIZE=1000`, clear-all eviction) — avoids V8 JIT recompilation when evaluating the same expression repeatedly
 
 ## [1.2.29] — 2026-05-08
 

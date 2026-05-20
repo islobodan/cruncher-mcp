@@ -8,13 +8,13 @@
     "url": "https://github.com/islobodan/cruncher-mcp",
     "source": "github"
   },
-  "version": "1.2.30",
+  "version": "1.2.31",
   "packages": [
     {
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "@slbdn/cruncher-mcp",
-      "version": "1.2.30",
+      "version": "1.2.31",
       "transport": {
         "type": "stdio"
       },
