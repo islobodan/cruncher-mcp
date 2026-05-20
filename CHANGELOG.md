@@ -16,6 +16,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 - **DRY: variance/std_dev deduplication (CR-5)**: Extracted shared `computeVariance()` helper — `variance` returns it directly, `std_dev` calls `Math.sqrt(computeVariance(...))`. Eliminated 22 duplicated lines (guards, mean, sum-of-squares) across the two handlers
+- **safeMath precision cap (CR-10)**: Capped `countDecimals()` return value at 14 — prevents `Math.pow(10, maxDecimals)` multipliers from exceeding JS safe integer range (2^53 ≈ 9e15) in all `safeMath` operations (add, subtract, multiply, divide, modulo). Single-point fix in the `countDecimals` helper protects all five arithmetic primitives
+- **Cache comment corrected (CR-7)**: Changed "LRU" → "FIFO" in cache documentation comments — the implementation is FIFO eviction (oldest entry removed), not LRU
+- **Removed duplicate comment (CR-13)**: Eliminated duplicate "3.5. Substitute constant names" comment block in `evaluate_expression`
+- **Added "pow" to error message (CR-14)**: First security error message in `evaluate_expression` now includes "pow" in the allowed functions list, matching the second message
+- **Removed dead `typeof module` guard (CR-15)**: Cruncher always runs in Node.js (CommonJS/Worker threads) — the `if (typeof module !== "undefined")` check was always true and has been removed
 
 ## [1.2.29] — 2026-05-08
 

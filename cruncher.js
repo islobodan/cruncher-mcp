@@ -18,7 +18,7 @@
  * - v1.2.6: Batch processing tool for executing multiple calculations
  *           in a single request with partial failure tolerance.
  * - v1.2.7: Result caching (sqrt, power, factorial, log, evaluate_expression, etc.)
- *           with TTL and LRU eviction.
+ *           with TTL and FIFO eviction.
  * - v1.2.8: Angle mode toggle (set_angle_mode/get_angle_mode) with global state,
  *           trig functions moved to main-thread execution for persistence.
  * - v1.2.9: Performance optimizations: moved instant tools (power, sqrt, log,
@@ -165,7 +165,7 @@ function cacheGet(key) {
     return entry.value;
 }
 
-/** Store result in cache with LRU eviction. */
+/** Store result in cache with FIFO eviction. */
 function cacheSet(key, value) {
     if (cache.size >= CACHE_MAX_SIZE) {
         const first = cache.keys().next().value;
@@ -1236,9 +1236,11 @@ const convertTemperature = (value, from, to) => {
 const countDecimals = (num) => {
     if (Math.floor(num) === num) return 0;
     const str = num.toString();
-    if (str.includes("e-")) return parseInt(str.split("e-")[1], 10);
-    if (str.includes(".")) return str.split(".")[1].length;
-    return 0;
+    let d = 0;
+    if (str.includes("e-")) d = parseInt(str.split("e-")[1], 10);
+    else if (str.includes(".")) d = str.split(".")[1].length;
+    // Cap at 14 to keep all scaled intermediates within JS safe integer range (2^53)
+    return Math.min(d, 14);
 };
 
 const safeMath = {
@@ -1806,8 +1808,6 @@ const toolHandlers = {
         parsedExpr = parsedExpr.replace(RE_FUNC_LOG_BASE, "Math.log($1) / Math.log($2)");
 
         // 3.5. Substitute constant names with their numeric values
-
-        // 3.5. Substitute constant names with their numeric values
         //    e.g., "pi * 2" → "3.141592653589793 * 2"
         //    Use word boundaries so "pi" doesn't match inside other identifiers.
         //    Longest constant names are matched first to avoid partial collisions.
@@ -1819,7 +1819,7 @@ const toolHandlers = {
             throw new Error(
                 "Security Error: Expression contains invalid characters. " +
                 "Only numbers, basic operators (+, -, *, /, %, ^), parentheses, commas, " +
-                "functions (abs, round, floor, ceil, min, max, sin, cos, tan, asin, acos, atan, sqrt, log10, ln, log) " +
+                "functions (abs, round, floor, ceil, min, max, pow, sin, cos, tan, asin, acos, atan, sqrt, log10, ln, log) " +
                 "and constants (pi, e, tau, phi, sqrt2, c, g, G, h, k, R, NA, euler_mascheroni) " +
                 "are allowed.",
             );
@@ -2514,18 +2514,16 @@ if (isMainThread) {
 
 // --- Test Exports ---
 // Expose internals for testing without affecting runtime behaviour.
-// When cruncher.js is run directly or as a worker, this block is harmless.
-if (typeof module !== "undefined") {
-    module.exports = {
-        safeMath,
-        countDecimals,
-        toolHandlers,
-        validateArguments,
-        validateMessage,
-        sendError,
-        structuredValidationError,
-        EXECUTION_TIMEOUT,
-        MAX_EXPR_LENGTH,
-        MAX_ARRAY_LENGTH,
-    };
-}
+// When cruncher.js is run as a worker, this block is harmless.
+module.exports = {
+    safeMath,
+    countDecimals,
+    toolHandlers,
+    validateArguments,
+    validateMessage,
+    sendError,
+    structuredValidationError,
+    EXECUTION_TIMEOUT,
+    MAX_EXPR_LENGTH,
+    MAX_ARRAY_LENGTH,
+};
