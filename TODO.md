@@ -32,13 +32,13 @@
 | CR-3 | Array no size limit on stat tools (DoS) | `[x]` | M | 🔴 Critical | High |
 | CR-4 | memory_recall stale read during add | `[x]` | M | 🟠 High | Medium |
 | CR-5 | variance/std_dev duplicate logic | `[x]` | S | 🟠 High | Medium |
-| CR-6 | Standard tier hardcodes minimal names | `[ ]` | S | 🟡 Medium | Low |
+| CR-6 | Standard tier hardcodes minimal names | `[x]` | S | 🟡 Medium | Low |
 | CR-7 | Cache labeled LRU but is FIFO | `[x]` | S | 🟡 Medium | Low |
-| CR-8 | Disallowed-chars regex has dead chars | `[ ]` | M | 🟡 Medium | Medium |
-| CR-9 | Temperature error shows empty unit list | `[ ]` | S | 🟡 Medium | Low |
+| CR-8 | Disallowed-chars regex has dead chars | `[x]` | M | 🟡 Medium | Medium |
+| CR-9 | Temperature error shows empty unit list | `[x]` | S | 🟡 Medium | Low |
 | CR-10 | safeMath divide precision loss | `[x]` | M | 🟡 Medium | Medium |
-| CR-11 | No worker cleanup on SIGTERM | `[ ]` | S | 🟡 Medium | Low |
-| CR-12 | evaluate_expression recompiles Function | `[ ]` | S | 🟢 Low | Low |
+| CR-11 | No worker cleanup on SIGTERM | `[x]` | S | 🟡 Medium | Low |
+| CR-12 | evaluate_expression recompiles Function | `[x]` | S | 🟢 Low | Low |
 | CR-13 | Duplicate comment block | `[x]` | S | 🟢 Low | Low |
 | CR-14 | Error messages missing "pow" | `[x]` | S | 🟢 Low | Low |
 | CR-15 | Dead typeof module guard | `[x]` | S | 🟢 Low | Low |
@@ -291,7 +291,7 @@ state storage duplicates functionality already provided by the MCP conversation 
 **Version**: v1.2.30
 **Last Updated**: 2026-05-09
 **Total Tasks**: 28 (13 original + 15 code review findings)
-**Completed**: 23 ✅  |  **Code Review Open**: 5 📋
+**Completed**: 28 ✅  |  **Code Review Open**: 0 📋
 **Skipped**: 3 🚫 (low impact, disproportionate effort)
 
 **Project Status**: Active maintenance — 15 issues identified, see Code Review Findings below.

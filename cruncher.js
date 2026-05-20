@@ -65,16 +65,21 @@ if (!VALID_TOOL_SETS.includes(TOOL_SET)) {
     console.error(`Warning: Unknown CRUNCHER_TOOL_SET='${TOOL_SET}', using 'full'.`);
 }
 
+/**
+ * Minimal tool set — shared as the base of the standard tier.
+ * Any change here automatically propagates to the standard tier.
+ */
+const MINIMAL_TOOLS = [
+    "evaluate_expression", "add", "subtract", "multiply", "divide",
+];
+
 /** Tool names exposed per tier. */
 const TOOL_TIERS = {
     // Minimal: math primitives + evaluate_expression (5 tools)
-    minimal: [
-        "evaluate_expression", "add", "subtract", "multiply", "divide",
-    ],
+    minimal: MINIMAL_TOOLS,
     // Standard: core math + trig, common stats, constants, unit conversion (34 tools)
     standard: [
-        "evaluate_expression",
-        "add", "subtract", "multiply", "divide",
+        ...MINIMAL_TOOLS,
         "sqrt", "power", "absolute", "modulo", "factorial",
         "logarithm", "natural_log", "get_constant",
         "sine", "cosine", "tangent", "asin", "acos", "atan",
@@ -100,10 +105,14 @@ function filterToolsByTier(allTools, tier) {
 let memory = 0;
 let memoryQueue = Promise.resolve(); // Queue for atomic memory operations (main thread)
 
+// Track active workers for graceful shutdown (SIGTERM/SIGINT)
+const activeWorkers = new Set();
+
 // --- Cache State ---
 const CACHE_MAX_SIZE = 1000;
 const CACHE_TTL = 300000; // 5 minutes TTL
 const cache = new Map(); // Map<string, { value, timestamp }>
+const compiledExprCache = new Map(); // Map<string, Function> — compiled evaluate_expression functions
 
 // --- Angle Mode State ---
 let angleMode = "degrees"; // Default unit for trigonometric functions
@@ -225,7 +234,7 @@ const RE_CONSTANTS = (() => {
     const escaped = names.map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
     return new RegExp(`\\b(${escaped.join('|')})\\b`, 'g');
 })();
-const RE_DISALLOWED_CHARS   = /[^0-9+\-*/().% \t*,Mathabspowrndflceigumsxqtogv1]/;
+const RE_DISALLOWED_CHARS   = /[^0-9+\-*/().% 	,Mabcdefghilmnopqrstuwx]/;
 const RE_VALID_MATH_CALLS   = /Math\.(pow|abs|round|floor|ceil|min|max|sin|cos|tan|asin|acos|atan|sqrt|log10|log)\(/g;
 
 // --- Master Tool Definitions (full catalog) ---
@@ -1215,14 +1224,14 @@ const convertTemperature = (value, from, to) => {
         case 'C': celsius = value; break;
         case 'F': celsius = (value - 32) * 5 / 9; break;
         case 'K': celsius = value - 273.15; break;
-        default: throw new Error(`Unknown temperature unit: ${from}`);
+        default: throw new Error(`Unknown temperature unit: ${from}. Available: C, F, K`);
     }
     // Convert from Celsius to target
     switch (to) {
         case 'C': return celsius;
         case 'F': return celsius * 9 / 5 + 32;
         case 'K': return celsius + 273.15;
-        default: throw new Error(`Unknown temperature unit: ${to}`);
+        default: throw new Error(`Unknown temperature unit: ${to}. Available: C, F, K`);
     }
 };
 
@@ -1834,9 +1843,16 @@ const toolHandlers = {
         }
 
         try {
-            // 5. Evaluate safely
-            // Because we strictly verified the contents above, this is now safe to run.
-            const result = new Function("return (" + parsedExpr + ")")();
+            // 5. Evaluate safely (cache compiled function to avoid re-JIT on repeats)
+            let fn = compiledExprCache.get(parsedExpr);
+            if (!fn) {
+                fn = new Function("return (" + parsedExpr + ")");
+                if (compiledExprCache.size >= CACHE_MAX_SIZE) {
+                    compiledExprCache.clear();
+                }
+                compiledExprCache.set(parsedExpr, fn);
+            }
+            const result = fn();
             if (result === Infinity || result === -Infinity) {
                 throw new Error(
                     "Domain Error: Expression evaluated to infinity. " +
@@ -2433,11 +2449,13 @@ if (isMainThread) {
                 const worker = new Worker(__filename, {
                     workerData: { name, args: workerArgs, currentMemory: memory },
                 });
+                activeWorkers.add(worker);
 
                 // Set the execution timeout (custom or default)
                 const timeoutId = setTimeout(() => {
                     if (responded) return;  // Guard: already responded via worker message/error
                     responded = true;
+                    activeWorkers.delete(worker);
                     worker.terminate(); // Forcefully kill the thread!
                     sendError(
                         message.id,
@@ -2450,6 +2468,7 @@ if (isMainThread) {
 
                 worker.on("message", (result) => {
                     clearTimeout(timeoutId);
+                    activeWorkers.delete(worker);
                     if (responded) return;  // Guard: already responded via timeout
                     responded = true;
                     if (result.success) {
@@ -2473,6 +2492,7 @@ if (isMainThread) {
 
                 worker.on("error", (error) => {
                     clearTimeout(timeoutId);
+                    activeWorkers.delete(worker);
                     if (responded) return;  // Guard: already responded via timeout
                     responded = true;
                     sendError(message.id, -32603, { message: `Worker Error: ${error.message}` });
@@ -2486,6 +2506,21 @@ if (isMainThread) {
             });
         }
     });
+
+    // Graceful shutdown: terminate all active workers on SIGTERM/SIGINT
+    const shutdown = (signal) => {
+        if (activeWorkers.size > 0) {
+            console.error(`[Cruncher] Received ${signal}, terminating ${activeWorkers.size} active worker(s)...`);
+            for (const w of activeWorkers) {
+                w.terminate();
+                activeWorkers.delete(w);
+            }
+        }
+        process.exit(0);
+    };
+    process.on("SIGTERM", () => shutdown("SIGTERM"));
+    process.on("SIGINT", () => shutdown("SIGINT"));
+
 } else {
     // --- Worker Thread Logic ---
     // This block only executes inside the spawned worker
